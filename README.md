@@ -6,6 +6,8 @@ It replaces stitching together two separate projects
 ([letterboxd-plex-sync](https://github.com/CampAsAChamp/letterboxd-plex-sync) and
 [PlexTraktSync](https://github.com/Taxel/PlexTraktSync)) with one app, one UI, one scheduler.
 
+See [PLAN.md](PLAN.md) for the full design doc and phase-by-phase progress tracker.
+
 ## Sync model (source of truth per data type)
 
 | Data type          | Source of truth | Direction                                             |
@@ -106,15 +108,5 @@ cd frontend && npm run typecheck && npm run test
 
 ## Build phases
 
-The app is built incrementally; each phase is independently runnable and testable.
-
-0. **Scaffold** ✅ — repo layout, health endpoint, single-container serving, CI.
-1. Auth + first-run wizard (local user)
-2. Connections + wizard steps (Plex / Trakt / Letterboxd / TMDB)
-3. Sync engine core (sources + reconcilers + dry-run)
-4. Jobs + runs + scheduler
-5. Logging pipeline + live log viewer
-6. Notifications (Discord / email / in-app)
-7. Hardening
-8. TrueNAS deployment — personal install (real install + validation on the target box)
-9. TrueNAS App Catalog publication (package, publish image, submit/review, verify from catalog)
+The app is built incrementally; each phase is independently runnable and testable. See
+[PLAN.md](PLAN.md#phase-tracker) for the checklist and current progress.
