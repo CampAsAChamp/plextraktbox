@@ -20,7 +20,7 @@ It replaces stitching together two separate projects
 
 - **Backend:** Python 3.11+, FastAPI, SQLModel + Alembic, APScheduler, structlog. Reuses `plexapi` and `trakt.py`.
 - **Frontend:** React + TypeScript + Vite, Mantine, TanStack Query.
-- **Deploy:** single Docker container (FastAPI serves the built SPA + runs the scheduler + SQLite).
+- **Deploy:** single Docker container (FastAPI serves the built SPA + runs the scheduler + SQLite). Target deployment environment is **TrueNAS** (SCALE) via its custom-app / "Launch Docker Image" flow, with `/data` mounted to a ZFS dataset — see [Deploying on TrueNAS](#deploying-on-truenas).
 
 ## Quick start (Docker)
 
@@ -54,6 +54,24 @@ npm run dev   # Vite proxies /api → http://localhost:8000
 
 Open the Vite URL (http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built.
 
+## Deploying on TrueNAS
+
+The intended install target is a **TrueNAS SCALE** box, not just any Docker host. Once the app is far
+enough along to run a real scheduled job (see Phase 8 below), the deployment shape is:
+
+- Run the built image via TrueNAS's **custom app** / "Launch Docker Image" flow (or a catalog app if one
+  is published later) rather than assuming raw `docker run`/Compose access.
+- Mount `/data` to a **ZFS dataset** (a host-path volume), not a Docker-managed volume, so the SQLite DB
+  and caches live on the pool and survive app reinstalls.
+- Expose a single HTTP port (8000) — no host networking, no privileged mode, no Docker-socket access, so
+  it drops cleanly into TrueNAS's app UI.
+- Respect the dataset's permission model: if the app needs a specific `PUID`/`PGID` to write to the
+  mounted dataset, that's configured the same way other self-hosted TrueNAS apps handle it.
+
+This isn't wired up yet — it's a deployment milestone (Phase 8) that follows once jobs, the scheduler,
+and logging are in place, but the container has been kept dependency-free (single image, SQLite,
+one port) from Phase 0 specifically so this drops in without rework.
+
 ## Tests & checks
 
 ```bash
@@ -77,3 +95,4 @@ The app is built incrementally; each phase is independently runnable and testabl
 5. Logging pipeline + live log viewer
 6. Notifications (Discord / email / in-app)
 7. Hardening
+8. TrueNAS deployment (real install + validation on the target box)
