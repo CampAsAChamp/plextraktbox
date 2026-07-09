@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "media-sync"
+version = "0.1.0"
+description = "All-in-one Plex + Letterboxd + Trakt sync tool with a web UI"
+readme = "../README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "sqlmodel>=0.0.22",
+    "alembic>=1.14",
+    "apscheduler>=3.11,<4",
+    "pydantic-settings>=2.7",
+    "passlib[bcrypt]>=1.7",
+    "itsdangerous>=2.2",
+    "cryptography>=44",
+    "python-multipart>=0.0.18",
+    "structlog>=24.4",
+    "httpx>=0.28",
+    "aiosmtplib>=3.0",
+    "sse-starlette>=2.1",
+    # third-party service clients
+    "plexapi>=4.16",
+    "trakt.py>=4.4",
+    "requests-cache>=1.2",
+    "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "respx>=0.22",
+    "freezegun>=1.5",
+    "ruff>=0.9",
+    "mypy>=1.14",
+    "types-passlib",
+]
+
+[project.scripts]
+media-sync = "media_sync.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["media_sync*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = ["B008"]  # FastAPI Depends() in defaults
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

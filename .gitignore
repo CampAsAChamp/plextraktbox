@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Built SPA (emitted into the backend package by Vite)
+backend/media_sync/static/
+
+# Runtime data (SQLite DB, caches)
+data/
+backend/data/
+
+# Secrets / env
+.env
+
+# OS / editor
+.DS_Store

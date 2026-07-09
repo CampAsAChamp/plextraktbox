@@ -1,0 +1,18 @@
+services:
+  media-sync:
+    build: .
+    image: media-sync:latest
+    container_name: media-sync
+    ports:
+      - "8000:8000"
+    environment:
+      MEDIA_SYNC_ENV: prod
+      # REQUIRED in prod. Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+      MEDIA_SYNC_SECRET_KEY: ${MEDIA_SYNC_SECRET_KEY:?set MEDIA_SYNC_SECRET_KEY in .env}
+      MEDIA_SYNC_DATA_DIR: /data
+    volumes:
+      - media_sync_data:/data
+    restart: unless-stopped
+
+volumes:
+  media_sync_data:

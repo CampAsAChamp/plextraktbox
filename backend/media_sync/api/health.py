@@ -1,0 +1,14 @@
+"""Health check endpoint (unauthenticated)."""
+
+from __future__ import annotations
+
+from fastapi import APIRouter
+
+from media_sync import __version__
+
+router = APIRouter(tags=["health"])
+
+
+@router.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok", "version": __version__}

@@ -1,0 +1,41 @@
+"""Shared pytest fixtures.
+
+Each test gets an app backed by a throwaway SQLite file so the schema is created
+fresh and nothing leaks between tests.
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import Iterator
+from pathlib import Path
+
+import pytest
+
+# Configure settings BEFORE importing the app so get_settings() caches test values.
+os.environ.setdefault("MEDIA_SYNC_ENV", "dev")
+os.environ.setdefault("MEDIA_SYNC_SECRET_KEY", "test-secret-key")
+
+
+@pytest.fixture
+def client(tmp_path: Path) -> Iterator["TestClient"]:  # noqa: F821
+    os.environ["MEDIA_SYNC_DATA_DIR"] = str(tmp_path)
+
+    # Reset the cached settings + engine so they pick up the tmp data dir.
+    from media_sync import config, db
+
+    config.get_settings.cache_clear()
+    db._settings = config.get_settings()
+    db.engine = db.create_engine(
+        db._settings.database_url,
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
+
+    from fastapi.testclient import TestClient
+
+    from media_sync.main import create_app
+
+    app = create_app()
+    with TestClient(app) as c:
+        yield c
