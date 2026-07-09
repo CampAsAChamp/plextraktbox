@@ -10,7 +10,7 @@ from __future__ import annotations
 from cryptography.fernet import Fernet, InvalidToken
 from passlib.context import CryptContext
 
-from media_sync.config import get_settings
+from plextraktbox.config import get_settings
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

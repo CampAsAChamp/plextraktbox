@@ -7,7 +7,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: "../backend/media_sync/static",
+    outDir: "../backend/plextraktbox/static",
     emptyOutDir: true,
   },
   server: {

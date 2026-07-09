@@ -12,7 +12,7 @@ main() {
 
   # Step 2: start the ASGI server on 0.0.0.0:8000.
   log_step "Step 2/2: starting uvicorn"
-  exec uvicorn media_sync.main:app --host 0.0.0.0 --port 8000
+  exec uvicorn plextraktbox.main:app --host 0.0.0.0 --port 8000
 }
 
 main "$@"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from media_sync import __version__
+from plextraktbox import __version__
 
 router = APIRouter(tags=["health"])
 

@@ -13,16 +13,16 @@ from pathlib import Path
 import pytest
 
 # Configure settings BEFORE importing the app so get_settings() caches test values.
-os.environ.setdefault("MEDIA_SYNC_ENV", "dev")
-os.environ.setdefault("MEDIA_SYNC_SECRET_KEY", "test-secret-key")
+os.environ.setdefault("PLEXTRAKTBOX_ENV", "dev")
+os.environ.setdefault("PLEXTRAKTBOX_SECRET_KEY", "test-secret-key")
 
 
 @pytest.fixture
 def client(tmp_path: Path) -> Iterator["TestClient"]:  # noqa: F821
-    os.environ["MEDIA_SYNC_DATA_DIR"] = str(tmp_path)
+    os.environ["PLEXTRAKTBOX_DATA_DIR"] = str(tmp_path)
 
     # Reset the cached settings + engine so they pick up the tmp data dir.
-    from media_sync import config, db
+    from plextraktbox import config, db
 
     config.get_settings.cache_clear()
     db._settings = config.get_settings()
@@ -34,7 +34,7 @@ def client(tmp_path: Path) -> Iterator["TestClient"]:  # noqa: F821
 
     from fastapi.testclient import TestClient
 
-    from media_sync.main import create_app
+    from plextraktbox.main import create_app
 
     app = create_app()
     with TestClient(app) as c:

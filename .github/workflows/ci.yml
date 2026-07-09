@@ -17,9 +17,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: ruff check media_sync
-      - run: ruff format --check media_sync
-      - run: mypy media_sync
+      - run: ruff check plextraktbox
+      - run: ruff format --check plextraktbox
+      - run: mypy plextraktbox
       - run: pytest -q
 
   frontend:

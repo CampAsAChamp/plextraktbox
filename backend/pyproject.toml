@@ -3,10 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "media-sync"
+name = "plextraktbox"
 version = "0.1.0"
 description = "All-in-one Plex + Letterboxd + Trakt sync tool with a web UI"
-readme = "../README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = [
@@ -43,11 +42,11 @@ dev = [
 ]
 
 [project.scripts]
-media-sync = "media_sync.__main__:main"
+plextraktbox = "plextraktbox.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["media_sync*"]
+include = ["plextraktbox*"]
 
 [tool.ruff]
 line-length = 110

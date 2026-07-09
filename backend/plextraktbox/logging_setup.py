@@ -10,7 +10,7 @@ import logging
 
 import structlog
 
-from media_sync.config import get_settings
+from plextraktbox.config import get_settings
 
 
 def configure_logging() -> None:

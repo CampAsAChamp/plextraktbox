@@ -1,7 +1,7 @@
 """Alembic migration environment.
 
 Pulls the database URL from the application settings and the target metadata from
-``SQLModel.metadata`` (populated by importing ``media_sync.models``).
+``SQLModel.metadata`` (populated by importing ``plextraktbox.models``).
 """
 
 from __future__ import annotations
@@ -12,8 +12,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-import media_sync.models  # noqa: F401  # populate SQLModel.metadata
-from media_sync.config import get_settings
+import plextraktbox.models  # noqa: F401  # populate SQLModel.metadata
+from plextraktbox.config import get_settings
 
 config = context.config
 

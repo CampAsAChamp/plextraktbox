@@ -1,8 +1,8 @@
 """Application configuration loaded from environment variables.
 
-All settings are prefixed with ``MEDIA_SYNC_`` (e.g. ``MEDIA_SYNC_SECRET_KEY``).
+All settings are prefixed with ``PLEXTRAKTBOX_`` (e.g. ``PLEXTRAKTBOX_SECRET_KEY``).
 The secret key is required in production; a dev default is provided only when
-``MEDIA_SYNC_ENV=dev`` so local runs work without ceremony.
+``PLEXTRAKTBOX_ENV=dev`` so local runs work without ceremony.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="MEDIA_SYNC_",
+        env_prefix="PLEXTRAKTBOX_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
@@ -30,14 +30,14 @@ class Settings(BaseSettings):
         description="Signs session cookies and derives the Fernet token-encryption key.",
     )
     data_dir: Path = Field(default=Path("./data"), description="Directory for the SQLite DB and caches.")
-    session_cookie: str = "media_sync_session"
+    session_cookie: str = "plextraktbox_session"
     log_level: str = "INFO"
 
     @model_validator(mode="after")
     def _require_secret_in_prod(self) -> Settings:
         if not self.secret_key:
             if self.env == "prod":
-                raise ValueError("MEDIA_SYNC_SECRET_KEY is required when MEDIA_SYNC_ENV=prod")
+                raise ValueError("PLEXTRAKTBOX_SECRET_KEY is required when PLEXTRAKTBOX_ENV=prod")
             # Deterministic dev-only key so encrypted data survives restarts locally.
             self.secret_key = "dev-insecure-secret-key-do-not-use-in-production"
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     @property
     def db_path(self) -> Path:
-        return self.data_dir / "media_sync.db"
+        return self.data_dir / "plextraktbox.db"
 
     @property
     def database_url(self) -> str:

@@ -16,6 +16,6 @@ afterEach(() => {
 
 test("renders the shell and shows API status once health resolves", async () => {
   renderWithProviders(<App />);
-  expect(screen.getByText("media-sync")).toBeInTheDocument();
+  expect(screen.getByText("plextraktbox")).toBeInTheDocument();
   await waitFor(() => expect(screen.getByText(/API ok/)).toBeInTheDocument());
 });

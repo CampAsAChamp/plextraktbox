@@ -1,4 +1,4 @@
-# media-sync
+# plextraktbox
 
 All-in-one, self-hosted tool that keeps **Plex**, **Letterboxd**, and **Trakt** in sync — with a web UI, a built-in scheduler, live log streaming, and notifications.
 
@@ -26,7 +26,7 @@ It replaces stitching together two separate projects
 
 ```bash
 cp .env.example .env
-# set MEDIA_SYNC_SECRET_KEY (python -c "import secrets; print(secrets.token_urlsafe(48))")
+# set PLEXTRAKTBOX_SECRET_KEY (python -c "import secrets; print(secrets.token_urlsafe(48))")
 docker compose up --build
 # open http://localhost:8000 and complete the first-run wizard
 ```
@@ -39,9 +39,9 @@ docker compose up --build
 cd backend
 python3.12 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
-export MEDIA_SYNC_SECRET_KEY=dev MEDIA_SYNC_DATA_DIR=./data
+export PLEXTRAKTBOX_SECRET_KEY=dev PLEXTRAKTBOX_DATA_DIR=./data
 alembic upgrade head
-uvicorn media_sync.main:app --reload
+uvicorn plextraktbox.main:app --reload
 ```
 
 **Frontend** (needs Node 20+):
@@ -59,7 +59,7 @@ Open the Vite URL (http://localhost:5173) for the dev SPA, or hit the backend di
 ```bash
 # backend
 cd backend && . .venv/bin/activate
-ruff check media_sync && ruff format --check media_sync && mypy media_sync && pytest -q
+ruff check plextraktbox && ruff format --check plextraktbox && mypy plextraktbox && pytest -q
 
 # frontend
 cd frontend && npm run typecheck && npm run test

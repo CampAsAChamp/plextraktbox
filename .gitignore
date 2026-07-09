@@ -13,7 +13,7 @@ frontend/dist/
 *.tsbuildinfo
 
 # Built SPA (emitted into the backend package by Vite)
-backend/media_sync/static/
+backend/plextraktbox/static/
 
 # Runtime data (SQLite DB, caches)
 data/

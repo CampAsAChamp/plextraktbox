@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 from sqlmodel import Session, SQLModel, create_engine
 
-from media_sync.config import get_settings
+from plextraktbox.config import get_settings
 
 _settings = get_settings()
 
@@ -26,7 +26,7 @@ def init_db() -> None:
     and first boot where migrations may not have run yet.
     """
     # Import models so they register with SQLModel.metadata before create_all.
-    import media_sync.models  # noqa: F401
+    import plextraktbox.models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 

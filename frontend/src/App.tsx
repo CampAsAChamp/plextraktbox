@@ -19,7 +19,7 @@ export function App() {
     <AppShell header={{ height: 56 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title order={4}>media-sync</Title>
+          <Title order={4}>plextraktbox</Title>
           {data ? (
             <Badge color="green" variant="light">
               API ok · v{data.version}

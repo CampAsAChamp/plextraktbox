@@ -6,25 +6,25 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 COPY frontend/ ./
-# Vite emits into ../backend/media_sync/static; redirect it to a build dir here.
+# Vite emits into ../backend/plextraktbox/static; redirect it to a build dir here.
 RUN npm run build -- --outDir dist --emptyOutDir
 
 # ---- Stage 2: python runtime ----
 FROM python:3.12-slim AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    MEDIA_SYNC_ENV=prod \
-    MEDIA_SYNC_DATA_DIR=/data
+    PLEXTRAKTBOX_ENV=prod \
+    PLEXTRAKTBOX_DATA_DIR=/data
 
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
-COPY backend/media_sync ./media_sync
+COPY backend/plextraktbox ./plextraktbox
 COPY backend/migrations ./migrations
 COPY backend/alembic.ini ./
 RUN pip install --no-cache-dir .
 
 # Bring in the built SPA
-COPY --from=frontend /app/frontend/dist ./media_sync/static
+COPY --from=frontend /app/frontend/dist ./plextraktbox/static
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
