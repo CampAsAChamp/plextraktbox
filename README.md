@@ -72,6 +72,27 @@ This isn't wired up yet — it's a deployment milestone (Phase 8) that follows o
 and logging are in place, but the container has been kept dependency-free (single image, SQLite,
 one port) from Phase 0 specifically so this drops in without rework.
 
+### Getting into the TrueNAS App Catalog (Phase 9, later)
+
+Running the container on the user's own box (Phase 8) is a separate milestone from getting
+`plextraktbox` **listed in the TrueNAS App Catalog** so it can be installed like any official/community
+app. That's a heavier, later effort with its own steps:
+
+1. Package the app per TrueNAS SCALE's current app spec (a chart/`app.yaml`-style app definition with a
+   config schema), not just a raw Docker image — check the current SCALE app format when this phase
+   starts, since it has changed across releases.
+2. Expose the user-configurable options (HTTP port, `/data` dataset path, `PLEXTRAKTBOX_SECRET_KEY`,
+   etc.) through that config schema so they render as real fields in the TrueNAS app UI.
+3. Publish the container image to a public registry (e.g. GHCR) with versioned tags — a catalog entry
+   needs a real, pullable image, not a local build.
+4. Submit to the official community catalog (via their contribution process) or stand up a self-hosted
+   custom catalog added by URL — whichever fits — and confirm the current submission/review requirements
+   at the time, since catalog mechanics are a moving target.
+5. Verify the app installs and behaves correctly from the catalog on a clean TrueNAS instance.
+
+Don't start this until Phase 8 (the personal install) has been running successfully for a while —
+publishing before the app is proven on real hardware is premature.
+
 ## Tests & checks
 
 ```bash
@@ -95,4 +116,5 @@ The app is built incrementally; each phase is independently runnable and testabl
 5. Logging pipeline + live log viewer
 6. Notifications (Discord / email / in-app)
 7. Hardening
-8. TrueNAS deployment (real install + validation on the target box)
+8. TrueNAS deployment — personal install (real install + validation on the target box)
+9. TrueNAS App Catalog publication (package, publish image, submit/review, verify from catalog)
