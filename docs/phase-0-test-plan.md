@@ -2,13 +2,14 @@
 
 Smoke tests for the scaffold. All four sections passed on 2026-07-10.
 
+Shared setup and mise tasks: [testing.md](testing.md).
+
 ## 1. Container end-to-end
 
 ```bash
-cp .env.example .env
-python3 -c "import secrets; print(secrets.token_urlsafe(48))"   # paste into .env as PLEXTRAKTBOX_SECRET_KEY
+# First time only: cp .env.example .env and set PLEXTRAKTBOX_SECRET_KEY
 
-podman compose up --build   # or: docker compose up --build
+mise run up   # or: podman compose up --build
 ```
 
 Then check:
@@ -16,19 +17,15 @@ Then check:
 - Build succeeds (frontend build stage, then Python runtime copy stage)
 - `curl http://localhost:8000/api/health` → `{"status":"ok","version":"0.1.0"}`
 - Open `http://localhost:8000/` in a browser → "plextraktbox" shell with a green "API ok" badge
-- `podman compose down` then `podman compose up` again (no `--build`) → boots cleanly with the persisted volume
+- `mise run down` then `mise run up` again (no rebuild) → boots cleanly with the persisted volume
 
-## 2. Local dev mode (day-to-day loop)
+## 2. Local dev mode (two terminals — hot reload only)
 
 Both processes must be running — Vite proxies `/api` to the backend on port 8000.
 
 ```bash
-# terminal 1 — backend (keep running)
-cd backend && source .venv/bin/activate
-PLEXTRAKTBOX_SECRET_KEY=dev PLEXTRAKTBOX_DATA_DIR=./data uvicorn plextraktbox.main:app --reload
-
-# terminal 2 — frontend (keep running)
-cd frontend && npm run dev
+mise run dev-backend    # terminal 1
+mise run dev-frontend   # terminal 2
 ```
 
 Open the URL Vite prints (usually `http://localhost:5173`) → same shell, badge should go green (proxied through Vite to the backend). Edit `App.tsx` and confirm hot-reload.

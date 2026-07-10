@@ -1,0 +1,166 @@
+# plextraktbox — tool versions, dev env, and common workflows.
+# Install mise: https://mise.jdx.dev/getting-started.html
+# First run in this repo: mise trust && mise install
+
+[tools]
+python = "3.12"
+node = "22"
+
+[env]
+PLEXTRAKTBOX_SECRET_KEY = "dev"
+PLEXTRAKTBOX_DATA_DIR = "{{ config_root }}/backend/data"
+
+[tasks.install]
+description = "Install backend and frontend dependencies"
+depends = ["install-backend", "install-frontend"]
+
+[tasks."install-backend"]
+description = "Create venv and install backend (incl. dev extras)"
+dir = "{{ config_root }}/backend"
+run = '''
+if [ ! -x .venv/bin/python ] || ! .venv/bin/python -m pip --version >/dev/null 2>&1; then
+  rm -rf .venv
+  python -m venv .venv
+fi
+.venv/bin/python -m pip install -e ".[dev]"
+'''
+
+[tasks."install-frontend"]
+description = "Install frontend dependencies (npm ci)"
+dir = "{{ config_root }}/frontend"
+run = "npm ci"
+
+[tasks.build]
+description = "Build SPA into backend/static and install backend package"
+depends = ["build-frontend", "build-backend"]
+
+[tasks."build-frontend"]
+description = "Build React app into backend/plextraktbox/static"
+depends = ["install-frontend"]
+dir = "{{ config_root }}/frontend"
+run = "npm run build"
+
+[tasks."build-backend"]
+description = "Install backend package into the local venv"
+depends = ["install-backend"]
+dir = "{{ config_root }}/backend"
+run = '.venv/bin/python -m pip install -e ".[dev]"'
+
+[tasks."db-upgrade"]
+description = "Apply Alembic migrations to the local SQLite DB"
+depends = ["install-backend"]
+dir = "{{ config_root }}/backend"
+run = ".venv/bin/python -m alembic upgrade head"
+
+[tasks.test]
+description = "Run backend and frontend test suites"
+depends = ["test-backend", "test-frontend"]
+
+[tasks."test-backend"]
+description = "Run backend pytest suite"
+depends = ["install-backend"]
+dir = "{{ config_root }}/backend"
+run = ".venv/bin/python -m pytest -q"
+
+[tasks."test-frontend"]
+description = "Run frontend vitest suite"
+depends = ["install-frontend"]
+dir = "{{ config_root }}/frontend"
+run = "npm run test"
+
+[tasks.check]
+description = "Run linters/typecheck and all tests (CI parity)"
+depends = ["lint", "test"]
+
+[tasks.lint]
+description = "Run ruff, mypy, and frontend typecheck"
+depends = ["install-backend", "install-frontend"]
+run = '''
+backend/.venv/bin/ruff check backend/plextraktbox
+backend/.venv/bin/ruff format --check backend/plextraktbox
+backend/.venv/bin/mypy backend/plextraktbox
+cd frontend && npm run typecheck
+'''
+
+[tasks."dev-backend"]
+description = "Run uvicorn with reload (terminal 1)"
+depends = ["install-backend", "db-upgrade"]
+dir = "{{ config_root }}/backend"
+run = ".venv/bin/uvicorn plextraktbox.main:app --reload"
+
+[tasks."dev-frontend"]
+description = "Run Vite dev server with /api proxy (terminal 2)"
+depends = ["install-frontend"]
+dir = "{{ config_root }}/frontend"
+run = "npm run dev"
+
+[tasks.up]
+description = "Start container (foreground, rebuilds image)"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE up --build
+'''
+
+[tasks.down]
+description = "Stop container and keep the data volume"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE down
+'''
+
+[tasks."down-v"]
+description = "Stop container and delete the data volume (fresh DB next start)"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE down -v
+'''
+
+[tasks.rebuild]
+description = "Wipe data volume, rebuild image, and start fresh"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE down -v
+$COMPOSE build
+$COMPOSE up --build
+'''
+
+[tasks."build-image"]
+description = "Build the Docker image (no compose)"
+depends = ["build-frontend"]
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE build
+'''
+
+[tasks.clean]
+description = "Remove build artifacts and tool caches"
+depends = ["clean-frontend", "clean-backend"]
+
+[tasks."clean-frontend"]
+description = "Remove frontend dist and TypeScript build info"
+run = "rm -rf frontend/dist && find frontend -name '*.tsbuildinfo' -delete"
+
+[tasks."clean-backend"]
+description = "Remove SPA output, Python caches, and egg metadata"
+run = '''
+rm -rf backend/plextraktbox/static backend/.pytest_cache backend/.mypy_cache \
+  backend/.ruff_cache backend/plextraktbox.egg-info
+find backend -name __pycache__ -type d -prune -exec rm -rf {} +
+'''
+
+[tasks."clean-data"]
+description = "Remove local SQLite DB and runtime data directories"
+run = "rm -rf backend/data data"
+
+[tasks."clean-deps"]
+description = "Remove venv and node_modules (full reinstall next time)"
+run = "rm -rf backend/.venv frontend/node_modules"
+
+[tasks."clean-all"]
+description = "Remove artifacts, local data/deps, and container volume"
+run = '''
+mise run clean
+mise run clean-data
+mise run clean-deps
+mise run down-v
+'''

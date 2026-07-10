@@ -7,20 +7,19 @@ encryption/decryption for third-party tokens.
 
 from __future__ import annotations
 
+import bcrypt
 from cryptography.fernet import Fernet, InvalidToken
-from passlib.context import CryptContext
 
 from plextraktbox.config import get_settings
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
-    return _pwd_context.hash(password)
+    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    return hashed.decode("utf-8")
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return _pwd_context.verify(password, password_hash)
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
 def _fernet() -> Fernet:

@@ -18,7 +18,7 @@ os.environ.setdefault("PLEXTRAKTBOX_SECRET_KEY", "test-secret-key")
 
 
 @pytest.fixture
-def client(tmp_path: Path) -> Iterator["TestClient"]:  # noqa: F821
+def client(tmp_path: Path) -> Iterator[TestClient]:  # noqa: F821
     os.environ["PLEXTRAKTBOX_DATA_DIR"] = str(tmp_path)
 
     # Reset the cached settings + engine so they pick up the tmp data dir.

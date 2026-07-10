@@ -26,35 +26,32 @@ See [PLAN.md](PLAN.md) for the full design doc and phase-by-phase progress track
 
 ## Quick start (container)
 
+One terminal — the image serves the API and built UI together on port 8000.
+
 ```bash
-cp .env.example .env
-# set PLEXTRAKTBOX_SECRET_KEY (python -c "import secrets; print(secrets.token_urlsafe(48))")
-podman compose up --build   # or: docker compose up --build
-# open http://localhost:8000 and complete the first-run wizard
+# First time only: cp .env.example .env and set PLEXTRAKTBOX_SECRET_KEY
+mise run up   # or: podman compose up --build
+# open http://localhost:8000 — setup wizard on first run, then login → dashboard
 ```
+
+Install [mise](https://mise.jdx.dev/getting-started.html) for project tasks (`mise trust && mise install` on first clone). Run `mise tasks` to list everything.
+
+See [docs/testing.md](docs/testing.md) for the full smoke-test checklist (including how to reset with `mise run down-v`).
 
 ## Local development
 
-**Backend** (needs Python 3.11+):
+Use two terminals only when you want Vite hot reload while editing the frontend.
 
 ```bash
-cd backend
-python3.12 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"
-export PLEXTRAKTBOX_SECRET_KEY=dev PLEXTRAKTBOX_DATA_DIR=./data
-alembic upgrade head
-uvicorn plextraktbox.main:app --reload
+mise trust && mise install   # first time only
+mise run install             # backend venv + frontend deps
+mise run dev-backend         # terminal 1 — uvicorn on :8000
+mise run dev-frontend        # terminal 2 — Vite on :5173
 ```
 
-**Frontend** (needs Node 20+):
+`mise` pins Python 3.12 and Node 22 (matching CI) and sets `PLEXTRAKTBOX_SECRET_KEY` / `PLEXTRAKTBOX_DATA_DIR` automatically.
 
-```bash
-cd frontend
-npm install
-npm run dev   # Vite proxies /api → http://127.0.0.1:8000 (backend must be running)
-```
-
-Open the Vite URL (usually http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built. Both the backend and `npm run dev` must be running for the dev UI to show a green health badge.
+Open the Vite URL (usually http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built. Both `dev-backend` and `dev-frontend` must be running for the dev UI to show a green health badge.
 
 ## Deploying on TrueNAS
 
@@ -98,12 +95,14 @@ publishing before the app is proven on real hardware is premature.
 ## Tests & checks
 
 ```bash
-# backend
-cd backend && . .venv/bin/activate
-ruff check plextraktbox && ruff format --check plextraktbox && mypy plextraktbox && pytest -q
+mise run check   # lint + test (CI parity)
+```
 
-# frontend
-cd frontend && npm run typecheck && npm run test
+Or run each stack separately:
+
+```bash
+mise run test-backend
+mise run test-frontend
 ```
 
 ## Build phases

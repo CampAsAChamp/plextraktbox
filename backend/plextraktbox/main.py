@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from plextraktbox.api import health
+from plextraktbox.api import auth, health, setup
 from plextraktbox.config import get_settings
 from plextraktbox.db import init_db
 from plextraktbox.logging_setup import configure_logging, get_logger
@@ -50,6 +50,8 @@ def create_app() -> FastAPI:
 
     # --- API routers (all under /api) ---
     app.include_router(health.router, prefix="/api")
+    app.include_router(setup.router, prefix="/api")
+    app.include_router(auth.router, prefix="/api")
 
     # --- SPA static hosting ---
     _mount_spa(app)
