@@ -10,7 +10,7 @@ current approach of stitching two separate projects together:
 - [CampAsAChamp/letterboxd-plex-sync](https://github.com/CampAsAChamp/letterboxd-plex-sync) — one-way Letterboxd → Plex (Python; scrapes Letterboxd via `letterboxd_stats`; matches LB URL → TMDB id → Plex guid `tmdb://`).
 - [Taxel/PlexTraktSync](https://github.com/Taxel/PlexTraktSync) — two-way Plex ↔ Trakt (Python; `plexapi` + `pytrakt`; **pluggy** plugin sync engine; GUID matching; stateless diffing; `dry_run` everywhere; **no scheduler, no UI**).
 
-Repo/folder name is kept as `media-sync`; the product/package is named **`plextraktbox`**.
+Repo and package name: **`plextraktbox`**.
 
 ### Deployment target: TrueNAS
 The user will run this on **TrueNAS** (not just any Docker host) — this shapes packaging/ops decisions:
@@ -67,7 +67,7 @@ The user will run this on **TrueNAS** (not just any Docker host) — this shapes
 
 ## Directory structure
 ```
-media-sync/
+plextraktbox/
 ├── Dockerfile (multi-stage: build SPA → copy into python img)  docker-compose.yml  .env.example
 ├── backend/
 │   ├── pyproject.toml  alembic.ini  migrations/
@@ -138,7 +138,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 Each phase is independently runnable/testable. Check off as completed.
 
-- [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`, CI (ruff/mypy/pytest/vitest). *Container boots, health OK, empty SPA loads.*
+- [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`, CI (ruff/mypy/pytest/vitest). *Verified: container boots, health OK, SPA loads (container + Vite dev + backend static).*
 - [x] **Rename** — `media-sync` package → `plextraktbox` (package, env prefix, Docker/CI/docs).
 - [ ] **Phase 1 — Auth + wizard (user)** — user model, bcrypt, sessions, auth dep, `setup/user`+`login`/`logout`, SPA setup-gate→login→dashboard.
 - [ ] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex token + Trakt device + LB creds + TMDB key steps, re-auth UI.
@@ -151,8 +151,8 @@ Each phase is independently runnable/testable. Check off as completed.
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while.
 
 ## Verification
-- **Local dev:** backend `pip install -e ".[dev]" && alembic upgrade head && uvicorn plextraktbox.main:app --reload` (needs `PLEXTRAKTBOX_SECRET_KEY`, `PLEXTRAKTBOX_DATA_DIR`); frontend `npm install && npm run dev` (Vite proxies `/api`→:8000). Complete wizard → create jobs → watch logs.
-- **Docker:** `docker compose up --build` → wizard, scheduled job fires, live logs stream, notification arrives, restart container → data + schedule survive.
+- **Local dev:** backend `pip install -e ".[dev]" && alembic upgrade head && uvicorn plextraktbox.main:app --reload` (needs `PLEXTRAKTBOX_SECRET_KEY`, `PLEXTRAKTBOX_DATA_DIR`); frontend `npm install && npm run dev` (Vite proxies `/api` → `127.0.0.1:8000` — both processes must run). Complete wizard → create jobs → watch logs. See [docs/phase-0-test-plan.md](docs/phase-0-test-plan.md) for the Phase 0 smoke checklist.
+- **Container:** `podman compose up --build` (or `docker compose up --build`) → health OK, SPA loads, restart → data survives. Dockerfile bundles the Zscaler root CA for TLS-inspecting corporate networks during `npm ci` / `pip install`.
 - **TrueNAS personal install (Phase 8):** deploy the built image via TrueNAS SCALE's custom-app / "Launch Docker Image" flow with `/data` mounted to a real ZFS dataset path; confirm file ownership/permissions work with the dataset's configured PUID/PGID, and that the same wizard → jobs → scheduled run → notification flow works against the real Plex/Trakt/Letterboxd accounts.
 - **TrueNAS catalog publication (Phase 9):** validate the packaged app installs cleanly from the catalog (official or self-hosted custom catalog) on a clean TrueNAS instance — config schema renders correctly in the app UI, image pulls from the public registry, and the resulting app behaves the same as the manually-launched Phase 8 install.
 - **Tests:** fakes in `tests/fakes/` injected via `SyncContext` (no network). Assert source-of-truth: Plex-truth watchlist reconciles Trakt; LB-truth ratings push Plex+Trakt; Trakt-truth watched marks Plex; LB writes raise `NotSupported`. `respx` for HTTP, `freezegun` for dates. API tests via httpx AsyncClient + in-memory SQLite (auth gate, wizard-disable, job CRUD, run-now, SSE replay+live+terminal). Scheduler: near-future cron creates JobRun, `max_instances=1` prevents overlap. Notifications: mock httpx/SMTP, assert scope + isolation. Frontend (vitest+RTL+MSW): LogViewer behaviors, JobForm validation, wizard flow, auth redirect.

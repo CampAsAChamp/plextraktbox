@@ -24,12 +24,12 @@ See [PLAN.md](PLAN.md) for the full design doc and phase-by-phase progress track
 - **Frontend:** React + TypeScript + Vite, Mantine, TanStack Query.
 - **Deploy:** single Docker container (FastAPI serves the built SPA + runs the scheduler + SQLite). Target deployment environment is **TrueNAS** (SCALE) via its custom-app / "Launch Docker Image" flow, with `/data` mounted to a ZFS dataset — see [Deploying on TrueNAS](#deploying-on-truenas).
 
-## Quick start (Docker)
+## Quick start (container)
 
 ```bash
 cp .env.example .env
 # set PLEXTRAKTBOX_SECRET_KEY (python -c "import secrets; print(secrets.token_urlsafe(48))")
-docker compose up --build
+podman compose up --build   # or: docker compose up --build
 # open http://localhost:8000 and complete the first-run wizard
 ```
 
@@ -51,10 +51,10 @@ uvicorn plextraktbox.main:app --reload
 ```bash
 cd frontend
 npm install
-npm run dev   # Vite proxies /api → http://localhost:8000
+npm run dev   # Vite proxies /api → http://127.0.0.1:8000 (backend must be running)
 ```
 
-Open the Vite URL (http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built.
+Open the Vite URL (usually http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built. Both the backend and `npm run dev` must be running for the dev UI to show a green health badge.
 
 ## Deploying on TrueNAS
 
