@@ -193,15 +193,19 @@ export function AppLayout({
                   <Button
                     variant="subtle"
                     size="compact-sm"
-                    leftSection={
-                      avatarUrl ? (
-                        <Avatar src={avatarUrl} alt="" size={24} radius="xl" />
-                      ) : undefined
-                    }
-                    rightSection={<ChevronDownIcon />}
+                    px="sm"
+                    py="xs"
+                    h="auto"
+                    styles={{ label: { lineHeight: 1 } }}
                     aria-label="Account menu"
                   >
-                    {username}
+                    <Group gap={6} wrap="nowrap" align="center">
+                      {avatarUrl ? (
+                        <Avatar src={avatarUrl} alt="" size={24} radius="xl" />
+                      ) : null}
+                      <span>{username}</span>
+                      <ChevronDownIcon />
+                    </Group>
                   </Button>
                 </Menu.Target>
                 <Menu.Dropdown>
