@@ -62,7 +62,7 @@ Dockerfile/compose/entrypoint so there's no retrofit later.
 - **App auth:** **single local user** (email/username + bcrypt password, session cookie), set in first-run wizard.
 - **Letterboxd:** **read-only** (scrape reads; no write-back — Letterboxd has no usable write API for personal use).
 - **Jobs:** **per-service-pair jobs**, each independently scheduled/configured.
-- **Notifications:** **Discord webhook + Email (SMTP) + in-app**.
+- **Notifications:** **Discord webhook + in-app**.
 
 
 
@@ -76,7 +76,7 @@ Dockerfile/compose/entrypoint so there's no retrofit later.
 
 ## Tech choices
 
-**Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), aiosmtplib (email), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
+**Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
 **Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine** (admin UI components), `@microsoft/fetch-event-source` (SSE), react-hook-form + zod, `@tanstack/react-virtual` (log virtualization). Tests: Vitest + RTL + MSW.
 
 ## Directory structure
@@ -97,7 +97,7 @@ plextraktbox/
 │       │   ├── sources/  base(Source ABC), plex_source, trakt_source, letterboxd_source(read-only)
 │       │   └── reconcilers/ base, watchlist(Plex-truth), ratings(LB-truth), watched(Trakt-truth)
 │       ├── scheduler/    manager(APScheduler lifecycle), runner(execute JobRun + record + notify)
-│       ├── notifications/ dispatcher, discord, email, inapp
+│       ├── notifications/ dispatcher, discord, inapp
 │       └── logstream/    pubsub(per-run asyncio pubsub + ring buffer), handler(structlog→DB+pubsub)
 │   └── tests/  conftest, fakes/(FakePlex/Trakt/Letterboxd/TMDB), unit/, api/
 └── frontend/src/
@@ -130,7 +130,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 - **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json?`.
 - **job_run** — job_id, trigger(scheduled|manual), dry_run, status(running|success|failed|partial), started/finished_at, `summary_json`, error.
 - **log_entry** — run_id(indexed), ts, level, logger, message, `context_json`; index `(run_id,id)` for paging + stream cursor.
-- **notification_config** — channel(discord|email|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook/SMTP creds), `config_json`.
+- **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
 - **setting** — key/value_json (default cron, log_retention_days, global dry-run). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention job prunes old logs/runs.
 
@@ -154,7 +154,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 ## Notifications
 
-`notifications/dispatcher.py` called at run finalize: resolve job-override-else-global configs filtered by run status vs on_success/on_failure; build payload from RunSummary (name, status, counts, duration, link `/#/runs/{id}`, error excerpt); fan out concurrently to **discord** (httpx embed, color by status), **email** (aiosmtplib HTML+text), **inapp** (insert row → bell). Each channel isolated (own try/except; failure logs WARN, never aborts run). `POST /api/notifications/{id}/test` sends synthetic payload.
+`notifications/dispatcher.py` called at run finalize: resolve job-override-else-global configs filtered by run status vs on_success/on_failure; build payload from RunSummary (name, status, counts, duration, link `/#/runs/{id}`, error excerpt); fan out concurrently to **discord** (httpx embed, color by status), **inapp** (insert row → bell). Each channel isolated (own try/except; failure logs WARN, never aborts run). `POST /api/notifications/{id}/test` sends synthetic payload.
 
 ## Security
 
@@ -178,7 +178,7 @@ Each phase is independently runnable/testable. Check off as completed.
 - [x] **Phase 3 — Sync engine core** — MediaItem/guid/matcher/plugins/sources/3 reconcilers/engine + dry-run; temporary synchronous `POST /api/jobs/{id}/run`. *Full unit coverage of matching + each source-of-truth reconciler vs fakes; dry-run = zero writes.* → [test plan](docs/phase-3-test-plan.md)
 - [x] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. → [test plan](docs/phase-4-test-plan.md)
 - [x] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. → [test plan](docs/phase-5-test-plan.md)
-- [ ] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/email/inapp, per-job override + global, test buttons, in-app bell. *(test plan: TBD)*
+- [x] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/inapp, per-job override + global, test buttons, in-app bell. → [test plan](docs/phase-6-test-plan.md)
 - [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, **GitHub Actions CI** (restore `.github/workflows/ci.yml`: backend ruff/mypy/pytest, frontend typecheck/vitest/build; fix current failures; mirror `mise run check`), polish. **Gravatar:** `avatar_url` on `UserResponse` (MD5 of normalized email → identicon fallback); navbar account menu shows avatar + email; future Settings controls for Gravatar default style (`d=`) or custom avatar URL override. *(test plan: TBD)*
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount, document the "Launch Docker Image" / custom-app setup in the README, do a real install on the user's TrueNAS box end to end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while. *(test plan: TBD)*

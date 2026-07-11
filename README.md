@@ -194,7 +194,7 @@ The app is built incrementally; each phase is independently runnable and testabl
 - [x] **Phase 3 — Sync engine core** — matching, reconcilers, dry-run engine
 - [ ] **Phase 4 — Jobs + runs + scheduler** — job CRUD, APScheduler, run history UI
 - [x] **Phase 5 — Logging pipeline + live viewer** — structlog, SSE, LogViewer
-- [ ] **Phase 6 — Notifications** — Discord, email, in-app alerts
+- [x] **Phase 6 — Notifications** — Discord, in-app alerts
 - [ ] **Phase 7 — Hardening** — retention, CI, polish, OpenAPI → TS types
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — real install on user's box
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — packaged app + public image

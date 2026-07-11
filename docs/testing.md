@@ -49,7 +49,7 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | 3 | Sync engine core + dry-run | [phase-3-test-plan.md](phase-3-test-plan.md) | Done |
 | 4 | Jobs, runs, scheduler | [phase-4-test-plan.md](phase-4-test-plan.md) | Done |
 | 5 | Logging pipeline + live viewer | [phase-5-test-plan.md](phase-5-test-plan.md) | Done |
-| 6 | Notifications | — | TBD when phase lands |
+| 6 | Notifications | [phase-6-test-plan.md](phase-6-test-plan.md) | Done |
 | 7 | Hardening + e2e smoke | — | TBD when phase lands |
 | 8 | TrueNAS personal install | — | TBD when phase lands |
 | 9 | TrueNAS App Catalog | — | TBD when phase lands |
