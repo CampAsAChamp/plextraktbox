@@ -1,0 +1,7 @@
+.dryRunRow {
+  background-color: var(--mantine-color-blue-light) !important;
+}
+
+.dryRunRow[data-hover]:hover {
+  background-color: var(--mantine-color-blue-light-hover) !important;
+}

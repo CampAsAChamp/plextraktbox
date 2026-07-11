@@ -19,6 +19,7 @@ import { ApiError } from "../api/client";
 import { deleteJob, listJobs, runJob } from "../api/jobApi";
 import { DryRunBadge, JobStatusBadge } from "../components/JobForm/JobForm";
 import { TrashIcon } from "../components/icons/TrashIcon";
+import dryRunRowClasses from "../styles/dryRunRow.module.css";
 
 function StrokeIcon({ size = 14, children }: { size?: number; children: React.ReactNode }) {
   return (
@@ -142,7 +143,10 @@ export function JobsPage() {
           </Table.Thead>
           <Table.Tbody>
             {jobs.map((job) => (
-              <Table.Tr key={job.id}>
+              <Table.Tr
+                key={job.id}
+                className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
+              >
                 <Table.Td>
                   <Text fw={500}>{job.name}</Text>
                 </Table.Td>

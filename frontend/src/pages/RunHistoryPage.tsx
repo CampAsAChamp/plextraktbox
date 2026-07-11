@@ -1,37 +1,87 @@
-import { Alert, Button, Group, Loader, Select, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Alert,
+  Button,
+  Group,
+  Loader,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { listJobs } from "../api/jobApi";
 import { listRuns } from "../api/runs";
 import {
-  RUN_STATUS_OPTIONS,
   RUN_TRIGGER_OPTIONS,
   filterRuns,
-  parseRunStatus,
+  parseRunStatuses,
   parseRunTrigger,
 } from "../utils/runFilters";
 import {
   DryRunBadge,
-  renderRunStatusOption,
   renderRunTriggerOption,
   RunStatusBadge,
   RunTriggerBadge,
 } from "../components/runs/RunBadges";
+import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
+import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
+import { formatDateTime } from "../utils/dateTimeFormat";
+import dryRunRowClasses from "../styles/dryRunRow.module.css";
+import classes from "./RunHistoryPage.module.css";
 
-function formatWhen(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString();
+function StrokeIcon({
+  size = 14,
+  className,
+  children,
+}: {
+  size?: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {children}
+    </svg>
+  );
+}
+
+function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
+  return (
+    <StrokeIcon className={spinning ? classes.spin : undefined}>
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 16h5v5" />
+    </StrokeIcon>
+  );
 }
 
 export function RunHistoryPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { preferences } = useDisplayPreferences();
   const [searchParams, setSearchParams] = useSearchParams();
   const jobIdParam = searchParams.get("job_id");
   const jobId = jobIdParam && !Number.isNaN(Number(jobIdParam)) ? Number(jobIdParam) : undefined;
-  const statusFilter = parseRunStatus(searchParams.get("status"));
+  const statusFilters = parseRunStatuses(searchParams.get("status"));
   const triggerFilter = parseRunTrigger(searchParams.get("trigger"));
-  const hasFilters = jobId !== undefined || statusFilter !== undefined || triggerFilter !== undefined;
+  const hasFilters = jobId !== undefined || statusFilters.length > 0 || triggerFilter !== undefined;
 
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
@@ -53,6 +103,22 @@ export function RunHistoryPage() {
     setSearchParams(next);
   }
 
+  function updateSearchParamList(key: string, values: string[]) {
+    const next = new URLSearchParams(searchParams);
+    if (values.length > 0) {
+      next.set(key, values.join(","));
+    } else {
+      next.delete(key);
+    }
+    setSearchParams(next);
+  }
+
+  const isRefreshing = runsQuery.isFetching || jobsQuery.isFetching;
+
+  function refreshRuns() {
+    void Promise.all([runsQuery.refetch(), jobsQuery.refetch()]);
+  }
+
   if (runsQuery.isLoading || jobsQuery.isLoading) {
     return (
       <Group>
@@ -70,7 +136,7 @@ export function RunHistoryPage() {
   const selectedJob = jobId !== undefined ? jobs.find((job) => job.id === jobId) : undefined;
   const deletedJob = jobId !== undefined && selectedJob === undefined;
   const allRuns = runsQuery.data?.items ?? [];
-  const runs = filterRuns(allRuns, { status: statusFilter, trigger: triggerFilter });
+  const runs = filterRuns(allRuns, { statuses: statusFilters, trigger: triggerFilter });
   const deletedJobName = allRuns.find((run) => run.job_id === jobId)?.job_name ?? null;
 
   const jobOptions = [
@@ -80,7 +146,7 @@ export function RunHistoryPage() {
 
   return (
     <Stack gap="md">
-      <Group justify="space-between">
+      <Group gap="sm">
         <Title order={3}>
           {selectedJob
             ? `Runs for ${selectedJob.name}`
@@ -92,9 +158,16 @@ export function RunHistoryPage() {
                 ? `Runs for job #${jobId}`
                 : "Run history"}
         </Title>
-        <Button component={Link} to="/jobs" variant="light">
-          Jobs
-        </Button>
+        <Tooltip label="Refresh runs">
+          <ActionIcon
+            variant="light"
+            aria-label="Refresh runs"
+            disabled={isRefreshing}
+            onClick={refreshRuns}
+          >
+            <RefreshIcon spinning={isRefreshing} />
+          </ActionIcon>
+        </Tooltip>
       </Group>
 
       {deletedJob ? (
@@ -110,19 +183,16 @@ export function RunHistoryPage() {
           value={jobId !== undefined ? String(jobId) : ""}
           onChange={(value) => updateSearchParam("job_id", value || null)}
           searchable
+          styles={{
+            input: { cursor: "pointer" },
+            section: { cursor: "pointer" },
+          }}
         />
-        <Select
+        <RunStatusMultiSelect
           label="Status"
-          data={RUN_STATUS_OPTIONS.map((option) => ({ value: option.value, label: option.value }))}
-          value={statusFilter ?? null}
-          onChange={(value) => updateSearchParam("status", value)}
+          value={statusFilters}
+          onChange={(values) => updateSearchParamList("status", values)}
           clearable
-          placeholder="All statuses"
-          renderOption={renderRunStatusOption}
-          leftSection={statusFilter ? <RunStatusBadge status={statusFilter} /> : undefined}
-          leftSectionPointerEvents="none"
-          leftSectionWidth={statusFilter ? 92 : undefined}
-          styles={statusFilter ? { input: { color: "transparent" } } : undefined}
         />
         <Select
           label="Trigger"
@@ -140,10 +210,7 @@ export function RunHistoryPage() {
       </SimpleGrid>
 
       {hasFilters ? (
-        <Group justify="space-between">
-          <Text size="sm" c="dimmed">
-            Showing {runs.length} of {allRuns.length} runs
-          </Text>
+        <Group gap="sm">
           <Button
             variant="subtle"
             size="compact-sm"
@@ -151,6 +218,9 @@ export function RunHistoryPage() {
           >
             Clear filters
           </Button>
+          <Text size="sm" c="dimmed">
+            Showing {runs.length} of {allRuns.length} runs
+          </Text>
         </Group>
       ) : null}
 
@@ -188,6 +258,7 @@ export function RunHistoryPage() {
               return (
                 <Table.Tr
                   key={run.id}
+                  className={run.dry_run ? dryRunRowClasses.dryRunRow : undefined}
                   tabIndex={0}
                   aria-label={`Run #${run.id} for ${run.job_name ?? `job #${run.job_id}`}`}
                   style={{ cursor: "pointer" }}
@@ -212,7 +283,7 @@ export function RunHistoryPage() {
                   <Table.Td>
                     <RunStatusBadge status={run.status} />
                   </Table.Td>
-                  <Table.Td>{formatWhen(run.started_at)}</Table.Td>
+                  <Table.Td>{formatDateTime(run.started_at, preferences)}</Table.Td>
                   <Table.Td>{duration}</Table.Td>
                 </Table.Tr>
               );

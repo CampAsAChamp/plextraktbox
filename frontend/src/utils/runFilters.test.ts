@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RunListItem } from "../api/jobs";
-import { filterRuns, parseRunStatus, parseRunTrigger } from "./runFilters";
+import { filterRuns, parseRunStatuses, parseRunTrigger } from "./runFilters";
 
 const sampleRuns: RunListItem[] = [
   {
@@ -29,15 +29,16 @@ const sampleRuns: RunListItem[] = [
   },
 ];
 
-describe("parseRunStatus", () => {
+describe("parseRunStatuses", () => {
   it("accepts known statuses", () => {
-    expect(parseRunStatus("success")).toBe("success");
-    expect(parseRunStatus("failed")).toBe("failed");
+    expect(parseRunStatuses("success")).toEqual(["success"]);
+    expect(parseRunStatuses("failed,partial")).toEqual(["failed", "partial"]);
   });
 
   it("rejects unknown values", () => {
-    expect(parseRunStatus("bogus")).toBeUndefined();
-    expect(parseRunStatus(null)).toBeUndefined();
+    expect(parseRunStatuses("bogus")).toEqual([]);
+    expect(parseRunStatuses("failed,bogus,partial")).toEqual(["failed", "partial"]);
+    expect(parseRunStatuses(null)).toEqual([]);
   });
 });
 
@@ -59,9 +60,10 @@ describe("filterRuns", () => {
   });
 
   it("filters by status and trigger", () => {
-    expect(filterRuns(sampleRuns, { status: "success" })).toHaveLength(1);
+    expect(filterRuns(sampleRuns, { statuses: ["success"] })).toHaveLength(1);
+    expect(filterRuns(sampleRuns, { statuses: ["failed", "success"] })).toHaveLength(2);
     expect(filterRuns(sampleRuns, { trigger: "scheduled" })).toHaveLength(1);
-    expect(filterRuns(sampleRuns, { status: "success", trigger: "manual" })).toHaveLength(1);
-    expect(filterRuns(sampleRuns, { status: "success", trigger: "scheduled" })).toHaveLength(0);
+    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "manual" })).toHaveLength(1);
+    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "scheduled" })).toHaveLength(0);
   });
 });
