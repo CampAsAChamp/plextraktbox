@@ -11,12 +11,21 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from sqlmodel import Session
 
 # Configure settings BEFORE importing the app so get_settings() caches test values.
 os.environ.setdefault("ENV", "dev")
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 os.environ.setdefault("TRAKT_CLIENT_ID", "cid")
 os.environ.setdefault("TRAKT_CLIENT_SECRET", "secret")
+
+
+@pytest.fixture
+def session(client: TestClient) -> Iterator[Session]:  # noqa: F821
+    from plextraktbox.db import engine
+
+    with Session(engine) as db_session:
+        yield db_session
 
 
 @pytest.fixture
