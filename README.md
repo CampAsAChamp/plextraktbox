@@ -1,9 +1,5 @@
 <a name="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
