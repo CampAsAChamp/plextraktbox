@@ -12,11 +12,11 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from plextraktbox.api import auth, health, setup
+from plextraktbox.api import auth, connections, health, setup
 from plextraktbox.config import get_settings
 from plextraktbox.db import init_db
 from plextraktbox.logging_setup import configure_logging, get_logger
@@ -52,6 +52,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api")
     app.include_router(setup.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
+    app.include_router(connections.router, prefix="/api")
 
     # --- SPA static hosting ---
     _mount_spa(app)
@@ -61,6 +62,31 @@ def create_app() -> FastAPI:
 
 def _mount_spa(app: FastAPI) -> None:
     """Serve the built SPA, falling back to index.html for client-side routes."""
+    settings = get_settings()
+    if settings.env == "dev":
+
+        @app.get("/{full_path:path}")
+        def _dev_ui_notice(full_path: str) -> HTMLResponse:
+            return HTMLResponse(
+                """<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>plextraktbox dev backend</title>
+  </head>
+  <body>
+    <h1>plextraktbox — dev backend</h1>
+    <p>
+      The UI with hot reload runs on the Vite dev server:
+      <a href="http://localhost:5173">http://localhost:5173</a>
+    </p>
+    <p>JSON API routes are available under <code>/api</code> on this server.</p>
+  </body>
+</html>"""
+            )
+
+        return
+
     if not STATIC_DIR.exists():
 
         @app.get("/")
