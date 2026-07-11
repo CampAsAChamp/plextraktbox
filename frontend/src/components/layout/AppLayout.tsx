@@ -1,7 +1,26 @@
-import { AppShell, Button, Group, Title } from "@mantine/core";
+import { ActionIcon, AppShell, Button, Group, Title, Tooltip } from "@mantine/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
+
+function HomeIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
 
 interface AppLayoutProps {
   username?: string;
@@ -9,7 +28,10 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ username, showLogout = false }: AppLayoutProps) {
+  const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+  const showHome = showLogout;
   const queryClient = useQueryClient();
   const logout = useMutation({
     mutationFn: () => api.post<void>("/auth/logout"),
@@ -23,7 +45,23 @@ export function AppLayout({ username, showLogout = false }: AppLayoutProps) {
     <AppShell header={{ height: 56 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title order={4}>plextraktbox</Title>
+          <Group gap="sm">
+            {showHome ? (
+              <Tooltip label="Dashboard">
+                <ActionIcon
+                  component={isHome ? "span" : Link}
+                  to={isHome ? undefined : "/"}
+                  variant={isHome ? "light" : "subtle"}
+                  size="lg"
+                  aria-label={isHome ? "Dashboard" : "Go to dashboard"}
+                  aria-current={isHome ? "page" : undefined}
+                >
+                  <HomeIcon />
+                </ActionIcon>
+              </Tooltip>
+            ) : null}
+            <Title order={4}>plextraktbox</Title>
+          </Group>
           {showLogout && username ? (
             <Group gap="sm">
               <span>{username}</span>

@@ -3,10 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { api } from "./api/client";
 import type { SetupStatus, User } from "./api/auth";
+import type { ConnectionsStatus } from "./api/connections";
 import { ApiError } from "./api/client";
 import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
 import { SetupWizardPage } from "./pages/SetupWizardPage";
 
 function LoadingScreen() {
@@ -50,8 +52,18 @@ function SetupRoutes() {
   );
 }
 
+function useConnectionsStatus(enabled: boolean) {
+  return useQuery({
+    queryKey: ["connections", "status"],
+    queryFn: () => api.get<ConnectionsStatus>("/connections/status"),
+    enabled,
+  });
+}
+
 function AppRoutes() {
   const meQuery = useCurrentUser();
+  const authed = meQuery.isSuccess && meQuery.data !== null;
+  const connectionsQuery = useConnectionsStatus(authed);
 
   if (meQuery.isLoading) return <LoadingScreen />;
   if (meQuery.isError) {
@@ -59,7 +71,13 @@ function AppRoutes() {
   }
 
   const user = meQuery.data;
-  const authed = user !== null;
+
+  if (authed && connectionsQuery.isLoading) return <LoadingScreen />;
+  if (authed && connectionsQuery.isError) {
+    return <Center mih="100vh">API unreachable. Start the backend and refresh.</Center>;
+  }
+
+  const needsConnections = authed && connectionsQuery.data?.needs_connections === true;
 
   return (
     <Routes>
@@ -74,10 +92,34 @@ function AppRoutes() {
           element={authed ? <Navigate to="/" replace /> : <LoginPage />}
         />
         <Route
+          path="/onboarding"
+          element={
+            authed ? (
+              <OnboardingPage mode="onboarding" />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/connections"
+          element={
+            authed ? (
+              <OnboardingPage mode="settings" />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
           path="/"
           element={
             authed && user ? (
-              <DashboardPage user={user} />
+              needsConnections ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <DashboardPage user={user} connections={connectionsQuery.data?.connections} />
+              )
             ) : (
               <Navigate to="/login" replace />
             )

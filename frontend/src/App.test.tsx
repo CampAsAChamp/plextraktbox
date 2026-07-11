@@ -42,12 +42,52 @@ test("shows login when setup is complete and session is absent", async () => {
   });
 });
 
+function connectionsPending() {
+  return jsonResponse({
+    needs_connections: true,
+    connections: [
+      { service: "plex", status: "unconfigured", config: {}, token_expires_at: null },
+      { service: "trakt", status: "unconfigured", config: {}, token_expires_at: null },
+      { service: "letterboxd", status: "unconfigured", config: {}, token_expires_at: null },
+      { service: "tmdb", status: "unconfigured", config: {}, token_expires_at: null },
+    ],
+  });
+}
+
+function connectionsReady() {
+  return jsonResponse({
+    needs_connections: false,
+    connections: [
+      { service: "plex", status: "ok", config: { url: "http://plex.local:32400" }, token_expires_at: null },
+      { service: "trakt", status: "ok", config: {}, token_expires_at: null },
+      { service: "letterboxd", status: "ok", config: { username: "nick" }, token_expires_at: null },
+      { service: "tmdb", status: "ok", config: {}, token_expires_at: null },
+    ],
+  });
+}
+
+test("redirects to onboarding when connections are incomplete", async () => {
+  vi.mocked(fetch)
+    .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
+    .mockResolvedValueOnce(
+      jsonResponse({ id: 1, username: "nick", email: "nick@example.com" }),
+    )
+    .mockResolvedValueOnce(connectionsPending());
+
+  renderWithProviders(<App />);
+
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: "Connect your services" })).toBeInTheDocument();
+  });
+});
+
 test("shows dashboard when setup is complete and session is present", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
     .mockResolvedValueOnce(
       jsonResponse({ id: 1, username: "nick", email: "nick@example.com" }),
     )
+    .mockResolvedValueOnce(connectionsReady())
     .mockResolvedValueOnce(jsonResponse({ status: "ok", version: "0.1.0" }));
 
   renderWithProviders(<App />);
