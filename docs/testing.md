@@ -45,8 +45,8 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | ----- | ----- | --------- | ------ |
 | 0 | Scaffold, health, SPA shell | [phase-0-test-plan.md](phase-0-test-plan.md) | Done |
 | 1 | Auth, sessions, setup wizard | [phase-1-test-plan.md](phase-1-test-plan.md) | Done |
-| 2 | Connections + wizard steps | [phase-2-test-plan.md](phase-2-test-plan.md) | In progress |
-| 3 | Sync engine core + dry-run | — | TBD when phase lands |
+| 2 | Connections + wizard steps | [phase-2-test-plan.md](phase-2-test-plan.md) | Done |
+| 3 | Sync engine core + dry-run | [phase-3-test-plan.md](phase-3-test-plan.md) | Done |
 | 4 | Jobs, runs, scheduler | — | TBD when phase lands |
 | 5 | Logging pipeline + live viewer | — | TBD when phase lands |
 | 6 | Notifications | — | TBD when phase lands |
@@ -80,3 +80,26 @@ mise run dev-frontend   # terminal 2 — Vite on :5173
 See [phase-0-test-plan.md](phase-0-test-plan.md) §2 for details. Open the Vite URL (usually
 http://localhost:5173); both processes must be running for the health badge to go green. Do not
 run `up` and `up-dev` together — both use port 8000.
+
+## API smoke sessions
+
+Authenticated curl examples in phase test plans use a cookie jar (`cookies.txt`). Create it once
+per dev session:
+
+```bash
+mise run api-login
+# prompts for username/password (hidden), writes cookies.txt, verifies /api/auth/me
+```
+
+To skip prompts, add to your gitignored `.env` (see `.env.example`):
+
+```bash
+PLEXTRAKTBOX_API_USER=nick
+PLEXTRAKTBOX_API_PASSWORD=your-password
+```
+
+Then `mise run api-login` reads those vars automatically. Use the saved jar on later curls:
+
+```bash
+curl -s -b cookies.txt http://localhost:8000/api/jobs
+```

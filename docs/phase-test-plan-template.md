@@ -27,7 +27,8 @@ mise run up          # or rebuild if phase needs fresh state
 ## 3. API smoke (optional)
 
 ```bash
-# curl examples for new endpoints
+mise run api-login   # writes cookies.txt — see testing.md
+# curl -s -b cookies.txt http://localhost:8000/api/...
 ```
 
 ## 4. Reset / fixtures

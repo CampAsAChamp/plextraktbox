@@ -37,7 +37,13 @@ Open http://localhost:5173 (Vite dev UI; API is proxied to :8000) and verify:
 
 ## 3. API smoke (optional)
 
-With a logged-in session cookie:
+Create a session cookie jar first (see [testing.md](testing.md#api-smoke-sessions)):
+
+```bash
+mise run api-login
+```
+
+Then:
 
 ```bash
 curl -s -b cookies.txt http://localhost:8000/api/connections/status
