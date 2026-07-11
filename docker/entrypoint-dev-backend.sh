@@ -14,7 +14,8 @@ main() {
     --port 8000 \
     --reload \
     --reload-dir plextraktbox \
-    --use-colors
+    --use-colors \
+    --no-access-log
 }
 
 main "$@"

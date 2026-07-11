@@ -19,6 +19,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from plextraktbox.api import auth, connections, health, setup
 from plextraktbox.config import get_settings
 from plextraktbox.db import init_db
+from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -47,6 +48,7 @@ def create_app() -> FastAPI:
         https_only=settings.env == "prod",
         same_site="lax",
     )
+    app.add_middleware(AccessLogMiddleware)
 
     # --- API routers (all under /api) ---
     app.include_router(health.router, prefix="/api")

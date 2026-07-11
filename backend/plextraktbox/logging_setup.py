@@ -40,7 +40,7 @@ def configure_logging() -> None:
     use_colors = _use_colors(log_format)
 
     timestamper = structlog.processors.TimeStamper(fmt="iso")
-    shared_processors: list[object] = [
+    shared_processors: list[structlog.types.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
