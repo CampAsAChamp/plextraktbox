@@ -1,0 +1,46 @@
+# Dev stack: hot-reload backend + Vite frontend. Use `mise run up-dev`.
+# Open http://localhost:5173 (UI) — API on http://localhost:8000.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev-backend
+    image: plextraktbox-dev-backend:latest
+    container_name: plextraktbox-dev-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/plextraktbox:/app/backend/plextraktbox
+      - ./backend/migrations:/app/backend/migrations
+      - ./data:/data
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      ENV: dev
+      LOG_FORMAT: console
+      FORCE_COLOR: "1"
+      DATA_DIR: /data
+      SECRET_KEY: ${SECRET_KEY:-dev}
+      TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
+      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev-frontend
+    image: plextraktbox-dev-frontend:latest
+    container_name: plextraktbox-dev-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+      - frontend_node_modules:/app/frontend/node_modules
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8000
+      FORCE_COLOR: "1"
+    depends_on:
+      - backend
+
+volumes:
+  frontend_node_modules:

@@ -7,8 +7,8 @@ python = "3.12"
 node = "22"
 
 [env]
-PLEXTRAKTBOX_SECRET_KEY = "dev"
-PLEXTRAKTBOX_DATA_DIR = "{{ config_root }}/backend/data"
+SECRET_KEY = "dev"
+DATA_DIR = "{{ config_root }}/backend/data"
 
 [tasks.install]
 description = "Install backend and frontend dependencies"
@@ -57,14 +57,12 @@ description = "Run backend and frontend test suites"
 depends = ["test-backend", "test-frontend"]
 
 [tasks."test-backend"]
-description = "Run backend pytest suite"
-depends = ["install-backend"]
+description = "Run backend pytest suite (run install-backend first if needed)"
 dir = "{{ config_root }}/backend"
 run = ".venv/bin/python -m pytest -q"
 
 [tasks."test-frontend"]
-description = "Run frontend vitest suite"
-depends = ["install-frontend"]
+description = "Run frontend vitest suite (run install-frontend first if needed)"
 dir = "{{ config_root }}/frontend"
 run = "npm run test"
 
@@ -83,43 +81,68 @@ cd frontend && npm run typecheck
 '''
 
 [tasks."dev-backend"]
-description = "Run uvicorn with reload (terminal 1)"
+description = "Run uvicorn with reload natively (terminal 1; or use up-dev)"
 depends = ["install-backend", "db-upgrade"]
 dir = "{{ config_root }}/backend"
-run = ".venv/bin/uvicorn plextraktbox.main:app --reload"
+run = ".venv/bin/uvicorn plextraktbox.main:app --reload --use-colors"
 
 [tasks."dev-frontend"]
-description = "Run Vite dev server with /api proxy (terminal 2)"
+description = "Run Vite dev server natively (terminal 2; or use up-dev)"
 depends = ["install-frontend"]
 dir = "{{ config_root }}/frontend"
 run = "npm run dev"
 
 [tasks.up]
-description = "Start container (foreground, rebuilds image)"
+description = "Start production container (foreground, rebuilds image)"
 run = '''
 COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
 $COMPOSE up --build
 '''
 
+[tasks."up-dev"]
+description = "Start dev containers with hot reload (backend :8000, frontend :5173)"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE -f docker-compose.dev.yml up --build
+'''
+
+[tasks."rebuild-dev"]
+description = "Stop dev stack, rebuild backend/frontend images from scratch, and start"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE -f docker-compose.dev.yml down -v
+$COMPOSE -f docker-compose.dev.yml build --no-cache
+$COMPOSE -f docker-compose.dev.yml up
+'''
+
+[tasks."down-dev"]
+description = "Stop dev containers"
+run = '''
+COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
+$COMPOSE -f docker-compose.dev.yml down
+'''
+
 [tasks.down]
-description = "Stop container and keep the data volume"
+description = "Stop container and keep the ./data directory"
 run = '''
 COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
 $COMPOSE down
 '''
 
 [tasks."down-v"]
-description = "Stop container and delete the data volume (fresh DB next start)"
+description = "Stop container and delete ./data (fresh DB next start)"
 run = '''
 COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
-$COMPOSE down -v
+$COMPOSE down
+rm -rf data
 '''
 
 [tasks.rebuild]
-description = "Wipe data volume, rebuild image, and start fresh"
+description = "Wipe ./data, rebuild image, and start fresh"
 run = '''
 COMPOSE=$(command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
-$COMPOSE down -v
+$COMPOSE down
+rm -rf data
 $COMPOSE build
 $COMPOSE up --build
 '''
@@ -157,7 +180,7 @@ description = "Remove venv and node_modules (full reinstall next time)"
 run = "rm -rf backend/.venv frontend/node_modules"
 
 [tasks."clean-all"]
-description = "Remove artifacts, local data/deps, and container volume"
+description = "Remove artifacts, local data/deps, and stop container"
 run = '''
 mise run clean
 mise run clean-data
