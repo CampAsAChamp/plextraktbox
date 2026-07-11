@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from urllib.parse import urlencode
 
 import httpx
-from plexapi.exceptions import PlexApiException
-from plexapi.server import PlexServer
 
 from plextraktbox.clients.base import ConnectionTestResult
 
@@ -219,14 +218,35 @@ def pick_best_server(servers: list[PlexDiscoveredServer]) -> PlexDiscoveredServe
 
 
 def test_connection(url: str, token: str) -> ConnectionTestResult:
+    """Probe ``/identity`` with httpx (same TLS stack as Plex.tv PIN/resources calls)."""
+    base = url.rstrip("/")
     try:
-        server = PlexServer(url.rstrip("/"), token, timeout=10)
-        friendly_name = server.friendlyName
-        machine_id = server.machineIdentifier
-    except PlexApiException as exc:
+        resp = httpx.get(
+            f"{base}/identity",
+            headers={"X-Plex-Token": token, "Accept": "application/xml"},
+            timeout=10.0,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
         return ConnectionTestResult(ok=False, message=f"Plex connection failed: {exc}")
     except Exception as exc:  # noqa: BLE001 — surface unexpected errors to the UI
         return ConnectionTestResult(ok=False, message=f"Plex connection failed: {exc}")
+
+    try:
+        root = ET.fromstring(resp.text)
+    except ET.ParseError:
+        return ConnectionTestResult(
+            ok=False,
+            message="Plex connection failed: invalid identity response",
+        )
+
+    friendly_name = root.attrib.get("friendlyName") or ""
+    machine_id = root.attrib.get("machineIdentifier") or ""
+    if not machine_id:
+        return ConnectionTestResult(
+            ok=False,
+            message="Plex connection failed: missing machine identifier",
+        )
 
     return ConnectionTestResult(
         ok=True,
