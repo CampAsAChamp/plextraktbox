@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import os
 import ssl
-import sys
 from typing import Any
 
 from plextraktbox.logging_setup import get_logger
@@ -44,8 +43,6 @@ def configure_ssl_compat() -> None:
     global _PATCHED
     if _PATCHED:
         return
-    if sys.version_info < (3, 13):
-        return
     if _STRICT == 0 and _PARTIAL == 0:
         return
     if not _custom_ca_bundle_configured():
@@ -65,3 +62,5 @@ def create_default_context_is_relaxed() -> bool:
 
 
 __all__ = ["configure_ssl_compat", "create_default_context_is_relaxed"]
+
+configure_ssl_compat()

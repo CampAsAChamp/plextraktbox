@@ -116,6 +116,9 @@ def save_plex_from_pin(
             last_error=result.message if result is not None else None,
         )
 
+    if server is None:
+        raise ValueError("No Plex Media Server found on your Plex account")
+
     config: dict[str, Any] = {"url": server.url.rstrip("/")}
     if verified and result is not None and result.details:
         if friendly_name := result.details.get("friendly_name"):

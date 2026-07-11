@@ -84,9 +84,18 @@ DEV_BACKEND_HTML = """<!doctype html>
         background: rgba(127, 127, 127, 0.08);
         transition: color 0.35s ease, border-color 0.35s ease, background 0.35s ease;
       }
-      .badge[data-state="ok"] { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); }
-      .badge[data-state="error"] { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); }
-      .badge[data-state="pending"] { color: var(--pending); border-color: color-mix(in srgb, var(--pending) 45%, var(--border)); }
+      .badge[data-state="ok"] {
+        color: var(--ok);
+        border-color: color-mix(in srgb, var(--ok) 45%, var(--border));
+      }
+      .badge[data-state="error"] {
+        color: var(--bad);
+        border-color: color-mix(in srgb, var(--bad) 45%, var(--border));
+      }
+      .badge[data-state="pending"] {
+        color: var(--pending);
+        border-color: color-mix(in srgb, var(--pending) 45%, var(--border));
+      }
       .badge-icon {
         width: 0.875rem;
         height: 0.875rem;

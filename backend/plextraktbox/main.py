@@ -7,15 +7,10 @@ Vite ``dist/`` output into that directory so a single container serves both.
 
 from __future__ import annotations
 
-from plextraktbox.ssl_compat import configure_ssl_compat
-
-configure_ssl_compat()
-
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-
-import time
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
@@ -24,8 +19,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from plextraktbox.api import auth, connections, dev, health, jobs, runs, setup
 from plextraktbox.config import get_settings
-from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
 from plextraktbox.db import init_db
+from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
 from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
 from plextraktbox.scheduler import get_scheduler_manager
