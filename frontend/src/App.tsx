@@ -14,7 +14,9 @@ import { LoginPage } from "./pages/LoginPage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { RunDetailPage } from "./pages/RunDetailPage";
 import { RunHistoryPage } from "./pages/RunHistoryPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import { SetupWizardPage } from "./pages/SetupWizardPage";
+import { DisplayPreferencesProvider } from "./settings/DisplayPreferencesProvider";
 
 function LoadingScreen() {
   return (
@@ -88,7 +90,11 @@ function AppRoutes() {
     <Routes>
       <Route
         element={
-          <AppLayout username={user?.username} showLogout={authed} />
+          <AppLayout
+            username={user?.username}
+            avatarUrl={user?.avatar_url}
+            showLogout={authed}
+          />
         }
       >
         <Route path="/setup" element={<Navigate to="/login" replace />} />
@@ -138,6 +144,16 @@ function AppRoutes() {
           path="/runs/:runId"
           element={authed ? <RunDetailPage /> : <Navigate to="/login" replace />}
         />
+        <Route
+          path="/settings"
+          element={
+            authed && user ? (
+              <SettingsPage user={user} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
         <Route path="*" element={<Navigate to={authed ? "/" : "/login"} replace />} />
       </Route>
     </Routes>
@@ -153,8 +169,16 @@ export function App() {
   }
 
   if (setupQuery.data?.needs_setup) {
-    return <SetupRoutes />;
+    return (
+      <DisplayPreferencesProvider>
+        <SetupRoutes />
+      </DisplayPreferencesProvider>
+    );
   }
 
-  return <AppRoutes />;
+  return (
+    <DisplayPreferencesProvider>
+      <AppRoutes />
+    </DisplayPreferencesProvider>
+  );
 }

@@ -66,12 +66,18 @@ function connectionsReady() {
   });
 }
 
+const nickUser = {
+  id: 1,
+  username: "nick",
+  email: "nick@example.com",
+  avatar_url:
+    "https://www.gravatar.com/avatar/484f70e21a3d3480e013519f8236bb86?s=80&d=identicon",
+};
+
 test("redirects to connections when setup is incomplete", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
-    .mockResolvedValueOnce(
-      jsonResponse({ id: 1, username: "nick", email: "nick@example.com" }),
-    )
+    .mockResolvedValueOnce(jsonResponse(nickUser))
     .mockResolvedValueOnce(connectionsPending());
 
   renderWithProviders(<App />);
@@ -84,9 +90,7 @@ test("redirects to connections when setup is incomplete", async () => {
 test("shows dashboard when setup is complete and session is present", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
-    .mockResolvedValueOnce(
-      jsonResponse({ id: 1, username: "nick", email: "nick@example.com" }),
-    )
+    .mockResolvedValueOnce(jsonResponse(nickUser))
     .mockResolvedValueOnce(connectionsReady())
     .mockResolvedValueOnce(jsonResponse({ status: "ok", version: "0.1.0" }));
 
