@@ -15,6 +15,7 @@ from plextraktbox.logging_setup import get_logger
 from plextraktbox.logstream import get_log_hub
 from plextraktbox.models.job import Job
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
+from plextraktbox.notifications import dispatch_notifications
 from plextraktbox.services.source_factory import build_sources
 from plextraktbox.sync.context import SyncContext
 from plextraktbox.sync.engine import run_sync
@@ -137,6 +138,7 @@ def _execute_run_in_session(
             status=run.status.value,
             summary=summary.to_dict(),
         )
+        dispatch_notifications(session, job, run)
         return run.id or 0
     except Exception as exc:
         run.status = JobRunStatus.FAILED
@@ -147,6 +149,7 @@ def _execute_run_in_session(
         session.refresh(run)
         final_status = run.status.value
         run_logger.warning("sync.run.failed", error=str(exc))
+        dispatch_notifications(session, job, run)
         raise
     finally:
         if run.id is not None:
