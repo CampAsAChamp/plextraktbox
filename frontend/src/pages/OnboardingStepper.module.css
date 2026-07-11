@@ -1,0 +1,21 @@
+.stepIcon {
+  background-color: var(--mantine-color-body);
+  border-color: var(--mantine-color-gray-4);
+  color: inherit;
+}
+
+.stepIcon[data-progress] {
+  background-color: var(--mantine-color-body);
+  border-color: var(--mantine-color-blue-6);
+}
+
+.stepIcon[data-completed] {
+  background-color: var(--mantine-color-body);
+  border-color: var(--mantine-color-green-6);
+  color: inherit;
+}
+
+.stepIconConnected,
+.stepIconConnected[data-progress] {
+  border-color: var(--mantine-color-green-6);
+}
