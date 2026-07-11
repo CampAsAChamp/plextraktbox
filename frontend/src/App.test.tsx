@@ -66,7 +66,7 @@ function connectionsReady() {
   });
 }
 
-test("redirects to onboarding when connections are incomplete", async () => {
+test("redirects to connections when setup is incomplete", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
     .mockResolvedValueOnce(

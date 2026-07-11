@@ -7,8 +7,13 @@ import type { ConnectionsStatus } from "./api/connections";
 import { ApiError } from "./api/client";
 import { AppLayout } from "./components/layout/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
+import { JobCreatePage } from "./pages/JobCreatePage";
+import { JobEditPage } from "./pages/JobEditPage";
+import { JobsPage } from "./pages/JobsPage";
 import { LoginPage } from "./pages/LoginPage";
-import { OnboardingPage } from "./pages/OnboardingPage";
+import { ConnectionsPage } from "./pages/ConnectionsPage";
+import { RunDetailPage } from "./pages/RunDetailPage";
+import { RunHistoryPage } from "./pages/RunHistoryPage";
 import { SetupWizardPage } from "./pages/SetupWizardPage";
 
 function LoadingScreen() {
@@ -93,30 +98,18 @@ function AppRoutes() {
         />
         <Route
           path="/onboarding"
-          element={
-            authed ? (
-              <OnboardingPage mode="onboarding" />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
+          element={<Navigate to="/connections" replace />}
         />
         <Route
           path="/connections"
-          element={
-            authed ? (
-              <OnboardingPage mode="settings" />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
+          element={authed ? <ConnectionsPage /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/"
           element={
             authed && user ? (
               needsConnections ? (
-                <Navigate to="/onboarding" replace />
+                <Navigate to="/connections" replace />
               ) : (
                 <DashboardPage user={user} connections={connectionsQuery.data?.connections} />
               )
@@ -124,6 +117,26 @@ function AppRoutes() {
               <Navigate to="/login" replace />
             )
           }
+        />
+        <Route
+          path="/jobs"
+          element={authed ? <JobsPage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/jobs/new"
+          element={authed ? <JobCreatePage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/jobs/:jobId/edit"
+          element={authed ? <JobEditPage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/runs"
+          element={authed ? <RunHistoryPage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/runs/:runId"
+          element={authed ? <RunDetailPage /> : <Navigate to="/login" replace />}
         />
         <Route path="*" element={<Navigate to={authed ? "/" : "/login"} replace />} />
       </Route>

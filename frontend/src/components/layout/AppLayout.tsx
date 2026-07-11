@@ -1,7 +1,8 @@
-import { ActionIcon, AppShell, Button, Group, Title, Tooltip } from "@mantine/core";
+import { ActionIcon, AppShell, Button, Group, NavLink, Title, Tooltip } from "@mantine/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
+import { ApiHealthBadge } from "./ApiHealthBadge";
 
 function HomeIcon({ size = 18 }: { size?: number }) {
   return (
@@ -31,6 +32,9 @@ export function AppLayout({ username, showLogout = false }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
+  const isJobs = location.pathname.startsWith("/jobs");
+  const isRuns = location.pathname.startsWith("/runs");
+  const isConnections = location.pathname.startsWith("/connections");
   const showHome = showLogout;
   const queryClient = useQueryClient();
   const logout = useMutation({
@@ -72,20 +76,51 @@ export function AppLayout({ username, showLogout = false }: AppLayoutProps) {
               </Tooltip>
             ) : null}
             <Title order={4}>plextraktbox</Title>
+            {showLogout ? (
+              <Group gap="xs">
+                <NavLink
+                  component={Link}
+                  to="/jobs"
+                  label="Jobs"
+                  active={isJobs}
+                  variant="subtle"
+                  style={{ width: "auto", borderRadius: 4 }}
+                />
+                <NavLink
+                  component={Link}
+                  to="/runs"
+                  label="Runs"
+                  active={isRuns}
+                  variant="subtle"
+                  style={{ width: "auto", borderRadius: 4 }}
+                />
+                <NavLink
+                  component={Link}
+                  to="/connections"
+                  label="Connections"
+                  active={isConnections}
+                  variant="subtle"
+                  style={{ width: "auto", borderRadius: 4 }}
+                />
+              </Group>
+            ) : null}
           </Group>
-          {showLogout && username ? (
-            <Group gap="sm">
-              <span>{username}</span>
-              <Button
-                size="xs"
-                variant="light"
-                loading={logout.isPending}
-                onClick={() => logout.mutate()}
-              >
-                Log out
-              </Button>
-            </Group>
-          ) : null}
+          <Group gap="sm">
+            <ApiHealthBadge />
+            {showLogout && username ? (
+              <>
+                <span>{username}</span>
+                <Button
+                  size="xs"
+                  variant="light"
+                  loading={logout.isPending}
+                  onClick={() => logout.mutate()}
+                >
+                  Log out
+                </Button>
+              </>
+            ) : null}
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Main>
