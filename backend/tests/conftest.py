@@ -37,6 +37,9 @@ def client(tmp_path: Path) -> Iterator[TestClient]:  # noqa: F821
     from fastapi.testclient import TestClient
 
     from plextraktbox.main import create_app
+    import plextraktbox.scheduler.manager as scheduler_manager_mod
+
+    scheduler_manager_mod._manager = None
 
     app = create_app()
     with TestClient(app) as c:
