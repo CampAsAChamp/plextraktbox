@@ -11,8 +11,9 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import type { DataType, Job, JobInput, SourcePair } from "../../api/jobs";
+import type { DataType, Job, JobInput, NotifyMode, SourcePair } from "../../api/jobs";
 import { DATA_TYPES_BY_PAIR, SOURCE_PAIR_LABELS } from "../../api/jobs";
+import { NOTIFY_MODE_LABELS } from "../../api/notifications";
 import { DataTypeBadge } from "../services/DataTypeBadge";
 import { SourcePairLabel } from "../services/SourcePairLabel";
 import { SaveIcon } from "../icons/SaveIcon";
@@ -43,6 +44,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
   const [cron, setCron] = useState(initial?.cron ?? "0 3 * * *");
   const [enabled, setEnabled] = useState(initial?.enabled ?? true);
   const [dryRun, setDryRun] = useState(initial?.dry_run ?? false);
+  const [notifyMode, setNotifyMode] = useState<NotifyMode>(initial?.notify_mode ?? "inherit");
   const [dataTypes, setDataTypes] = useState<DataType[]>(
     initial?.data_types ?? DATA_TYPES_BY_PAIR.plex_trakt,
   );
@@ -87,6 +89,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
       cron,
       dry_run: dryRun,
       data_types: dataTypes,
+      notify_mode: notifyMode,
     });
   }
 
@@ -160,6 +163,19 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
             onChange={(event) => setDryRun(event.currentTarget.checked)}
           />
         </Group>
+
+        <Radio.Group
+          label="Notifications"
+          description="Control whether this job sends alerts when runs finish"
+          value={notifyMode}
+          onChange={(value) => setNotifyMode(value as NotifyMode)}
+        >
+          <Stack gap="xs" mt="xs">
+            {(Object.keys(NOTIFY_MODE_LABELS) as NotifyMode[]).map((mode) => (
+              <Radio key={mode} value={mode} label={NOTIFY_MODE_LABELS[mode]} />
+            ))}
+          </Stack>
+        </Radio.Group>
 
         <Group>
           <Button type="submit" loading={loading} leftSection={<SaveIcon />}>

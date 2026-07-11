@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from sqlmodel import Session, select
 
-from plextraktbox.models.job import Job, SourcePair
+from plextraktbox.models.job import Job, NotifyMode, SourcePair
 from plextraktbox.scheduler import get_scheduler_manager
 from plextraktbox.sync.plans import DataType
 
@@ -26,6 +26,7 @@ def create_job(
     cron: str,
     dry_run: bool,
     data_types: set[DataType],
+    notify_mode: NotifyMode = NotifyMode.INHERIT,
 ) -> Job:
     job = Job(
         name=name,
@@ -34,6 +35,7 @@ def create_job(
         cron=cron,
         dry_run=dry_run,
         data_types_json=Job.dump_data_types(data_types),
+        notify_override_json=Job.dump_notify_mode(notify_mode),
     )
     errors = job.validate_data_types()
     if errors:
@@ -55,6 +57,7 @@ def update_job(
     cron: str,
     dry_run: bool,
     data_types: set[DataType],
+    notify_mode: NotifyMode = NotifyMode.INHERIT,
 ) -> Job:
     job.name = name
     job.source_pair = source_pair
@@ -62,6 +65,7 @@ def update_job(
     job.cron = cron
     job.dry_run = dry_run
     job.data_types_json = Job.dump_data_types(data_types)
+    job.notify_override_json = Job.dump_notify_mode(notify_mode)
     errors = job.validate_data_types()
     if errors:
         raise ValueError("; ".join(errors))

@@ -16,6 +16,12 @@ class SourcePair(StrEnum):
     LETTERBOXD_TRAKT = "letterboxd_trakt"
 
 
+class NotifyMode(StrEnum):
+    INHERIT = "inherit"
+    CUSTOM = "custom"
+    DISABLED = "disabled"
+
+
 class Job(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
@@ -24,6 +30,24 @@ class Job(SQLModel, table=True):
     cron: str = Field(default="0 3 * * *")
     dry_run: bool = Field(default=False)
     data_types_json: str = Field(default='["watchlist"]')
+    notify_override_json: str = Field(default='{"mode":"inherit"}')
+
+    def notify_mode(self) -> NotifyMode:
+        try:
+            raw = json.loads(self.notify_override_json)
+        except json.JSONDecodeError:
+            return NotifyMode.INHERIT
+        if not isinstance(raw, dict):
+            return NotifyMode.INHERIT
+        mode = raw.get("mode", NotifyMode.INHERIT.value)
+        try:
+            return NotifyMode(str(mode))
+        except ValueError:
+            return NotifyMode.INHERIT
+
+    @staticmethod
+    def dump_notify_mode(mode: NotifyMode) -> str:
+        return json.dumps({"mode": mode.value})
 
     def data_types(self) -> set[DataType]:
         try:

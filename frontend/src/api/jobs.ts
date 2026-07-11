@@ -5,6 +5,8 @@ export type SourcePair =
 
 export type DataType = "watchlist" | "ratings" | "watched";
 
+export type NotifyMode = "inherit" | "custom" | "disabled";
+
 export interface Job {
   id: number;
   name: string;
@@ -13,6 +15,7 @@ export interface Job {
   cron: string;
   dry_run: boolean;
   data_types: DataType[];
+  notify_mode: NotifyMode;
 }
 
 export interface JobInput {
@@ -22,6 +25,7 @@ export interface JobInput {
   cron: string;
   dry_run: boolean;
   data_types: DataType[];
+  notify_mode: NotifyMode;
 }
 
 export type RunTrigger = "scheduled" | "manual";
