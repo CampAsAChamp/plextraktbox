@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from plextraktbox.api import auth, connections, dev, health, jobs, run_logs, runs, setup
+from plextraktbox.api import auth, connections, dev, health, jobs, notifications, run_logs, runs, setup
 from plextraktbox.config import get_settings
 from plextraktbox.db import init_db
 from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(jobs.router, prefix="/api")
     app.include_router(runs.router, prefix="/api")
     app.include_router(run_logs.router, prefix="/api")
+    app.include_router(notifications.router, prefix="/api")
 
     if settings.env == "dev":
         app.include_router(dev.router, prefix="/api/dev")
