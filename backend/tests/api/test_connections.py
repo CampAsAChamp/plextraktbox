@@ -8,6 +8,17 @@ from fastapi.testclient import TestClient
 
 HEADERS = {"X-Requested-With": "XMLHttpRequest"}
 
+PLEX_IDENTITY_XML = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<MediaContainer friendlyName="Home Plex" machineIdentifier="abc123"/>'
+)
+
+
+def _mock_plex_identity(base_url: str = "http://plex.local:32400") -> None:
+    respx.get(f"{base_url.rstrip('/')}/identity").mock(
+        return_value=httpx.Response(200, text=PLEX_IDENTITY_XML)
+    )
+
 
 def _create_user_and_login(client: TestClient) -> None:
     client.post(
@@ -93,17 +104,9 @@ def test_tmdb_saved_connection_test_without_body(client: TestClient) -> None:
 
 
 @respx.mock
-def test_plex_pin_flow(client: TestClient, monkeypatch) -> None:
+def test_plex_pin_flow(client: TestClient) -> None:
     _create_user_and_login(client)
-
-    class FakeServer:
-        friendlyName = "Home Plex"
-        machineIdentifier = "abc123"
-
-    monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.PlexServer",
-        lambda url, token, timeout=10: FakeServer(),
-    )
+    _mock_plex_identity()
 
     respx.post("https://plex.tv/api/v2/pins").mock(
         return_value=httpx.Response(
@@ -181,17 +184,67 @@ def test_plex_pin_poll_pending(client: TestClient) -> None:
 
 
 @respx.mock
-def test_save_plex_connection(client: TestClient, monkeypatch) -> None:
+def test_plex_pin_poll_saves_unverified_server_when_unreachable(client: TestClient) -> None:
     _create_user_and_login(client)
 
-    class FakeServer:
-        friendlyName = "Home Plex"
-        machineIdentifier = "abc123"
-
-    monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.PlexServer",
-        lambda url, token, timeout=10: FakeServer(),
+    respx.post("https://plex.tv/api/v2/pins").mock(
+        return_value=httpx.Response(200, json={"id": 99, "code": "PIN9"})
     )
+    respx.get("https://plex.tv/api/v2/pins/99").mock(
+        return_value=httpx.Response(
+            200,
+            json={"id": 99, "code": "PIN9", "authToken": "plex-account-token"},
+        )
+    )
+    respx.get("https://plex.tv/api/v2/resources").mock(
+        return_value=httpx.Response(
+            200,
+            json=[
+                {
+                    "name": "Home Plex",
+                    "product": "Plex Media Server",
+                    "provides": "server",
+                    "owned": True,
+                    "clientIdentifier": "abc123",
+                    "accessToken": "plex-server-token",
+                    "connections": [
+                        {
+                            "uri": "https://10-0-0-25.abc.plex.direct:32400",
+                            "local": False,
+                            "relay": True,
+                            "protocol": "https",
+                        },
+                        {
+                            "uri": "http://192.168.1.10:32400",
+                            "local": True,
+                            "relay": False,
+                            "protocol": "http",
+                        },
+                    ],
+                }
+            ],
+        )
+    )
+    respx.get(url__regex=r"https?://.*/identity").mock(
+        return_value=httpx.Response(503, text="unreachable")
+    )
+
+    start = client.post("/api/connections/plex/pin/start", headers=HEADERS).json()
+    poll = client.post(
+        "/api/connections/plex/pin/poll",
+        json={"pin_id": start["pin_id"], "pin_code": start["pin_code"]},
+        headers=HEADERS,
+    )
+    assert poll.status_code == 200
+    body = poll.json()
+    assert body["status"] == "ok"
+    assert body["connection"]["config"]["url"] == "https://10-0-0-25.abc.plex.direct:32400"
+
+
+@respx.mock
+def test_save_plex_connection(client: TestClient) -> None:
+    _create_user_and_login(client)
+    _mock_plex_identity()
 
     resp = client.post(
         "/api/connections/plex",
@@ -206,17 +259,9 @@ def test_save_plex_connection(client: TestClient, monkeypatch) -> None:
 
 
 @respx.mock
-def test_plex_saved_connection_test_without_body(client: TestClient, monkeypatch) -> None:
+def test_plex_saved_connection_test_without_body(client: TestClient) -> None:
     _create_user_and_login(client)
-
-    class FakeServer:
-        friendlyName = "Home Plex"
-        machineIdentifier = "abc123"
-
-    monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.PlexServer",
-        lambda url, token, timeout=10: FakeServer(),
-    )
+    _mock_plex_identity()
 
     save = client.post(
         "/api/connections/plex",
@@ -413,17 +458,49 @@ def test_trakt_device_flow(client: TestClient) -> None:
 
 
 @respx.mock
-def test_all_connections_configured(client: TestClient, monkeypatch) -> None:
+def test_trakt_tokens_import_dev(client: TestClient) -> None:
     _create_user_and_login(client)
-
-    class FakeServer:
-        friendlyName = "Home Plex"
-        machineIdentifier = "abc123"
-
-    monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.PlexServer",
-        lambda url, token, timeout=10: FakeServer(),
+    respx.get("https://api.trakt.tv/users/settings").mock(
+        return_value=httpx.Response(200, json={"user": {"username": "nick"}})
     )
+
+    resp = client.post(
+        "/api/connections/trakt/tokens",
+        json={"access_token": "saved-access", "refresh_token": "saved-refresh"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["service"] == "trakt"
+    assert body["status"] == "ok"
+
+    status = client.get("/api/connections/status").json()
+    trakt = next(c for c in status["connections"] if c["service"] == "trakt")
+    assert trakt["status"] == "ok"
+
+
+def test_trakt_tokens_import_hidden_in_prod(client: TestClient, monkeypatch) -> None:
+    _create_user_and_login(client)
+    monkeypatch.setenv("ENV", "prod")
+    monkeypatch.setenv("SECRET_KEY", "prod-secret-key-for-tests-only")
+
+    from plextraktbox import config
+
+    config.get_settings.cache_clear()
+
+    resp = client.post(
+        "/api/connections/trakt/tokens",
+        json={"access_token": "access", "refresh_token": "refresh"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 404
+
+
+@respx.mock
+def test_all_connections_configured(client: TestClient) -> None:
+    _create_user_and_login(client)
+    _mock_plex_identity()
+
     respx.post("https://plex.tv/api/v2/pins").mock(
         return_value=httpx.Response(200, json={"id": 42, "code": "ABCD"})
     )

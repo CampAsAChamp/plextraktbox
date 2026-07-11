@@ -27,6 +27,7 @@ from plextraktbox.schemas.connection import (
     TraktDevicePollRequest,
     TraktDevicePollResponse,
     TraktDeviceStartResponse,
+    TraktTokensRequest,
 )
 from plextraktbox.services import connections as conn_svc
 
@@ -128,8 +129,20 @@ def plex_pin_poll(
             body.pin_code,
         )
     except ValueError as exc:
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=body.pin_id,
+            stage="poll",
+            error=str(exc),
+        )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=body.pin_id,
+            stage="poll",
+            error=str(exc),
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Plex authorization failed: {exc}",
@@ -152,6 +165,12 @@ def plex_pin_poll(
             client_identifier=client_id,
         )
     except ValueError as exc:
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=body.pin_id,
+            stage="save",
+            error=str(exc),
+        )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     summary = ConnectionSummary.from_connection(connection, Service.PLEX)
@@ -260,6 +279,34 @@ def test_tmdb(
     else:
         result = conn_svc.test_saved_connection(session, Service.TMDB)
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
+
+
+@router.post(
+    "/trakt/tokens",
+    response_model=ConnectionSummary,
+    dependencies=[Depends(require_csrf)],
+)
+def save_trakt_tokens_dev(
+    body: TraktTokensRequest,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> ConnectionSummary:
+    """Import Trakt tokens from .env during local dev bootstrap (ENV=dev only)."""
+    if get_settings().env != "dev":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found",
+        )
+    try:
+        connection = conn_svc.save_trakt_tokens(
+            session,
+            access_token=body.access_token,
+            refresh_token=body.refresh_token,
+            expires_at=None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return ConnectionSummary.from_connection(connection, Service.TRAKT)
 
 
 @router.post(

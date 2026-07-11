@@ -96,23 +96,36 @@ def save_plex_from_pin(
     client_identifier: str,
 ) -> Connection:
     server, result = plex_client.find_connectable_server(account_token, client_identifier)
-    if server is None or result is None:
-        raise ValueError("No Plex Media Server found on your Plex account")
-    if not result.ok:
-        raise ValueError(
-            result.message
-            + " — try again, or save your Plex server URL manually if the container cannot reach it."
+    verified = server is not None and result is not None and result.ok
+    if not verified:
+        discovered = plex_client.discover_servers(account_token, client_identifier)
+        fallback = plex_client.pick_best_server(discovered)
+        if fallback is None:
+            if result is not None:
+                raise ValueError(
+                    result.message
+                    + " — try again, or save your Plex server URL manually if the container cannot reach it."
+                )
+            raise ValueError("No Plex Media Server found on your Plex account")
+        server = fallback
+        log.warning(
+            "connection.plex.pin.server_unverified",
+            url=server.url,
+            friendly_name=server.friendly_name,
+            machine_id=server.machine_id,
+            last_error=result.message if result is not None else None,
         )
 
     config: dict[str, Any] = {"url": server.url.rstrip("/")}
-    if result.details:
+    if verified and result is not None and result.details:
         if friendly_name := result.details.get("friendly_name"):
             config["friendly_name"] = friendly_name
-        elif server.friendly_name:
-            config["friendly_name"] = server.friendly_name
         if machine_id := result.details.get("machine_id"):
             config["machine_id"] = machine_id
-        elif server.machine_id:
+    else:
+        if server.friendly_name:
+            config["friendly_name"] = server.friendly_name
+        if server.machine_id:
             config["machine_id"] = server.machine_id
 
     connection = _save_connection(

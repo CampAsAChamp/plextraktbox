@@ -88,6 +88,13 @@ class TraktDevicePollResponse(BaseModel):
     connection: ConnectionSummary | None = None
 
 
+class TraktTokensRequest(BaseModel):
+    """Dev-only: import Trakt OAuth tokens without repeating device flow."""
+
+    access_token: str = Field(min_length=1, max_length=512)
+    refresh_token: str = Field(min_length=1, max_length=512)
+
+
 class PlexPinStartResponse(BaseModel):
     pin_id: int
     pin_code: str
