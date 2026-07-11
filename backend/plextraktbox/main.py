@@ -7,20 +7,28 @@ Vite ``dist/`` output into that directory so a single container serves both.
 
 from __future__ import annotations
 
+from plextraktbox.ssl_compat import configure_ssl_compat
+
+configure_ssl_compat()
+
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+import time
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from plextraktbox.api import auth, connections, health, jobs, setup
+from plextraktbox.api import auth, connections, dev, health, jobs, runs, setup
 from plextraktbox.config import get_settings
+from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
 from plextraktbox.db import init_db
 from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
+from plextraktbox.scheduler import get_scheduler_manager
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -31,9 +39,13 @@ log = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
     init_db()
+    scheduler = get_scheduler_manager()
+    scheduler.start()
+    app.state.scheduler = scheduler
+    app.state.started_at = time.time()
     log.info("plextraktbox.startup", env=get_settings().env)
-    # Scheduler is started here in Phase 4.
     yield
+    scheduler.shutdown(wait=True)
     log.info("plextraktbox.shutdown")
 
 
@@ -56,6 +68,10 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api")
     app.include_router(connections.router, prefix="/api")
     app.include_router(jobs.router, prefix="/api")
+    app.include_router(runs.router, prefix="/api")
+
+    if settings.env == "dev":
+        app.include_router(dev.router, prefix="/api/dev")
 
     # --- SPA static hosting ---
     _mount_spa(app)
@@ -71,21 +87,8 @@ def _mount_spa(app: FastAPI) -> None:
         @app.get("/{full_path:path}")
         def _dev_ui_notice(full_path: str) -> HTMLResponse:
             return HTMLResponse(
-                """<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>plextraktbox dev backend</title>
-  </head>
-  <body>
-    <h1>plextraktbox — dev backend</h1>
-    <p>
-      The UI with hot reload runs on the Vite dev server:
-      <a href="http://localhost:5173">http://localhost:5173</a>
-    </p>
-    <p>JSON API routes are available under <code>/api</code> on this server.</p>
-  </body>
-</html>"""
+                DEV_BACKEND_HTML,
+                headers={"Cache-Control": "no-store"},
             )
 
         return
