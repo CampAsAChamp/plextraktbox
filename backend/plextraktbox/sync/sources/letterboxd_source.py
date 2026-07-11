@@ -1,4 +1,4 @@
-"""Read-only Letterboxd source backed by in-memory data (Phase 3)."""
+"""Read-only Letterboxd source (Phase 3: in-memory; Phase 7: client fetch)."""
 
 from __future__ import annotations
 
