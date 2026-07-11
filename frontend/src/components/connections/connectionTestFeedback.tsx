@@ -1,0 +1,107 @@
+import { Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError } from "../../api/client";
+import type { ConnectionTestResult } from "../../api/connections";
+import { StatusCheckIcon } from "./StatusCheckIcon";
+import { StatusXIcon } from "./StatusXIcon";
+import classes from "./connectionTestFeedback.module.css";
+
+export type ConnectionTestStatus = "idle" | "success" | "error";
+
+const SUCCESS_BUTTON_RESET_MS = 1500;
+
+export function showConnectionTestResult(result: ConnectionTestResult) {
+  notifications.show({
+    color: result.ok ? "green" : "red",
+    icon: result.ok ? <StatusCheckIcon size={18} /> : <StatusXIcon size={18} />,
+    message: result.message,
+  });
+}
+
+export function showConnectionTestError(error: unknown, fallbackMessage: string) {
+  notifications.show({
+    color: "red",
+    icon: <StatusXIcon size={18} />,
+    message: error instanceof ApiError ? String(error.message) : fallbackMessage,
+  });
+}
+
+export function useConnectionTestFeedback() {
+  const [testStatus, setTestStatus] = useState<ConnectionTestStatus>("idle");
+  const resetTimerRef = useRef<number | null>(null);
+
+  const clearResetTimer = useCallback(() => {
+    if (resetTimerRef.current !== null) {
+      window.clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = null;
+    }
+  }, []);
+
+  const resetTestStatus = useCallback(() => {
+    clearResetTimer();
+    setTestStatus("idle");
+  }, [clearResetTimer]);
+
+  const onTestSuccess = useCallback(
+    (result: ConnectionTestResult) => {
+      clearResetTimer();
+      showConnectionTestResult(result);
+      if (result.ok) {
+        setTestStatus("success");
+        resetTimerRef.current = window.setTimeout(() => {
+          resetTimerRef.current = null;
+          setTestStatus("idle");
+        }, SUCCESS_BUTTON_RESET_MS);
+        return;
+      }
+      setTestStatus("error");
+    },
+    [clearResetTimer],
+  );
+
+  const onTestError = useCallback(
+    (error: unknown, fallbackMessage: string) => {
+      clearResetTimer();
+      setTestStatus("error");
+      showConnectionTestError(error, fallbackMessage);
+    },
+    [clearResetTimer],
+  );
+
+  useEffect(() => () => clearResetTimer(), [clearResetTimer]);
+
+  return { testStatus, onTestSuccess, onTestError, resetTestStatus };
+}
+
+export function TestConnectionButton({
+  testStatus,
+  loading,
+  disabled,
+  onClick,
+}: {
+  testStatus: ConnectionTestStatus;
+  loading?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="light"
+      classNames={{ root: classes.button, section: classes.section }}
+      data-status={testStatus}
+      leftSection={
+        <span className={classes.iconSlot}>
+          {testStatus === "success" ? <StatusCheckIcon size={16} /> : null}
+          {testStatus === "error" ? <StatusXIcon size={16} /> : null}
+        </span>
+      }
+      onClick={onClick}
+      loading={loading}
+      disabled={disabled}
+    >
+      Test connection
+    </Button>
+  );
+}

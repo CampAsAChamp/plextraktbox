@@ -1,5 +1,4 @@
-import { notifications } from "@mantine/notifications";
-import type { ConnectionSummary, ConnectionTestResult } from "../../api/connections";
+import type { ConnectionSummary } from "../../api/connections";
 
 export const SAVED_SECRET_PLACEHOLDER = "••••••••••••";
 
@@ -15,13 +14,6 @@ export function savedUsername(connection: ConnectionSummary | undefined): string
   if (!isConnectionConfigured(connection)) return "";
   const value = connection?.config.username;
   return typeof value === "string" ? value : "";
-}
-
-export function showConnectionTestResult(result: ConnectionTestResult) {
-  notifications.show({
-    color: result.ok ? "green" : "red",
-    message: result.message,
-  });
 }
 
 export function secretPlaceholderHandlers(

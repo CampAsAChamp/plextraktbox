@@ -1,0 +1,45 @@
+.button {
+  transition:
+    background-color 250ms ease,
+    color 250ms ease,
+    border-color 250ms ease;
+}
+
+.button[data-status="success"] {
+  background-color: var(--mantine-color-green-light);
+  color: var(--mantine-color-green-light-color);
+}
+
+.button[data-status="error"] {
+  background-color: var(--mantine-color-red-light);
+  color: var(--mantine-color-red-light-color);
+}
+
+.section {
+  display: inline-flex;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    max-width 250ms ease,
+    opacity 200ms ease,
+    transform 200ms ease,
+    margin-inline-end 250ms ease;
+  margin-inline-end: 0;
+}
+
+.button[data-status="success"] .section,
+.button[data-status="error"] .section {
+  max-width: 1.25rem;
+  opacity: 1;
+  transform: scale(1);
+  margin-inline-end: 0.375rem;
+}
+
+.iconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
