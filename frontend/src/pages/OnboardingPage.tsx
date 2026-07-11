@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Alert,
   Button,
   Group,
@@ -35,8 +36,11 @@ import {
   SAVED_SECRET_PLACEHOLDER,
   savedUsername,
   secretPlaceholderInputProps,
-  showConnectionTestResult,
 } from "../components/connections/connectionFormHelpers";
+import {
+  TestConnectionButton,
+  useConnectionTestFeedback,
+} from "../components/connections/connectionTestFeedback";
 import { ConnectionStatusBadge } from "../components/connections/ConnectionStatusBadge";
 import { SERVICE_LABELS } from "../components/connections/connectionStatus";
 import { ServiceLogo } from "../components/connections/ServiceLogo";
@@ -179,16 +183,16 @@ function PlexStep({
   const showManualCode = pin ? pin.pin_code.length <= 8 : false;
   const configured = isConnectionConfigured(connection);
   const plexConnected = connection?.status === "ok";
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+
+  useEffect(() => {
+    resetTestStatus();
+  }, [connection?.service, connection?.status, resetTestStatus]);
 
   const testSaved = useMutation({
-    mutationFn: () => api.post<ConnectionTestResult>("/connections/plex/test"),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "Plex test failed",
-      });
-    },
+    mutationFn: () => api.post<ConnectionTestResult>("/connections/plex/test", {}),
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "Plex test failed"),
   });
 
   return (
@@ -216,13 +220,11 @@ function PlexStep({
           Connect Plex
         </Button>
         {configured ? (
-          <Button
-            variant="light"
+          <TestConnectionButton
+            testStatus={testStatus}
             onClick={() => testSaved.mutate()}
             loading={testSaved.isPending}
-          >
-            Test connection
-          </Button>
+          />
         ) : null}
       </Group>
       {pollError ? (
@@ -336,16 +338,16 @@ function TraktStep({
 
   const configured = isConnectionConfigured(connection);
   const traktConnected = connection?.status === "ok";
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+
+  useEffect(() => {
+    resetTestStatus();
+  }, [connection?.service, connection?.status, resetTestStatus]);
 
   const testSaved = useMutation({
-    mutationFn: () => api.post<ConnectionTestResult>("/connections/trakt/test"),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "Trakt test failed",
-      });
-    },
+    mutationFn: () => api.post<ConnectionTestResult>("/connections/trakt/test", {}),
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "Trakt test failed"),
   });
 
   return (
@@ -368,13 +370,11 @@ function TraktStep({
           Connect Trakt
         </Button>
         {configured ? (
-          <Button
-            variant="light"
+          <TestConnectionButton
+            testStatus={testStatus}
             onClick={() => testSaved.mutate()}
             loading={testSaved.isPending}
-          >
-            Test connection
-          </Button>
+          />
         ) : null}
       </Group>
       {device ? (
@@ -423,6 +423,15 @@ function LetterboxdStep({
   }, [connection?.service, connection?.status, connection?.config.username]);
 
   const isDirty = username !== baselineUsername || password !== baselinePassword;
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+
+  useEffect(() => {
+    resetTestStatus();
+  }, [connection?.service, connection?.status, resetTestStatus]);
+
+  useEffect(() => {
+    if (isDirty) resetTestStatus();
+  }, [isDirty, resetTestStatus]);
 
   const save = useMutation({
     mutationFn: (body: LetterboxdConnectionInput) =>
@@ -440,26 +449,16 @@ function LetterboxdStep({
   });
 
   const testSaved = useMutation({
-    mutationFn: () => api.post<ConnectionTestResult>("/connections/letterboxd/test"),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "Letterboxd test failed",
-      });
-    },
+    mutationFn: () => api.post<ConnectionTestResult>("/connections/letterboxd/test", {}),
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "Letterboxd test failed"),
   });
 
   const testDraft = useMutation({
     mutationFn: (body: LetterboxdConnectionInput) =>
       api.post<ConnectionTestResult>("/connections/letterboxd/test", body),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "Letterboxd test failed",
-      });
-    },
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "Letterboxd test failed"),
   });
 
   function buildPayload(): LetterboxdConnectionInput | null {
@@ -540,19 +539,104 @@ function LetterboxdStep({
           <Button type="submit" loading={save.isPending} disabled={!isDirty}>
             Save Letterboxd connection
           </Button>
-          <Button
-            type="button"
-            variant="light"
+          <TestConnectionButton
+            testStatus={testStatus}
             onClick={handleTest}
             loading={testSaved.isPending || testDraft.isPending}
             disabled={!canTest}
-          >
-            Test connection
-          </Button>
+          />
         </Group>
         <ClearConnectionButton service="letterboxd" connection={connection} onCleared={onCleared} />
       </Stack>
     </form>
+  );
+}
+
+function TmdbApiKeyHelpContent() {
+  return (
+    <Stack gap="xs">
+      <List size="sm" spacing="xs">
+        <List.Item>
+          Sign in or create a free account at{" "}
+          <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">
+            themoviedb.org
+          </a>
+        </List.Item>
+        <List.Item>
+          Open{" "}
+          <a href={TMDB_API_SETTINGS_URL} target="_blank" rel="noreferrer">
+            Account Settings → API
+          </a>
+        </List.Item>
+        <List.Item>
+          Click <strong>Request an API Key</strong>, choose <strong>Developer</strong>, and complete
+          the application form
+        </List.Item>
+        <List.Item>
+          Copy the <strong>API Key</strong> (v3 auth) — not the Read Access Token
+        </List.Item>
+      </List>
+      <Button
+        component="a"
+        href={TMDB_API_SETTINGS_URL}
+        target="_blank"
+        rel="noreferrer"
+        variant="light"
+        size="xs"
+        w="fit-content"
+      >
+        Open TMDB API settings
+      </Button>
+    </Stack>
+  );
+}
+
+function TmdbApiKeyHelp({
+  collapsible,
+  expanded,
+  onExpandedChange,
+}: {
+  collapsible: boolean;
+  expanded: boolean;
+  onExpandedChange: (next: boolean) => void;
+}) {
+  if (!collapsible) {
+    return (
+      <Alert color="blue" title="Get a TMDB API key">
+        <TmdbApiKeyHelpContent />
+      </Alert>
+    );
+  }
+
+  return (
+    <Alert
+      color="blue"
+      p={0}
+      styles={{
+        root: { overflow: "hidden" },
+        message: { margin: 0 },
+      }}
+    >
+      <Accordion
+        chevronPosition="right"
+        onChange={(value) => onExpandedChange(value === "help")}
+        styles={{
+          chevron: { color: "var(--mantine-color-blue-light-color)" },
+          control: { padding: "var(--mantine-spacing-md)" },
+          label: { color: "var(--mantine-color-blue-light-color)", fontWeight: 600 },
+          panel: { padding: "0 var(--mantine-spacing-md) var(--mantine-spacing-md)" },
+        }}
+        value={expanded ? "help" : null}
+        variant="unstyled"
+      >
+        <Accordion.Item style={{ border: "none" }} value="help">
+          <Accordion.Control>Get a TMDB API key</Accordion.Control>
+          <Accordion.Panel>
+            <TmdbApiKeyHelpContent />
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+    </Alert>
   );
 }
 
@@ -570,14 +654,25 @@ function TmdbStep({
 
   const [apiKey, setApiKey] = useState(baselineApiKey);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showTmdbHelp, setShowTmdbHelp] = useState(!configured);
 
   useEffect(() => {
     const nextConfigured = isConnectionConfigured(connection);
     setApiKey(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "");
     setErrors({});
+    setShowTmdbHelp(!nextConfigured);
   }, [connection?.service, connection?.status]);
 
   const isDirty = apiKey !== baselineApiKey;
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+
+  useEffect(() => {
+    resetTestStatus();
+  }, [connection?.service, connection?.status, resetTestStatus]);
+
+  useEffect(() => {
+    if (isDirty) resetTestStatus();
+  }, [isDirty, resetTestStatus]);
 
   const save = useMutation({
     mutationFn: (body: TmdbConnectionInput) =>
@@ -595,26 +690,16 @@ function TmdbStep({
   });
 
   const testSaved = useMutation({
-    mutationFn: () => api.post<ConnectionTestResult>("/connections/tmdb/test"),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "TMDB test failed",
-      });
-    },
+    mutationFn: () => api.post<ConnectionTestResult>("/connections/tmdb/test", {}),
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "TMDB test failed"),
   });
 
   const testDraft = useMutation({
     mutationFn: (body: TmdbConnectionInput) =>
       api.post<ConnectionTestResult>("/connections/tmdb/test", body),
-    onSuccess: showConnectionTestResult,
-    onError: (error: unknown) => {
-      notifications.show({
-        color: "red",
-        message: error instanceof ApiError ? String(error.message) : "TMDB test failed",
-      });
-    },
+    onSuccess: onTestSuccess,
+    onError: (error: unknown) => onTestError(error, "TMDB test failed"),
   });
 
   function handleTest() {
@@ -661,42 +746,11 @@ function TmdbStep({
             <Text size="sm">API key saved and ready for title matching.</Text>
           </Alert>
         ) : null}
-        <Alert color="blue" title="Get a TMDB API key">
-          <Stack gap="xs">
-            <List size="sm" spacing="xs">
-              <List.Item>
-                Sign in or create a free account at{" "}
-                <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">
-                  themoviedb.org
-                </a>
-              </List.Item>
-              <List.Item>
-                Open{" "}
-                <a href={TMDB_API_SETTINGS_URL} target="_blank" rel="noreferrer">
-                  Account Settings → API
-                </a>
-              </List.Item>
-              <List.Item>
-                Click <strong>Request an API Key</strong>, choose <strong>Developer</strong>, and
-                complete the application form
-              </List.Item>
-              <List.Item>
-                Copy the <strong>API Key</strong> (v3 auth) — not the Read Access Token
-              </List.Item>
-            </List>
-            <Button
-              component="a"
-              href={TMDB_API_SETTINGS_URL}
-              target="_blank"
-              rel="noreferrer"
-              variant="light"
-              size="xs"
-              w="fit-content"
-            >
-              Open TMDB API settings
-            </Button>
-          </Stack>
-        </Alert>
+        <TmdbApiKeyHelp
+          collapsible={configured}
+          expanded={showTmdbHelp}
+          onExpandedChange={setShowTmdbHelp}
+        />
         <PasswordInput
           label="TMDB API key"
           onChange={(event) => setApiKey(event.currentTarget.value)}
@@ -713,15 +767,12 @@ function TmdbStep({
           <Button type="submit" loading={save.isPending} disabled={!isDirty}>
             Save TMDB connection
           </Button>
-          <Button
-            type="button"
-            variant="light"
+          <TestConnectionButton
+            testStatus={testStatus}
             onClick={handleTest}
             loading={testSaved.isPending || testDraft.isPending}
             disabled={!canTest}
-          >
-            Test connection
-          </Button>
+          />
         </Group>
         <ClearConnectionButton service="tmdb" connection={connection} onCleared={onCleared} />
       </Stack>
@@ -878,7 +929,10 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
       <Stepper
         active={active}
         onStepClick={setActive}
-        classNames={{ stepIcon: classes.stepIcon }}
+        classNames={{
+          stepIcon: classes.stepIcon,
+          stepCompletedIcon: classes.stepCompletedIcon,
+        }}
       >
         <Stepper.Step
           classNames={{ stepIcon: stepIconClass(connectionFor("plex")) }}

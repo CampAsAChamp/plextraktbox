@@ -4,6 +4,18 @@
   color: inherit;
 }
 
+/* Mantine mounts completedIcon in a separate overlay with a pop transition.
+   That swap makes the service logo flash when clicking between steps. */
+.stepCompletedIcon {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.stepIcon:not([data-completed]) .stepCompletedIcon {
+  display: none !important;
+}
+
 .stepIcon[data-progress] {
   background-color: var(--mantine-color-body);
   border-color: var(--mantine-color-blue-6);

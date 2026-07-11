@@ -48,16 +48,27 @@ export function AppLayout({ username, showLogout = false }: AppLayoutProps) {
           <Group gap="sm">
             {showHome ? (
               <Tooltip label="Dashboard">
-                <ActionIcon
-                  component={isHome ? "span" : Link}
-                  to={isHome ? undefined : "/"}
-                  variant={isHome ? "light" : "subtle"}
-                  size="lg"
-                  aria-label={isHome ? "Dashboard" : "Go to dashboard"}
-                  aria-current={isHome ? "page" : undefined}
-                >
-                  <HomeIcon />
-                </ActionIcon>
+                {isHome ? (
+                  <ActionIcon
+                    component="span"
+                    variant="light"
+                    size="lg"
+                    aria-label="Dashboard"
+                    aria-current="page"
+                  >
+                    <HomeIcon />
+                  </ActionIcon>
+                ) : (
+                  <ActionIcon
+                    component={Link}
+                    to="/"
+                    variant="subtle"
+                    size="lg"
+                    aria-label="Go to dashboard"
+                  >
+                    <HomeIcon />
+                  </ActionIcon>
+                )}
               </Tooltip>
             ) : null}
             <Title order={4}>plextraktbox</Title>
