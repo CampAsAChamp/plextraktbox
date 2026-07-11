@@ -27,6 +27,7 @@ class JobRunStatus(StrEnum):
 class JobRun(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     job_id: int = Field(index=True)
+    job_name: str | None = Field(default=None, nullable=True)
     trigger: RunTrigger = Field(default=RunTrigger.MANUAL)
     dry_run: bool = Field(default=False)
     status: JobRunStatus = Field(default=JobRunStatus.RUNNING, index=True)

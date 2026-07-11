@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
+from plextraktbox.cron import validate_cron_expression
 from plextraktbox.models.job import Job, SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.sync.plans import DataType
@@ -18,6 +19,25 @@ class JobCreateRequest(BaseModel):
     cron: str = "0 3 * * *"
     dry_run: bool = False
     data_types: list[DataType] = Field(default_factory=lambda: [DataType.WATCHLIST])
+
+    @field_validator("cron")
+    @classmethod
+    def validate_cron(cls, value: str) -> str:
+        return validate_cron_expression(value)
+
+
+class JobUpdateRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    source_pair: SourcePair
+    enabled: bool = True
+    cron: str = "0 3 * * *"
+    dry_run: bool = False
+    data_types: list[DataType] = Field(default_factory=lambda: [DataType.WATCHLIST])
+
+    @field_validator("cron")
+    @classmethod
+    def validate_cron(cls, value: str) -> str:
+        return validate_cron_expression(value)
 
 
 class JobResponse(BaseModel):

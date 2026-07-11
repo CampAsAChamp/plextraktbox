@@ -27,14 +27,15 @@ def _create_user_and_login(client: TestClient) -> None:
 
 
 @respx.mock
-def _configure_connections(client: TestClient, monkeypatch) -> None:
-    class FakeServer:
-        friendlyName = "Home Plex"
-        machineIdentifier = "abc123"
-
-    monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.PlexServer",
-        lambda url, token, timeout=10: FakeServer(),
+def _configure_connections(client: TestClient) -> None:
+    respx.get("http://plex.local:32400/identity").mock(
+        return_value=httpx.Response(
+            200,
+            text=(
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                '<MediaContainer friendlyName="Home Plex" machineIdentifier="abc123"/>'
+            ),
+        )
     )
     respx.post("https://plex.tv/api/v2/pins").mock(
         return_value=httpx.Response(200, json={"id": 42, "code": "ABCD"})
@@ -141,9 +142,9 @@ def test_jobs_require_auth(client: TestClient) -> None:
 
 
 @respx.mock
-def test_create_and_run_plex_trakt_job(client: TestClient, monkeypatch) -> None:
+def test_create_and_run_plex_trakt_job(client: TestClient) -> None:
     _create_user_and_login(client)
-    _configure_connections(client, monkeypatch)
+    _configure_connections(client)
 
     create = client.post(
         "/api/jobs",
@@ -181,3 +182,95 @@ def test_create_job_validates_data_types(client: TestClient) -> None:
     )
     assert resp.status_code == 400
     assert "watchlist" in resp.json()["detail"]
+
+
+def test_create_job_validates_cron(client: TestClient) -> None:
+    _create_user_and_login(client)
+    resp = client.post(
+        "/api/jobs",
+        json={
+            "name": "Bad cron",
+            "source_pair": "plex_trakt",
+            "data_types": ["watchlist"],
+            "cron": "not-a-cron",
+        },
+        headers=HEADERS,
+    )
+    assert resp.status_code == 422
+    assert "cron" in resp.json()["detail"][0]["loc"]
+
+
+def test_update_job_validates_cron(client: TestClient) -> None:
+    _create_user_and_login(client)
+
+    create = client.post(
+        "/api/jobs",
+        json={
+            "name": "Cron job",
+            "source_pair": "plex_trakt",
+            "data_types": ["watchlist"],
+            "cron": "0 3 * * *",
+        },
+        headers=HEADERS,
+    )
+    assert create.status_code == 200
+    job_id = create.json()["id"]
+
+    update = client.put(
+        f"/api/jobs/{job_id}",
+        json={
+            "name": "Cron job",
+            "source_pair": "plex_trakt",
+            "data_types": ["watchlist"],
+            "cron": "every day",
+        },
+        headers=HEADERS,
+    )
+    assert update.status_code == 422
+    assert "cron" in update.json()["detail"][0]["loc"]
+
+
+def test_job_crud(client: TestClient) -> None:
+    _create_user_and_login(client)
+
+    create = client.post(
+        "/api/jobs",
+        json={
+            "name": "Original",
+            "source_pair": "letterboxd_plex",
+            "data_types": ["ratings"],
+            "enabled": True,
+            "cron": "0 4 * * *",
+            "dry_run": False,
+        },
+        headers=HEADERS,
+    )
+    assert create.status_code == 200
+    job_id = create.json()["id"]
+
+    get_resp = client.get(f"/api/jobs/{job_id}")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["name"] == "Original"
+
+    update = client.put(
+        f"/api/jobs/{job_id}",
+        json={
+            "name": "Updated",
+            "source_pair": "letterboxd_plex",
+            "data_types": ["ratings"],
+            "enabled": False,
+            "cron": "0 5 * * *",
+            "dry_run": True,
+        },
+        headers=HEADERS,
+    )
+    assert update.status_code == 200
+    assert update.json()["name"] == "Updated"
+    assert update.json()["enabled"] is False
+    assert update.json()["dry_run"] is True
+
+    delete = client.delete(f"/api/jobs/{job_id}", headers=HEADERS)
+    assert delete.status_code == 204
+
+    missing = client.get(f"/api/jobs/{job_id}")
+    assert missing.status_code == 404
