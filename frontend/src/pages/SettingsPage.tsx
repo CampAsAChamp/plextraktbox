@@ -2,6 +2,7 @@ import { Anchor, Avatar, Group, Paper, SegmentedControl, Stack, Text, Title } fr
 import type { User } from "../api/auth";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { TimezonePreferenceControls } from "../settings/TimezonePreferenceControls";
+import { NotificationSettings } from "../components/notifications/NotificationSettings";
 import { formatDateTime } from "../utils/dateTimeFormat";
 
 const TIME_FORMAT_OPTIONS = [
@@ -71,6 +72,8 @@ export function SettingsPage({ user }: SettingsPageProps) {
           </Stack>
         </Stack>
       </Paper>
+
+      <NotificationSettings />
     </Stack>
   );
 }
