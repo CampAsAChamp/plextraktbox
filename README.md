@@ -202,6 +202,7 @@ The app is built incrementally; each phase is independently runnable and testabl
 - [ ] **Phase 11 — TrueNAS deployment (personal install)** — GHCR image, reverse proxy docs, real install
 - [ ] **Phase 12 — TrueNAS App Catalog publication** — packaged app + public image
 - [ ] **Phase 13 — Doppler secret management** — optional maintainer dev/CI workflow
+- [ ] **Phase 14 — UI polish & layout rework** — visual and layout pass after functionality is stable
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

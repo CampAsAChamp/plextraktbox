@@ -186,6 +186,7 @@ Each phase is independently runnable/testable. Check off as completed.
 - [ ] **Phase 11 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount; **publish versioned container image to GHCR** (tagged releases for pull-without-build install); document **reverse proxy / TLS** (Caddy or Traefik example behind TrueNAS app); document "Launch Docker Image" / custom-app setup in README; real install end-to-end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
 - [ ] **Phase 12 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 11 has run successfully for a while. *(test plan: TBD)*
 - [ ] **Phase 13 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
+- [ ] **Phase 14 — UI polish & layout rework** — intentional visual and layout pass once core functionality is stable. Earlier phases prioritize working features over aesthetics. Scope: consistent spacing/typography, responsive layout fixes, nav and page structure, form and table polish, empty/loading/error states, dark/light consistency, accessibility basics. No new product features — cosmetic and UX refinement only. *(test plan: TBD)*
 
 
 
@@ -211,6 +212,7 @@ and the table in `testing.md`.
 - **Client-backed sources (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
 - **TrueNAS (Phases 11–12):** real hardware / catalog install — documented in those phase test plans
 - **Doppler (Phase 13):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
+- **UI polish (Phase 14):** visual/layout pass only — defer until functionality is complete; manual smoke across main flows
 
 
 

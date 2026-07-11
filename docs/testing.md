@@ -57,6 +57,7 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | 11 | TrueNAS personal install | — | TBD when phase lands |
 | 12 | TrueNAS App Catalog | — | TBD when phase lands |
 | 13 | Doppler secret management (dev/CI) | — | TBD when phase lands |
+| 14 | UI polish & layout rework | — | TBD when phase lands |
 
 When a phase is implemented, copy [phase-test-plan-template.md](phase-test-plan-template.md),
 fill in the checklist, add a row link above, and link it from the phase line in PLAN.md.
