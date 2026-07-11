@@ -194,6 +194,7 @@ export function AppLayout({
                 <Menu.Target>
                   <Button
                     variant="subtle"
+                    color="gray"
                     size="compact-sm"
                     px="sm"
                     py="xs"

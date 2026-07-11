@@ -55,7 +55,7 @@ Do not run `up` and `up-dev` simultaneously — both bind port 8000.
 
 ## Git
 
-Personal repo — plain imperative commit subjects (no conventional commits unless asked). Match recent `git log`. Only commit when the user asks.
+Personal repo — plain imperative commit subjects, no trailing period (no conventional commits unless asked). Match recent `git log`. Only commit when the user asks.
 
 ## Coding principles
 

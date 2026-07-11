@@ -68,7 +68,8 @@ export function listIanaTimezones(): string[] {
 }
 
 export function getTimezoneMode(timezone: TimezonePreference): TimezoneMode {
-  if (timezone === "local" || timezone === "utc") return timezone;
+  if (timezone === "local") return "local";
+  if (timezone === "utc") return "utc";
   return "fixed";
 }
 

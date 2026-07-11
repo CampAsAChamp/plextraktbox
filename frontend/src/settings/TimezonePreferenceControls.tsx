@@ -97,7 +97,10 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
       />
       {timezoneMode === "local" ? (
         <Text size="sm" c="dimmed">
-          Browser timezone: {formatTimezoneLabel(browserTimezone)}
+          <Text span fw={600} inherit>
+            Browser Timezone:
+          </Text>{" "}
+          {formatTimezoneLabel(browserTimezone)}
         </Text>
       ) : null}
       {timezoneMode === "fixed" ? fixedTimezoneSelect : null}
