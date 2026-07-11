@@ -1,8 +1,4 @@
-"""structlog configuration.
-
-The per-run log pipeline (DB persistence + SSE pub/sub) is layered on top of this
-baseline in Phase 5. This module sets up console rendering for app-level logs.
-"""
+"""structlog configuration with per-run DB persistence and live pub/sub."""
 
 from __future__ import annotations
 
@@ -15,6 +11,7 @@ import structlog
 from structlog.dev import Column, ConsoleRenderer, KeyValueColumnFormatter
 
 from plextraktbox.config import get_settings
+from plextraktbox.logstream.handler import run_log_processor
 
 _LEVEL_LABELS = {
     "critical": "CRITICAL",
@@ -148,6 +145,7 @@ def configure_logging() -> None:
         timestamper,
         structlog.processors.StackInfoRenderer(),
         structlog.stdlib.ExtraAdder(),
+        run_log_processor,
     ]
 
     if log_format == "json":

@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import threading
+import time
 from datetime import UTC, datetime
 
 from sqlmodel import Session
 
 from plextraktbox import db
+from plextraktbox.config import get_settings
 from plextraktbox.logging_setup import get_logger
+from plextraktbox.logstream import get_log_hub
 from plextraktbox.models.job import Job
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.services.source_factory import build_sources
@@ -21,6 +24,22 @@ log = get_logger(__name__)
 
 _job_locks: dict[int, threading.Lock] = {}
 _job_locks_guard = threading.Lock()
+
+
+def _apply_dev_run_delay(run_logger) -> None:
+    """Sleep between log ticks so dev runs stay open long enough to test live streaming."""
+    settings = get_settings()
+    if settings.env != "dev" or settings.sync_run_delay_seconds <= 0:
+        return
+
+    total = int(settings.sync_run_delay_seconds)
+    if total <= 0:
+        return
+
+    run_logger.info("sync.run.dev_delay.start", seconds=total)
+    for second in range(1, total + 1):
+        time.sleep(1)
+        run_logger.info("sync.run.dev_delay.tick", elapsed=second, total=total)
 
 
 def _get_job_lock(job_id: int) -> threading.Lock:
@@ -93,8 +112,11 @@ def _execute_run_in_session(
         session.refresh(run)
 
     run_logger = log.bind(job_id=job.id, run_id=run.id)
+    get_log_hub().open(run.id or 0)
 
+    final_status = JobRunStatus.FAILED.value
     try:
+        _apply_dev_run_delay(run_logger)
         sources = build_sources(session, job)
         ctx = SyncContext(
             sources=sources,
@@ -109,6 +131,7 @@ def _execute_run_in_session(
         session.add(run)
         session.commit()
         session.refresh(run)
+        final_status = run.status.value
         run_logger.info(
             "sync.run.complete",
             status=run.status.value,
@@ -122,8 +145,12 @@ def _execute_run_in_session(
         session.add(run)
         session.commit()
         session.refresh(run)
+        final_status = run.status.value
         run_logger.warning("sync.run.failed", error=str(exc))
         raise
+    finally:
+        if run.id is not None:
+            get_log_hub().close(run.id, status=final_status)
 
 
 def _status_from_summary(summary: RunSummary) -> JobRunStatus:

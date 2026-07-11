@@ -42,6 +42,11 @@ class Settings(BaseSettings):
         default="",
         description="Trakt API application client secret.",
     )
+    sync_run_delay_seconds: float = Field(
+        default=0,
+        ge=0,
+        description="Dev-only seconds to wait at run start (ENV=dev) for live log testing.",
+    )
 
     @model_validator(mode="after")
     def _require_secret_in_prod(self) -> Settings:

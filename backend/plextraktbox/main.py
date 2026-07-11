@@ -7,6 +7,7 @@ Vite ``dist/`` output into that directory so a single container serves both.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -17,12 +18,13 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from plextraktbox.api import auth, connections, dev, health, jobs, runs, setup
+from plextraktbox.api import auth, connections, dev, health, jobs, run_logs, runs, setup
 from plextraktbox.config import get_settings
 from plextraktbox.db import init_db
 from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
 from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
+from plextraktbox.logstream import get_log_hub, get_log_writer
 from plextraktbox.scheduler import get_scheduler_manager
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -34,6 +36,8 @@ log = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
     init_db()
+    get_log_writer().start()
+    get_log_hub().set_event_loop(asyncio.get_running_loop())
     scheduler = get_scheduler_manager()
     scheduler.start()
     app.state.scheduler = scheduler
@@ -41,6 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     log.info("plextraktbox.startup", env=get_settings().env)
     yield
     scheduler.shutdown(wait=True)
+    get_log_writer().stop()
     log.info("plextraktbox.shutdown")
 
 
@@ -64,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(connections.router, prefix="/api")
     app.include_router(jobs.router, prefix="/api")
     app.include_router(runs.router, prefix="/api")
+    app.include_router(run_logs.router, prefix="/api")
 
     if settings.env == "dev":
         app.include_router(dev.router, prefix="/api/dev")

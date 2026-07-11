@@ -53,7 +53,7 @@ class SchedulerManager:
 
     def load_all_jobs(self) -> None:
         with Session(db.engine) as session:
-            jobs = list(session.exec(select(Job)).all())  # type: ignore[arg-type]
+            jobs = list(session.exec(select(Job)).all())
         for job in jobs:
             self.sync_job(job)
 

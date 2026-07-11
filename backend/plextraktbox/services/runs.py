@@ -19,7 +19,7 @@ def list_runs(
     if job_id is not None:
         stmt = stmt.where(JobRun.job_id == job_id)
     stmt = stmt.offset(offset).limit(limit)
-    return list(session.exec(stmt).all())  # type: ignore[arg-type]
+    return list(session.exec(stmt).all())
 
 
 def get_run(session: Session, run_id: int) -> JobRun | None:
