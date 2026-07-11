@@ -171,7 +171,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 Each phase is independently runnable/testable. Check off as completed.
 
-- [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`, CI (ruff/mypy/pytest/vitest). *Verified: container boots, health OK, SPA loads (container + Vite dev + backend static).* → [test plan](docs/phase-0-test-plan.md)
+- [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`. *Verified: container boots, health OK, SPA loads (container + Vite dev + backend static).* → [test plan](docs/phase-0-test-plan.md)
 - [x] **Rename** — `media-sync` package → `plextraktbox` (package, env prefix, Docker/CI/docs).
 - [x] **Phase 1 — Auth + wizard (user)** — user model, bcrypt, sessions, auth dep, `setup/user`+`login`/`logout`, SPA setup-gate→login→dashboard. → [test plan](docs/phase-1-test-plan.md)
 - [ ] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex PIN auth + Trakt device + LB creds + TMDB key steps, re-auth UI. → [test plan](docs/phase-2-test-plan.md)
@@ -179,7 +179,7 @@ Each phase is independently runnable/testable. Check off as completed.
 - [ ] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. *(test plan: TBD)*
 - [ ] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. *(test plan: TBD)*
 - [ ] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/email/inapp, per-job override + global, test buttons, in-app bell. *(test plan: TBD)*
-- [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, polish. *(test plan: TBD)*
+- [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, **GitHub Actions CI** (restore `.github/workflows/ci.yml`: backend ruff/mypy/pytest, frontend typecheck/vitest/build; fix current failures; mirror `mise run check`), polish. *(test plan: TBD)*
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount, document the "Launch Docker Image" / custom-app setup in the README, do a real install on the user's TrueNAS box end to end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while. *(test plan: TBD)*
 - [ ] **Phase 10 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
@@ -199,7 +199,7 @@ and the table in `testing.md`.
 
 - **Container (default):** `mise run up` → http://localhost:8000
 - **Local dev (hot reload):** `mise run dev-backend` + `mise run dev-frontend` (two terminals)
-- **Automated:** `mise run test` / `mise run check` (CI parity)
+- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions is restored in Phase 7)
 - **Sync engine (Phase 3+):** fakes in `tests/fakes/` via `SyncContext` (no network); assert
   source-of-truth per data type; dry-run = zero writes
 - **HTTP/time:** `respx`, `freezegun`
