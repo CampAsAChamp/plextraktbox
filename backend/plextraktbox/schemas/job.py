@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from pydantic import BaseModel, Field, field_validator
 
 from plextraktbox.cron import validate_cron_expression
 from plextraktbox.models.job import Job, SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.sync.plans import DataType
+from plextraktbox.utils.datetime import UtcDatetime
 
 
 class JobCreateRequest(BaseModel):
@@ -68,8 +67,8 @@ class JobRunResponse(BaseModel):
     trigger: RunTrigger
     dry_run: bool
     status: JobRunStatus
-    started_at: datetime
-    finished_at: datetime | None
+    started_at: UtcDatetime
+    finished_at: UtcDatetime | None
     summary: dict[str, int]
     error: str | None
 

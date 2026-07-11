@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from pydantic import BaseModel
 
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
+from plextraktbox.utils.datetime import UtcDatetime
 
 
 class RunListItem(BaseModel):
@@ -16,8 +15,8 @@ class RunListItem(BaseModel):
     trigger: RunTrigger
     dry_run: bool
     status: JobRunStatus
-    started_at: datetime
-    finished_at: datetime | None
+    started_at: UtcDatetime
+    finished_at: UtcDatetime | None
     summary: dict[str, int]
     error: str | None
 

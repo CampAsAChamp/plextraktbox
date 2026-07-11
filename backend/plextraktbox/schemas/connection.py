@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, HttpUrl
 
 from plextraktbox.models.connection import Connection, ConnectionStatus, Service
+from plextraktbox.utils.datetime import UtcDatetime
 
 
 class ConnectionSummary(BaseModel):
     service: Service
     status: ConnectionStatus
     config: dict[str, Any]
-    token_expires_at: datetime | None = None
+    token_expires_at: UtcDatetime | None = None
 
     @classmethod
     def from_connection(cls, connection: Connection | None, service: Service) -> ConnectionSummary:
