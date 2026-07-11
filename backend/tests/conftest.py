@@ -13,13 +13,15 @@ from pathlib import Path
 import pytest
 
 # Configure settings BEFORE importing the app so get_settings() caches test values.
-os.environ.setdefault("PLEXTRAKTBOX_ENV", "dev")
-os.environ.setdefault("PLEXTRAKTBOX_SECRET_KEY", "test-secret-key")
+os.environ.setdefault("ENV", "dev")
+os.environ.setdefault("SECRET_KEY", "test-secret-key")
+os.environ.setdefault("TRAKT_CLIENT_ID", "cid")
+os.environ.setdefault("TRAKT_CLIENT_SECRET", "secret")
 
 
 @pytest.fixture
 def client(tmp_path: Path) -> Iterator[TestClient]:  # noqa: F821
-    os.environ["PLEXTRAKTBOX_DATA_DIR"] = str(tmp_path)
+    os.environ["DATA_DIR"] = str(tmp_path)
 
     # Reset the cached settings + engine so they pick up the tmp data dir.
     from plextraktbox import config, db
