@@ -48,13 +48,27 @@ class PlexConnectionRequest(BaseModel):
     token: str = Field(min_length=1, max_length=512)
 
 
+class PlexConnectionTestRequest(BaseModel):
+    url: HttpUrl | None = None
+    token: str | None = Field(default=None, max_length=512)
+
+
 class LetterboxdConnectionRequest(BaseModel):
     username: str = Field(min_length=1, max_length=64)
     password: str | None = Field(default=None, min_length=1, max_length=128)
 
 
+class LetterboxdConnectionTestRequest(BaseModel):
+    username: str | None = Field(default=None, max_length=64)
+    password: str | None = Field(default=None, max_length=128)
+
+
 class TmdbConnectionRequest(BaseModel):
     api_key: str = Field(min_length=1, max_length=128)
+
+
+class TmdbConnectionTestRequest(BaseModel):
+    api_key: str | None = Field(default=None, max_length=128)
 
 
 class TraktDeviceStartResponse(BaseModel):

@@ -2,27 +2,32 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
 from plextraktbox.clients import letterboxd_client, plex_client, tmdb_client, trakt_client
 from plextraktbox.config import get_settings
+from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.connection import Service
 from plextraktbox.schemas.connection import (
     ConnectionsStatusResponse,
     ConnectionSummary,
     ConnectionTestResponse,
     LetterboxdConnectionRequest,
+    LetterboxdConnectionTestRequest,
     PlexConnectionRequest,
+    PlexConnectionTestRequest,
     PlexPinPollRequest,
     PlexPinPollResponse,
     PlexPinStartResponse,
     TmdbConnectionRequest,
+    TmdbConnectionTestRequest,
     TraktDevicePollRequest,
     TraktDevicePollResponse,
     TraktDeviceStartResponse,
 )
-from plextraktbox.logging_setup import get_logger
 from plextraktbox.services import connections as conn_svc
 
 log = get_logger(__name__)
@@ -206,8 +211,15 @@ def save_tmdb(
     response_model=ConnectionTestResponse,
     dependencies=[Depends(require_csrf)],
 )
-def test_plex(body: PlexConnectionRequest) -> ConnectionTestResponse:
-    result = plex_client.test_connection(str(body.url), body.token)
+def test_plex(
+    _user: CurrentUserDep,
+    session: SessionDep,
+    body: Annotated[PlexConnectionTestRequest, Body()] = PlexConnectionTestRequest(),
+) -> ConnectionTestResponse:
+    if body.url is not None and body.token:
+        result = plex_client.test_connection(str(body.url), body.token)
+    else:
+        result = conn_svc.test_saved_connection(session, Service.PLEX)
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 
 
@@ -217,10 +229,14 @@ def test_plex(body: PlexConnectionRequest) -> ConnectionTestResponse:
     dependencies=[Depends(require_csrf)],
 )
 def test_letterboxd(
-    body: LetterboxdConnectionRequest,
     _user: CurrentUserDep,
     session: SessionDep,
+    body: Annotated[LetterboxdConnectionTestRequest, Body()] = LetterboxdConnectionTestRequest(),
 ) -> ConnectionTestResponse:
+    if not body.username:
+        result = conn_svc.test_saved_connection(session, Service.LETTERBOXD)
+        return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
+
     try:
         password = conn_svc.resolve_letterboxd_password(session, body.password)
     except ValueError as exc:
@@ -234,8 +250,15 @@ def test_letterboxd(
     response_model=ConnectionTestResponse,
     dependencies=[Depends(require_csrf)],
 )
-def test_tmdb(body: TmdbConnectionRequest) -> ConnectionTestResponse:
-    result = tmdb_client.test_connection(body.api_key)
+def test_tmdb(
+    _user: CurrentUserDep,
+    session: SessionDep,
+    body: Annotated[TmdbConnectionTestRequest, Body()] = TmdbConnectionTestRequest(),
+) -> ConnectionTestResponse:
+    if body.api_key:
+        result = tmdb_client.test_connection(body.api_key)
+    else:
+        result = conn_svc.test_saved_connection(session, Service.TMDB)
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 
 

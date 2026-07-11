@@ -16,6 +16,17 @@ TRAKT_HEADERS = {
 }
 
 
+def _as_utc_aware(value: datetime) -> datetime:
+    """Normalize DB datetimes (often naive UTC) for aware comparisons."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
+def _token_is_expired(token_expires_at: datetime) -> bool:
+    return _as_utc_aware(token_expires_at) <= datetime.now(UTC)
+
+
 @dataclass(frozen=True)
 class TraktTokens:
     access_token: str
@@ -141,7 +152,7 @@ def test_connection(
     tokens: TraktTokens | None = None
     access = access_token
 
-    if token_expires_at is not None and token_expires_at <= datetime.now(UTC):
+    if token_expires_at is not None and _token_is_expired(token_expires_at):
         try:
             tokens = refresh_access_token(client_id, client_secret, refresh_token)
             access = tokens.access_token

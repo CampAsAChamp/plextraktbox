@@ -66,6 +66,33 @@ def test_save_tmdb_connection(client: TestClient) -> None:
 
 
 @respx.mock
+def test_tmdb_saved_connection_test_without_body(client: TestClient) -> None:
+    _create_user_and_login(client)
+    respx.get("https://api.themoviedb.org/3/configuration").mock(
+        return_value=httpx.Response(200, json={"images": {}})
+    )
+
+    save = client.post(
+        "/api/connections/tmdb",
+        json={"api_key": "saved-key"},
+        headers=HEADERS,
+    )
+    assert save.status_code == 200
+
+    test_resp = client.post("/api/connections/tmdb/test", headers=HEADERS)
+    assert test_resp.status_code == 200
+    assert test_resp.json() == {
+        "ok": True,
+        "message": "TMDB API key is valid",
+        "details": None,
+    }
+
+    empty_body_resp = client.post("/api/connections/tmdb/test", json={}, headers=HEADERS)
+    assert empty_body_resp.status_code == 200
+    assert empty_body_resp.json()["ok"] is True
+
+
+@respx.mock
 def test_plex_pin_flow(client: TestClient, monkeypatch) -> None:
     _create_user_and_login(client)
 
@@ -179,6 +206,35 @@ def test_save_plex_connection(client: TestClient, monkeypatch) -> None:
 
 
 @respx.mock
+def test_plex_saved_connection_test_without_body(client: TestClient, monkeypatch) -> None:
+    _create_user_and_login(client)
+
+    class FakeServer:
+        friendlyName = "Home Plex"
+        machineIdentifier = "abc123"
+
+    monkeypatch.setattr(
+        "plextraktbox.clients.plex_client.PlexServer",
+        lambda url, token, timeout=10: FakeServer(),
+    )
+
+    save = client.post(
+        "/api/connections/plex",
+        json={"url": "http://plex.local:32400", "token": "plex-token"},
+        headers=HEADERS,
+    )
+    assert save.status_code == 200
+
+    test_resp = client.post("/api/connections/plex/test", headers=HEADERS)
+    assert test_resp.status_code == 200
+    assert test_resp.json()["ok"] is True
+
+    empty_body_resp = client.post("/api/connections/plex/test", json={}, headers=HEADERS)
+    assert empty_body_resp.status_code == 200
+    assert empty_body_resp.json()["ok"] is True
+
+
+@respx.mock
 def test_save_letterboxd_connection(client: TestClient) -> None:
     _create_user_and_login(client)
     respx.get("https://letterboxd.com/sign-in/").mock(
@@ -252,6 +308,42 @@ def test_save_letterboxd_keeps_password_when_omitted(client: TestClient) -> None
     )
     assert test_resp.status_code == 200
     assert test_resp.json()["ok"] is True
+
+
+@respx.mock
+def test_letterboxd_saved_connection_test_without_body(client: TestClient) -> None:
+    _create_user_and_login(client)
+    respx.get("https://letterboxd.com/sign-in/").mock(
+        return_value=httpx.Response(
+            200,
+            text="<html></html>",
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+        )
+    )
+    respx.post("https://letterboxd.com/user/login.do").mock(
+        return_value=httpx.Response(
+            302,
+            headers={
+                "location": "/nick/",
+                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
+            },
+        )
+    )
+
+    save = client.post(
+        "/api/connections/letterboxd",
+        json={"username": "nick", "password": "lb-pass"},
+        headers=HEADERS,
+    )
+    assert save.status_code == 200
+
+    test_resp = client.post("/api/connections/letterboxd/test", headers=HEADERS)
+    assert test_resp.status_code == 200
+    assert test_resp.json()["ok"] is True
+
+    empty_body_resp = client.post("/api/connections/letterboxd/test", json={}, headers=HEADERS)
+    assert empty_body_resp.status_code == 200
+    assert empty_body_resp.json()["ok"] is True
 
 
 def test_trakt_device_start_requires_credentials(client: TestClient, monkeypatch) -> None:

@@ -41,7 +41,7 @@ class PlexDiscoveredServer:
 
 def plex_client_identifier(secret_key: str) -> str:
     """Stable Plex client ID for this deployment (required for PIN auth)."""
-    digest = hashlib.sha256(f"plex-client:{secret_key}".encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(f"plex-client:{secret_key}".encode()).hexdigest()
     return digest[:32]
 
 

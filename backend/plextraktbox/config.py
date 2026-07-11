@@ -70,10 +70,7 @@ class Settings(BaseSettings):
     def require_trakt_credentials(self) -> tuple[str, str]:
         """Return the server-level Trakt API app credentials."""
         if not self.trakt_client_id or not self.trakt_client_secret:
-            raise ValueError(
-                "Trakt API app is not configured. "
-                "Set TRAKT_CLIENT_ID and TRAKT_CLIENT_SECRET."
-            )
+            raise ValueError("Trakt API app is not configured. Set TRAKT_CLIENT_ID and TRAKT_CLIENT_SECRET.")
         return self.trakt_client_id, self.trakt_client_secret
 
     @property
