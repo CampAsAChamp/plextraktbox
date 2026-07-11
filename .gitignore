@@ -21,6 +21,11 @@ backend/data/
 
 # Secrets / env
 .env
+cookies.txt
+
+# AI tooling (local overrides)
+CLAUDE.local.md
+.claude/settings.local.json
 
 # OS / editor
 .DS_Store

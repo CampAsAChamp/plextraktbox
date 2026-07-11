@@ -1,0 +1,12 @@
+---
+description: Git commit style for this personal repo
+alwaysApply: true
+---
+
+# Git (personal repo)
+
+- Plain imperative subject lines — **no** conventional commits (`feat:`, `fix:`) unless the user asks
+- Match recent `git log` in this repo (e.g. `Add job scheduler UI`, `Fix Trakt token refresh`)
+- Optional short body focusing on **why**
+- No Jira IDs
+- Only commit when explicitly requested; never push unless asked
