@@ -23,11 +23,12 @@
 
 .stepIcon[data-completed] {
   background-color: var(--mantine-color-body);
-  border-color: var(--mantine-color-green-6);
+  border-color: var(--mantine-color-gray-4);
   color: inherit;
 }
 
 .stepIconConnected,
-.stepIconConnected[data-progress] {
+.stepIconConnected[data-progress],
+.stepIconConnected[data-completed] {
   border-color: var(--mantine-color-green-6);
 }

@@ -28,10 +28,10 @@ describe("TestConnectionButton", () => {
     expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).not.toBeNull();
   });
 
-  it("has no status icon before testing", () => {
+  it("shows a test icon before testing", () => {
     renderButton("idle");
 
-    expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).toBeNull();
+    expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).not.toBeNull();
   });
 
   it("calls onClick when pressed", async () => {

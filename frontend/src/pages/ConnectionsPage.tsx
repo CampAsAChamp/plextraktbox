@@ -45,6 +45,7 @@ import { ConnectionStatusBadge } from "../components/connections/ConnectionStatu
 import { SERVICE_LABELS } from "../components/connections/connectionStatus";
 import { ServiceLogo } from "../components/connections/ServiceLogo";
 import { ServiceStepLabel } from "../components/connections/ServiceStepLabel";
+import { TrashIcon } from "../components/icons/TrashIcon";
 import classes from "./OnboardingStepper.module.css";
 
 const tmdbSchema = z.object({
@@ -100,6 +101,7 @@ function ClearConnectionButton({
       variant={variant}
       color="red"
       size="xs"
+      leftSection={<TrashIcon />}
       onClick={handleClear}
       loading={clear.isPending}
       w="fit-content"
@@ -780,16 +782,13 @@ function TmdbStep({
   );
 }
 
-function resolveActiveStep(
-  connections: ConnectionSummary[],
-  mode: "onboarding" | "settings",
-) {
+function resolveActiveStep(connections: ConnectionSummary[], needsConnections: boolean) {
   for (let index = 0; index < SERVICE_ORDER.length; index += 1) {
     const service = SERVICE_ORDER[index];
     const row = connections.find((item) => item.service === service);
     if (!row || row.status !== "ok") return index;
   }
-  if (mode === "onboarding") return SERVICE_ORDER.length;
+  if (needsConnections) return SERVICE_ORDER.length;
   return 0;
 }
 
@@ -810,8 +809,8 @@ function FinishedStep({
     <Stack gap="md">
       <Alert color="green" title="All services connected">
         <Text size="sm">
-          Plex, Trakt, Letterboxd, and TMDB are configured. You can manage connections
-          anytime from the dashboard.
+          Plex, Trakt, Letterboxd, and TMDB are configured. You can manage them anytime
+          from Connections in the nav.
         </Text>
       </Alert>
       <Group gap="xs">
@@ -826,11 +825,7 @@ function FinishedStep({
   );
 }
 
-interface OnboardingPageProps {
-  mode?: "onboarding" | "settings";
-}
-
-export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
+export function ConnectionsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const statusQuery = useQuery({
@@ -839,19 +834,24 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
   });
 
   const [active, setActive] = useState(0);
-  const prevModeRef = useRef(mode);
+  const prevNeedsConnectionsRef = useRef<boolean | undefined>(undefined);
+
+  const needsConnections = statusQuery.data?.needs_connections === true;
 
   useEffect(() => {
     if (!statusQuery.data) return;
-    const modeChanged = prevModeRef.current !== mode;
-    prevModeRef.current = mode;
-    const step = resolveActiveStep(statusQuery.data.connections, mode);
+    const needsChanged = prevNeedsConnectionsRef.current !== statusQuery.data.needs_connections;
+    prevNeedsConnectionsRef.current = statusQuery.data.needs_connections;
+    const step = resolveActiveStep(
+      statusQuery.data.connections,
+      statusQuery.data.needs_connections,
+    );
     setActive((current) => {
-      if (mode === "onboarding" && current === SERVICE_ORDER.length) return current;
-      if (mode === "settings" && !modeChanged) return current;
+      if (current === SERVICE_ORDER.length) return current;
+      if (!statusQuery.data.needs_connections && !needsChanged) return current;
       return step;
     });
-  }, [statusQuery.data, mode]);
+  }, [statusQuery.data]);
 
   function refreshStatus() {
     void queryClient.invalidateQueries({ queryKey: ["connections", "status"] });
@@ -900,11 +900,11 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
 
   return (
     <Stack gap="md" maw={640}>
-      <Title order={3}>
-        {mode === "onboarding" ? "Connect your services" : "Manage connections"}
-      </Title>
+      <Title order={3}>{needsConnections ? "Connect your services" : "Connections"}</Title>
       <Text c="dimmed" size="sm">
-        Configure Plex, Trakt, Letterboxd, and TMDB before running sync jobs.
+        {needsConnections
+          ? "Configure Plex, Trakt, Letterboxd, and TMDB before running sync jobs."
+          : "Manage Plex, Trakt, Letterboxd, and TMDB credentials for sync jobs."}
       </Text>
 
       <Group gap="xs">
@@ -913,11 +913,12 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
         ))}
       </Group>
 
-      {mode === "settings" && hasConfiguredConnections ? (
+      {!needsConnections && hasConfiguredConnections ? (
         <Group justify="flex-end">
           <Button
             variant="outline"
             color="red"
+            leftSection={<TrashIcon />}
             onClick={handleClearAll}
             loading={clearAll.isPending}
           >
@@ -995,7 +996,7 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
             connection={connectionFor("tmdb")}
             onSaved={() => {
               refreshStatus();
-              if (mode === "onboarding") {
+              if (needsConnections) {
                 setActive(SERVICE_ORDER.length);
               }
             }}
@@ -1003,7 +1004,7 @@ export function OnboardingPage({ mode = "onboarding" }: OnboardingPageProps) {
           />
         </Stepper.Step>
 
-        {mode === "onboarding" ? (
+        {needsConnections ? (
           <Stepper.Completed>
             <FinishedStep connections={connections} onGoToDashboard={handleGoToDashboard} />
           </Stepper.Completed>

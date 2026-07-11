@@ -5,6 +5,7 @@ import { ApiError } from "../../api/client";
 import type { ConnectionTestResult } from "../../api/connections";
 import { StatusCheckIcon } from "./StatusCheckIcon";
 import { StatusXIcon } from "./StatusXIcon";
+import { TestConnectionIcon } from "./TestConnectionIcon";
 import classes from "./connectionTestFeedback.module.css";
 
 export type ConnectionTestStatus = "idle" | "success" | "error";
@@ -93,8 +94,13 @@ export function TestConnectionButton({
       data-status={testStatus}
       leftSection={
         <span className={classes.iconSlot}>
-          {testStatus === "success" ? <StatusCheckIcon size={16} /> : null}
-          {testStatus === "error" ? <StatusXIcon size={16} /> : null}
+          {testStatus === "success" ? (
+            <StatusCheckIcon size={16} />
+          ) : testStatus === "error" ? (
+            <StatusXIcon size={16} />
+          ) : (
+            <TestConnectionIcon size={16} />
+          )}
         </span>
       }
       onClick={onClick}
