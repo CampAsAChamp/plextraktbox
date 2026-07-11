@@ -22,7 +22,6 @@ dependencies = [
     "python-multipart>=0.0.18",
     "structlog>=24.4",
     "httpx>=0.28",
-    "aiosmtplib>=3.0",
     "sse-starlette>=2.1",
     # third-party service clients
     "plexapi>=4.16",
