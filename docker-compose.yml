@@ -6,13 +6,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      PLEXTRAKTBOX_ENV: prod
+      ENV: prod
       # REQUIRED in prod. Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"
-      PLEXTRAKTBOX_SECRET_KEY: ${PLEXTRAKTBOX_SECRET_KEY:?set PLEXTRAKTBOX_SECRET_KEY in .env}
-      PLEXTRAKTBOX_DATA_DIR: /data
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:?set TRAKT_CLIENT_ID in .env}
+      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:?set TRAKT_CLIENT_SECRET in .env}
+      DATA_DIR: /data
     volumes:
-      - plextraktbox_data:/data
+      - ./data:/data
     restart: unless-stopped
-
-volumes:
-  plextraktbox_data:

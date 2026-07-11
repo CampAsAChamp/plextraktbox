@@ -18,8 +18,8 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/zscaler-root-ca.pem \
     PIP_CERT=/etc/ssl/certs/zscaler-root-ca.pem
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PLEXTRAKTBOX_ENV=prod \
-    PLEXTRAKTBOX_DATA_DIR=/data
+    ENV=prod \
+    DATA_DIR=/data
 
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
