@@ -50,10 +50,13 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | 4 | Jobs, runs, scheduler | [phase-4-test-plan.md](phase-4-test-plan.md) | Done |
 | 5 | Logging pipeline + live viewer | [phase-5-test-plan.md](phase-5-test-plan.md) | Done |
 | 6 | Notifications | [phase-6-test-plan.md](phase-6-test-plan.md) | Done |
-| 7 | Hardening + e2e smoke | — | TBD when phase lands |
-| 8 | TrueNAS personal install | — | TBD when phase lands |
-| 9 | TrueNAS App Catalog | — | TBD when phase lands |
-| 10 | Doppler secret management (dev/CI) | — | TBD when phase lands |
+| 7 | Client-backed sources (movies) | [phase-7-test-plan.md](phase-7-test-plan.md) | Next |
+| 8 | Settings, safety & operations | — | TBD when phase lands |
+| 9 | Dashboard & scheduling UX | — | TBD when phase lands |
+| 10 | TV sync (shows + episodes) | — | TBD when phase lands |
+| 11 | TrueNAS personal install | — | TBD when phase lands |
+| 12 | TrueNAS App Catalog | — | TBD when phase lands |
+| 13 | Doppler secret management (dev/CI) | — | TBD when phase lands |
 
 When a phase is implemented, copy [phase-test-plan-template.md](phase-test-plan-template.md),
 fill in the checklist, add a row link above, and link it from the phase line in PLAN.md.
