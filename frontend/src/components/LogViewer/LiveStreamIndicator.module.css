@@ -1,0 +1,113 @@
+.dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.dotCore {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dotRing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dotGreen .dotCore {
+  background-color: var(--mantine-color-green-6);
+}
+
+.dotGreen .dotRing {
+  background-color: var(--mantine-color-green-5);
+}
+
+.dotYellow .dotCore {
+  background-color: var(--mantine-color-yellow-6);
+}
+
+.dotYellow .dotRing {
+  background-color: var(--mantine-color-yellow-5);
+}
+
+.dotGray .dotCore {
+  background-color: var(--mantine-color-gray-6);
+}
+
+.animateRing {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+.animateCore {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+.accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mantine-color-green-6);
+  border-radius: 8px 8px 0 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.animateAccent {
+  animation: live-bar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes live-bar-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animateRing,
+  .animateCore,
+  .animateAccent {
+    animation: none;
+  }
+}

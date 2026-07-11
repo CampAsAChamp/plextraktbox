@@ -2,12 +2,10 @@ import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title } from "@m
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { getRun } from "../api/runs";
+import { LogViewer } from "../components/LogViewer/LogViewer";
+import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
+import { formatDateTime } from "../utils/dateTimeFormat";
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "../components/runs/RunBadges";
-
-function formatWhen(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString();
-}
 
 const SUMMARY_LABELS: Record<string, string> = {
   matched: "Matched",
@@ -24,6 +22,7 @@ export function RunDetailPage() {
   const { runId } = useParams();
   const location = useLocation();
   const id = Number(runId);
+  const { preferences } = useDisplayPreferences();
   const backTo =
     typeof (location.state as { from?: unknown } | null)?.from === "string"
       ? (location.state as { from: string }).from
@@ -33,6 +32,7 @@ export function RunDetailPage() {
     queryKey: ["runs", id],
     queryFn: () => getRun(id),
     enabled: Number.isFinite(id),
+    refetchInterval: (query) => (query.state.data?.status === "running" ? 2000 : false),
   });
 
   if (!Number.isFinite(id)) {
@@ -79,10 +79,10 @@ export function RunDetailPage() {
           <strong>Job:</strong> {run.job_name ?? `#${run.job_id}`}
         </Text>
         <Text>
-          <strong>Started:</strong> {formatWhen(run.started_at)}
+          <strong>Started:</strong> {formatDateTime(run.started_at, preferences)}
         </Text>
         <Text>
-          <strong>Finished:</strong> {formatWhen(run.finished_at)}
+          <strong>Finished:</strong> {formatDateTime(run.finished_at, preferences)}
         </Text>
       </Stack>
 
@@ -106,9 +106,10 @@ export function RunDetailPage() {
         </SimpleGrid>
       </Stack>
 
-      <Text c="dimmed" size="sm">
-        Live log streaming arrives in Phase 5. For now, check backend logs for run output.
-      </Text>
+      <Stack gap="xs">
+        <Text fw={500}>Logs</Text>
+        <LogViewer runId={run.id} isLive={run.status === "running"} />
+      </Stack>
     </Stack>
   );
 }
