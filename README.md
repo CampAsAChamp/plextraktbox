@@ -151,11 +151,11 @@ The intended install target is a **TrueNAS SCALE** box, not just any Docker host
 * Expose a single HTTP port (8000) — no host networking, no privileged mode, no Docker-socket access, so it drops cleanly into TrueNAS's app UI.
 * Respect the dataset's permission model: if the app needs a specific `PUID`/`PGID` to write to the mounted dataset, that's configured the same way other self-hosted TrueNAS apps handle it.
 
-This isn't wired up yet — it's a deployment milestone (Phase 8) that follows once jobs, the scheduler, and logging are in place, but the container has been kept dependency-free (single image, SQLite, one port) from Phase 0 specifically so this drops in without rework.
+This isn't wired up yet — it's a deployment milestone (Phase 11) that follows once jobs, the scheduler, logging, and live sync are in place, but the container has been kept dependency-free (single image, SQLite, one port) from Phase 0 specifically so this drops in without rework.
 
-### Getting into the TrueNAS App Catalog (Phase 9, later)
+### Getting into the TrueNAS App Catalog (Phase 12, later)
 
-Running the container on the user's own box (Phase 8) is a separate milestone from getting `plextraktbox` **listed in the TrueNAS App Catalog** so it can be installed like any official/community app. That's a heavier, later effort with its own steps:
+Running the container on the user's own box (Phase 11) is a separate milestone from getting `plextraktbox` **listed in the TrueNAS App Catalog** so it can be installed like any official/community app. That's a heavier, later effort with its own steps:
 
 1. Package the app per TrueNAS SCALE's current app spec (a chart/`app.yaml`-style app definition with a config schema), not just a raw Docker image — check the current SCALE app format when this phase starts, since it has changed across releases.
 2. Expose the user-configurable options (HTTP port, `/data` dataset path, `SECRET_KEY`, etc.) through that config schema so they render as real fields in the TrueNAS app UI.
@@ -163,7 +163,7 @@ Running the container on the user's own box (Phase 8) is a separate milestone fr
 4. Submit to the official community catalog (via their contribution process) or stand up a self-hosted custom catalog added by URL — whichever fits — and confirm the current submission/review requirements at the time, since catalog mechanics are a moving target.
 5. Verify the app installs and behaves correctly from the catalog on a clean TrueNAS instance.
 
-Don't start this until Phase 8 (the personal install) has been running successfully for a while — publishing before the app is proven on real hardware is premature.
+Don't start this until Phase 11 (the personal install) has been running successfully for a while — publishing before the app is proven on real hardware is premature.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -192,13 +192,16 @@ The app is built incrementally; each phase is independently runnable and testabl
 - [x] **Phase 1 — Auth + wizard** — single local user, sessions, setup gate
 - [x] **Phase 2 — Connections** — Plex, Trakt, Letterboxd, TMDB connection flows
 - [x] **Phase 3 — Sync engine core** — matching, reconcilers, dry-run engine
-- [ ] **Phase 4 — Jobs + runs + scheduler** — job CRUD, APScheduler, run history UI
+- [x] **Phase 4 — Jobs + runs + scheduler** — job CRUD, APScheduler, run history UI
 - [x] **Phase 5 — Logging pipeline + live viewer** — structlog, SSE, LogViewer
 - [x] **Phase 6 — Notifications** — Discord, in-app alerts
-- [ ] **Phase 7 — Hardening** — retention, CI, polish, OpenAPI → TS types
-- [ ] **Phase 8 — TrueNAS deployment (personal install)** — real install on user's box
-- [ ] **Phase 9 — TrueNAS App Catalog publication** — packaged app + public image
-- [ ] **Phase 10 — Doppler secret management** — optional maintainer dev/CI workflow
+- [ ] **Phase 7 — Client-backed sources (movies)** — real Plex/Trakt/Letterboxd fetch + apply, library scoping, caching
+- [ ] **Phase 8 — Settings, safety & operations** — global settings, dry-run guards, health, backup, CI
+- [ ] **Phase 9 — Dashboard & scheduling UX** — ops dashboard, schedule picker, clone/export
+- [ ] **Phase 10 — TV sync** — shows and episodes
+- [ ] **Phase 11 — TrueNAS deployment (personal install)** — GHCR image, reverse proxy docs, real install
+- [ ] **Phase 12 — TrueNAS App Catalog publication** — packaged app + public image
+- [ ] **Phase 13 — Doppler secret management** — optional maintainer dev/CI workflow
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

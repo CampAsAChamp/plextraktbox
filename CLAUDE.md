@@ -76,7 +76,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–5 are done; Phase 6 (notifications) is next.
+See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–6 are done; **Phase 7 (client-backed sources, movies)** is next, followed by settings/safety (8), dashboard UX (9), and TV sync (10).
 
 When a phase lands, add/update its test plan under `docs/` and link from PLAN.md.
 

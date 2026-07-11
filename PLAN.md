@@ -33,10 +33,10 @@ Dockerfile/compose/entrypoint so there's no retrofit later.
 
 **Two distinct milestones, in order — don't conflate them:**
 
-1. **Phase 8 (personal install):** run the built image on the user's own TrueNAS box via the custom-app /
+1. **Phase 11 (personal install):** run the built image on the user's own TrueNAS box via the custom-app /
   "Launch Docker Image" flow. No catalog involvement — just a working container + dataset mount on one
    machine. This is the near-term goal.
-2. **Phase 9 (catalog publication):** get `plextraktbox` actually listed in the **TrueNAS App Catalog** so
+2. **Phase 12 (catalog publication):** get `plextraktbox` actually listed in the **TrueNAS App Catalog** so
   it can be installed like any official/community app. A separate, heavier lift:
   - Package the app per TrueNAS SCALE's current app spec (a chart/`app.yaml`-style app definition with a
   config schema) rather than just a raw Docker image — check the current SCALE app format when this
@@ -50,7 +50,7 @@ Dockerfile/compose/entrypoint so there's no retrofit later.
   submission process/requirements at the time, since catalog mechanics are a moving target.
   - Go through whatever review/validation TrueNAS requires before the app is listed and installable from
   the catalog UI.
-  - Only start once Phase 8 has been running successfully for a while — publishing before the app is
+  - Only start once Phase 11 has been running successfully for a while — publishing before the app is
   proven on real hardware is premature.
 
 
@@ -127,12 +127,12 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 
 - **user** — username, email, password_hash(bcrypt); single row enforced in app. Profile image derived from email via [Gravatar](https://gravatar.com) (`avatar_url` on auth responses).
 - **connection** — service(plex|trakt|letterboxd|tmdb), status, `config_json`(non-secret: urls/usernames/libraries), `secret_enc`(tokens/password/api key), `token_expires_at`.
-- **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json?`.
+- **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `require_dry_run_first?`, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json?`, `exclude_ids_json?`(optional per-job TMDB/IMDb ignore list).
 - **job_run** — job_id, trigger(scheduled|manual), dry_run, status(running|success|failed|partial), started/finished_at, `summary_json`, error.
 - **log_entry** — run_id(indexed), ts, level, logger, message, `context_json`; index `(run_id,id)` for paging + stream cursor.
 - **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
-- **setting** — key/value_json (default cron, log_retention_days, global dry-run). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention job prunes old logs/runs.
+- **setting** — key/value_json (default cron, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention job prunes old logs/runs.
 
 
 
@@ -162,8 +162,8 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - 3rd-party tokens Fernet-encrypted in `connection.secret_enc`, decrypted only in memory. bcrypt for local password.
 - Starlette SessionMiddleware (HttpOnly, SameSite=Lax, Secure over HTTPS); auth dependency gates all routes except `/api/setup/*` (self-disables once a user exists) and `/api/health`; require `X-Requested-With` on mutating requests (CSRF).
 - Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
-- structlog redaction processor scrubs token/password-shaped values before persist/stream. Document running behind a reverse proxy for TLS.
-- **Planned (Phase 10):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
+- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in Phase 11 (TrueNAS personal install).
+- **Planned (Phase 13):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
 
 
 
@@ -179,10 +179,13 @@ Each phase is independently runnable/testable. Check off as completed.
 - [x] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. → [test plan](docs/phase-4-test-plan.md)
 - [x] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. → [test plan](docs/phase-5-test-plan.md)
 - [x] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/inapp, per-job override + global, test buttons, in-app bell. → [test plan](docs/phase-6-test-plan.md)
-- [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, **GitHub Actions CI** (restore `.github/workflows/ci.yml`: backend ruff/mypy/pytest, frontend typecheck/vitest/build; fix current failures; mirror `mise run check`), polish. **Gravatar:** `avatar_url` on `UserResponse` (MD5 of normalized email → identicon fallback); navbar account menu shows avatar + email; future Settings controls for Gravatar default style (`d=`) or custom avatar URL override. *(test plan: TBD)*
-- [ ] **Phase 8 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount, document the "Launch Docker Image" / custom-app setup in the README, do a real install on the user's TrueNAS box end to end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
-- [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while. *(test plan: TBD)*
-- [ ] **Phase 10 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
+- [ ] **Phase 7 — Client-backed sources (movies)** — replace in-memory source stubs with real fetch/apply via `clients/` + decrypted `connection` secrets; `source_factory` wires config per job; TMDB for GUID resolution; **Plex library scoping** (library picker in Connections, stored in `config_json`, honored by `PlexSource`); **HTTP caching** (`requests-cache` SQLite backend for client HTTP); **pre-flight check** before run (required connections `ok`, clear error before `JobRun` is created); **unmatched items report** (`RunSummary` + run-detail panel for items with no cross-service match). Unit tests stay on fakes + respx mapping tests; manual dry-run shows non-zero fetch/plan counts. → [test plan](docs/phase-7-test-plan.md)
+- [ ] **Phase 8 — Settings, safety & operations** — **`setting` table** + Settings UI (default cron, `log_retention_days`, **global dry-run default**); runner resolves `override ?? job.dry_run ?? global`; **first run must be dry-run** (per-job `require_dry_run_first` blocks live apply until ≥1 successful dry-run exists); **exclude/ignore list** (global in settings + optional per-job override by TMDB/IMDb id); **connection health monitoring** (scheduled `test_connection()` job, update status, optional notification on `needs_reauth`); log **retention** pruning job; **richer `/health`** (version, scheduler alive, DB writable, connection status summary); **SQLite backup** (Settings download + README note for ZFS snapshots); **password change** in Settings; structlog redaction audit, error surfaces; **GitHub Actions CI** (restore `.github/workflows/ci.yml`, mirror `mise run check`); OpenAPI→TS types; e2e smoke; Gravatar settings polish. *(test plan: TBD)*
+- [ ] **Phase 9 — Dashboard & scheduling UX** — **dashboard ops view** (per-job last run status + summary counts, failure/partial alerts, quick Run / Dry-run once); **next scheduled run** (APScheduler next-fire-time API + Jobs/Dashboard display in user timezone); **friendly schedule picker** (presets like "Daily 3am" → cron, advanced raw cron still available); **cron preview in local time** (next N run times under cron field); **clone job**; **export run logs** (download `.txt` / `.jsonl` from run detail). *(test plan: TBD)*
+- [ ] **Phase 10 — TV sync** — extend client-backed sources + reconcilers for **shows and episodes** (watchlist, ratings, watched/history where each service supports it); episode-level Trakt↔Plex watched matching; Letterboxd remains film-focused (read-only). Builds on Phase 7 movie path — prove movies on real data first. *(test plan: TBD)*
+- [ ] **Phase 11 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount; **publish versioned container image to GHCR** (tagged releases for pull-without-build install); document **reverse proxy / TLS** (Caddy or Traefik example behind TrueNAS app); document "Launch Docker Image" / custom-app setup in README; real install end-to-end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
+- [ ] **Phase 12 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 11 has run successfully for a while. *(test plan: TBD)*
+- [ ] **Phase 13 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
 
 
 
@@ -199,14 +202,15 @@ and the table in `testing.md`.
 
 - **Container (default):** `mise run up` → http://localhost:8000
 - **Local dev (hot reload):** `mise run dev-backend` + `mise run dev-frontend` (two terminals)
-- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions is restored in Phase 7)
+- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions is restored in Phase 8)
 - **Sync engine (Phase 3+):** fakes in `tests/fakes/` via `SyncContext` (no network); assert
   source-of-truth per data type; dry-run = zero writes
 - **HTTP/time:** `respx`, `freezegun`
 - **API:** httpx AsyncClient + in-memory SQLite
 - **Frontend:** vitest + RTL (+ MSW where needed)
-- **TrueNAS (Phases 8–9):** real hardware / catalog install — documented in those phase test plans
-- **Doppler (Phase 10):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
+- **Client-backed sources (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
+- **TrueNAS (Phases 11–12):** real hardware / catalog install — documented in those phase test plans
+- **Doppler (Phase 13):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
 
 
 
