@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field, field_validator
 
+from plextraktbox.utils.gravatar import gravatar_url
+
 if TYPE_CHECKING:
     from plextraktbox.models.user import User
 
@@ -39,9 +41,15 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    avatar_url: str
 
     @classmethod
     def from_user(cls, user: User) -> UserResponse:
         if user.id is None:
             raise ValueError("user has no id")
-        return cls(id=user.id, username=user.username, email=user.email)
+        return cls(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            avatar_url=gravatar_url(user.email),
+        )

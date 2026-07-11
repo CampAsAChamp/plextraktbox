@@ -75,10 +75,12 @@ def test_login_and_me(client: TestClient) -> None:
     )
     assert login.status_code == 200
     assert login.json()["username"] == "nick"
+    assert login.json()["avatar_url"].endswith("484f70e21a3d3480e013519f8236bb86?s=80&d=identicon")
 
     me = client.get("/api/auth/me")
     assert me.status_code == 200
     assert me.json()["email"] == "nick@example.com"
+    assert me.json()["avatar_url"].endswith("484f70e21a3d3480e013519f8236bb86?s=80&d=identicon")
 
 
 def test_login_with_email(client: TestClient) -> None:
