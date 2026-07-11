@@ -21,9 +21,22 @@ services:
       LOG_FORMAT: console
       FORCE_COLOR: "1"
       DATA_DIR: /data
-      SECRET_KEY: ${SECRET_KEY:-dev}
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
       TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
+      # Bind mounts on macOS/Podman often miss fs events; poll so uvicorn --reload works.
+      WATCHFILES_FORCE_POLLING: "true"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 15s
 
   frontend:
     build:
@@ -40,7 +53,8 @@ services:
       VITE_API_PROXY_TARGET: http://backend:8000
       FORCE_COLOR: "1"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   frontend_node_modules:

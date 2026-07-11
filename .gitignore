@@ -17,7 +17,6 @@ backend/plextraktbox/static/
 
 # Runtime data (SQLite DB, caches)
 data/
-backend/data/
 
 # Secrets / env
 .env

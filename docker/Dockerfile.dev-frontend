@@ -8,6 +8,8 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+COPY docker/entrypoint-dev-frontend.sh /entrypoint-dev-frontend.sh
+RUN chmod +x /entrypoint-dev-frontend.sh
 
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+ENTRYPOINT ["/entrypoint-dev-frontend.sh"]
