@@ -9,10 +9,110 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from typing import cast
 
 import structlog
+from structlog.dev import Column, ConsoleRenderer, KeyValueColumnFormatter
 
 from plextraktbox.config import get_settings
+
+_LEVEL_LABELS = {
+    "critical": "CRITICAL",
+    "exception": "ERROR",
+    "error": "ERROR",
+    "warning": "WARN",
+    "warn": "WARN",
+    "info": "INFO",
+    "debug": "DEBUG",
+    "notset": "NOTSET",
+}
+
+
+class _UppercaseLogLevelFormatter:
+    """Format log levels as compact uppercase labels ([INFO], [WARN], ...)."""
+
+    def __init__(self, level_styles: dict[str, str], reset_style: str) -> None:
+        self._level_styles = level_styles
+        self._reset_style = reset_style
+
+    def __call__(self, key: str, value: object) -> str:
+        raw = cast(str, value).lower()
+        label = _LEVEL_LABELS.get(raw, raw.upper())
+        style = self._level_styles.get(raw, "")
+        return f"[{style}{label}{self._reset_style}]"
+
+
+def _strip_logger_prefix(
+    _logger: object, _method: str, event_dict: structlog.types.EventDict
+) -> structlog.types.EventDict:
+    for key in ("logger", "logger_name"):
+        name = event_dict.get(key)
+        if isinstance(name, str) and name.startswith("plextraktbox."):
+            event_dict[key] = name.removeprefix("plextraktbox.")
+    return event_dict
+
+
+def _repr_value(val: object) -> str:
+    if isinstance(val, str):
+        if set(val) & {" ", "\t", "=", "\r", "\n", '"', "'"}:
+            return repr(val)
+        return val
+    return repr(val)
+
+
+def _console_renderer(*, colors: bool) -> ConsoleRenderer:
+    styles = ConsoleRenderer.get_default_column_styles(colors)
+    level_styles = ConsoleRenderer.get_default_level_styles(colors)
+    for key in level_styles:
+        level_styles[key] += styles.bright
+
+    logger_name_formatter = KeyValueColumnFormatter(
+        key_style=None,
+        value_style=styles.bright + styles.logger_name,
+        reset_style=styles.reset,
+        value_repr=str,
+        prefix="[",
+        postfix="]",
+    )
+
+    default_formatter = KeyValueColumnFormatter(
+        styles.kv_key,
+        styles.kv_value,
+        styles.reset,
+        value_repr=_repr_value,
+        width=0,
+    )
+
+    return ConsoleRenderer(
+        columns=[
+            Column("", default_formatter),
+            Column(
+                "timestamp",
+                KeyValueColumnFormatter(
+                    key_style=None,
+                    value_style=styles.timestamp,
+                    reset_style=styles.reset,
+                    value_repr=str,
+                ),
+            ),
+            Column(
+                "level",
+                _UppercaseLogLevelFormatter(level_styles, styles.reset),
+            ),
+            Column(
+                "event",
+                KeyValueColumnFormatter(
+                    key_style=None,
+                    value_style=styles.bright,
+                    reset_style=styles.reset,
+                    value_repr=str,
+                    width=30,
+                ),
+            ),
+            Column("logger", logger_name_formatter),
+            Column("logger_name", logger_name_formatter),
+        ],
+    )
 
 
 def _resolve_log_format(settings: object) -> str:
@@ -44,6 +144,7 @@ def configure_logging() -> None:
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
+        _strip_logger_prefix,
         timestamper,
         structlog.processors.StackInfoRenderer(),
         structlog.stdlib.ExtraAdder(),
@@ -52,7 +153,7 @@ def configure_logging() -> None:
     if log_format == "json":
         renderer: structlog.types.Processor = structlog.processors.JSONRenderer()
     else:
-        renderer = structlog.dev.ConsoleRenderer(colors=use_colors)
+        renderer = _console_renderer(colors=use_colors)
 
     structlog.configure(
         processors=[
