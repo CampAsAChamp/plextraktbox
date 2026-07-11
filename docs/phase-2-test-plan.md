@@ -9,15 +9,15 @@ clients with `test_connection()`, Plex/Trakt/Letterboxd/TMDB setup steps, re-aut
 
 ```bash
 mise run test-backend    # tests/api/test_connections.py, tests/unit/test_security.py
-mise run test-frontend   # frontend/src/App.test.tsx (onboarding gate)
+mise run test-frontend   # frontend/src/App.test.tsx (connections gate)
 # or: mise run test
 mise run check           # CI parity before marking phase done
 ```
 
 Covers: connection status endpoint, Fernet round-trip, TMDB/Plex/Letterboxd/Trakt save flows
-(mocked HTTP), Trakt device OAuth poll, `needs_connections` gate, onboarding redirect.
+(mocked HTTP), Trakt device OAuth poll, `needs_connections` gate, connections redirect.
 
-## 2. Container — onboarding wizard
+## 2. Container — connections wizard
 
 After Phase 1 user setup and login:
 
@@ -27,7 +27,7 @@ mise run up
 
 Open http://localhost:5173 (Vite dev UI; API is proxied to :8000) and verify:
 
-1. Sign in → redirected to `/onboarding` ("Connect your services")
+1. Sign in → redirected to `/connections` ("Connect your services")
 2. Step through Plex → Trakt → Letterboxd → TMDB (use real credentials or test endpoints). Trakt env vars must be set in `.env` before the Trakt step.
 3. Plex step shows authorization link + PIN code; polls until authorized and auto-discovers your server
 4. Trakt step shows device code + verification URL; polls until authorized
@@ -66,7 +66,7 @@ mise run down-v
 mise run up
 ```
 
-Re-run setup (Phase 1 user) then onboarding. Local dev: `mise run clean-data && mise run db-upgrade`.
+Re-run setup (Phase 1 user) then connections wizard. Local dev: `mise run clean-data && mise run db-upgrade`.
 
 ## 5. Notes
 

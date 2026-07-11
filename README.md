@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/CampAsAChamp/plextraktbox">
-    <img src="imgs/logo.png" alt="plextraktbox logo" width="200" height="200">
+    <img src="docs/imgs/logo.png" alt="plextraktbox logo" width="200" height="200">
   </a>
 
   <h3 align="center">plextraktbox</h3>
@@ -94,7 +94,7 @@ Target deployment environment is **TrueNAS SCALE** via its custom-app / "Launch 
 
 ### Prerequisites
 
-* [mise](https://mise.jdx.dev/getting-started.html) — pins Python 3.14 and Node 24 and defines project tasks
+* [mise](https://mise.jdx.dev/getting-started.html) — pins Python 3.14, Node 24, and jq and defines project tasks
 * [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) — for container workflows (`mise run up`, `mise run up-dev`)
 
 ### Quick Start (Container)
@@ -135,7 +135,7 @@ mise run dev-backend         # terminal 1 — uvicorn on :8000
 mise run dev-frontend        # terminal 2 — Vite on :5173
 ```
 
-`mise` sets `SECRET_KEY` and `DATA_DIR` automatically. Open the Vite URL (usually http://localhost:5173) for the dev SPA. Both backend and frontend must be running for the health badge to go green.
+Native dev and docker both use `./data` at the repo root (`DATA_DIR` in `.env`). Open the Vite URL (usually http://localhost:5173) for the dev SPA. Both backend and frontend must be running for the health badge to go green.
 
 Do not run `up` and `up-dev` at the same time — they both bind port 8000.
 

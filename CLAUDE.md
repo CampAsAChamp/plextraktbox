@@ -37,8 +37,10 @@ docs/            phase test plans + testing guide
 
 ## Commands
 
+Task groups are shown in `mise tasks` descriptions as `[META]`, `[LOCAL]`, `[DOCKER-PROD]` (production container), and `[DOCKER-DEV]` (dev containers with hot reload).
+
 ```bash
-mise trust && mise install   # first clone
+mise trust && mise install   # first clone — installs tool versions only
 mise run install             # backend venv + frontend deps
 mise run dev-backend         # uvicorn :8000 (terminal 1)
 mise run dev-frontend        # Vite :5173 (terminal 2)
@@ -46,6 +48,7 @@ mise run up-dev              # container dev with hot reload
 mise run test                # pytest + vitest
 mise run check               # lint + typecheck + tests (CI parity)
 mise run db-upgrade          # apply Alembic migrations
+mise run up                  # production container on :8000
 ```
 
 Do not run `up` and `up-dev` simultaneously — both bind port 8000.
@@ -73,7 +76,7 @@ Personal repo — plain imperative commit subjects (no conventional commits unle
 
 ## Phase progress
 
-See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–3 are done; Phase 4 (jobs + scheduler UI) is next.
+See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–4 are done; Phase 5 (logging pipeline + live viewer) is next.
 
 When a phase lands, add/update its test plan under `docs/` and link from PLAN.md.
 

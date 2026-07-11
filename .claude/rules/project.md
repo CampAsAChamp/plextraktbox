@@ -12,6 +12,8 @@ Python 3.14 + FastAPI (backend), React 18 + Vite + Mantine (frontend). Tooling v
 
 ## Commands
 
+Task groups appear in `mise tasks` as `[META]`, `[LOCAL]`, `[DOCKER-PROD]` (prod container), and `[DOCKER-DEV]` (dev containers).
+
 ```bash
 mise run install       # deps
 mise run dev-backend   # :8000

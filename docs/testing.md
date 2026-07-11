@@ -47,7 +47,7 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | 1 | Auth, sessions, setup wizard | [phase-1-test-plan.md](phase-1-test-plan.md) | Done |
 | 2 | Connections + wizard steps | [phase-2-test-plan.md](phase-2-test-plan.md) | Done |
 | 3 | Sync engine core + dry-run | [phase-3-test-plan.md](phase-3-test-plan.md) | Done |
-| 4 | Jobs, runs, scheduler | — | TBD when phase lands |
+| 4 | Jobs, runs, scheduler | [phase-4-test-plan.md](phase-4-test-plan.md) | Done |
 | 5 | Logging pipeline + live viewer | — | TBD when phase lands |
 | 6 | Notifications | — | TBD when phase lands |
 | 7 | Hardening + e2e smoke | — | TBD when phase lands |
@@ -94,8 +94,8 @@ mise run api-login
 To skip prompts, add to your gitignored `.env` (see `.env.example`):
 
 ```bash
-PLEXTRAKTBOX_API_USER=nick
-PLEXTRAKTBOX_API_PASSWORD=your-password
+DEV_USER=nick
+DEV_PASSWORD=your-password
 ```
 
 Then `mise run api-login` reads those vars automatically. Use the saved jar on later curls:
@@ -103,3 +103,31 @@ Then `mise run api-login` reads those vars automatically. Use the saved jar on l
 ```bash
 curl -s -b cookies.txt http://localhost:8000/api/jobs
 ```
+
+## Dev bootstrap (after wiping `./data`)
+
+After `mise run down-v`, `mise run clean-data`, or `mise run rebuild`, skip the setup wizard by
+seeding from your gitignored `.env`:
+
+1. **Once**, after configuring connections in the UI, capture secrets into `.env`:
+
+   ```bash
+   mise run dev-export-secrets >> .env   # review before saving; password must be set manually
+   ```
+
+   Export reads `DATA_DIR` from `.env` (use `./data` for docker dev). It logs which database
+   file it opened. If you previously ran docker when mise forced `SECRET_KEY=dev`, run
+   `mise run dev-reencrypt-secrets` once so tokens match your `.env` key, then export again.
+
+2. Ensure `DEV_USER`, `DEV_PASSWORD`, and any connection vars you need
+   are in `.env` (see `.env.example`).
+
+3. Start the app, then bootstrap:
+
+   ```bash
+   mise run up-dev          # or dev-backend / up
+   mise run dev-bootstrap   # creates user, logs in, saves connections, writes cookies.txt
+   ```
+
+Use `mise run dev-bootstrap -- --force` to re-save connections even when they already show `ok`.
+Use `mise run dev-bootstrap -- --wait 60` if the API is slow to start.
