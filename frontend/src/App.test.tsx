@@ -74,11 +74,16 @@ const nickUser = {
     "https://www.gravatar.com/avatar/484f70e21a3d3480e013519f8236bb86?s=80&d=identicon",
 };
 
+function unreadCount() {
+  return jsonResponse({ unread_count: 0 });
+}
+
 test("redirects to connections when setup is incomplete", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
     .mockResolvedValueOnce(jsonResponse(nickUser))
-    .mockResolvedValueOnce(connectionsPending());
+    .mockResolvedValueOnce(connectionsPending())
+    .mockResolvedValue(unreadCount());
 
   renderWithProviders(<App />);
 
@@ -92,7 +97,8 @@ test("shows dashboard when setup is complete and session is present", async () =
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
     .mockResolvedValueOnce(jsonResponse(nickUser))
     .mockResolvedValueOnce(connectionsReady())
-    .mockResolvedValueOnce(jsonResponse({ status: "ok", version: "0.1.0" }));
+    .mockResolvedValueOnce(jsonResponse({ status: "ok", version: "0.1.0" }))
+    .mockResolvedValue(unreadCount());
 
   renderWithProviders(<App />);
 

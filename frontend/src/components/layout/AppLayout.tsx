@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { ApiHealthBadge } from "./ApiHealthBadge";
+import { NotificationBell } from "../notifications/NotificationBell";
 
 function ChevronDownIcon({ size = 14 }: { size?: number }) {
   return (
@@ -180,6 +181,7 @@ export function AppLayout({
           </Group>
           <Group gap="sm">
             <ApiHealthBadge />
+            {showLogout ? <NotificationBell /> : null}
             {showLogout && username ? (
               <Menu
                 position="bottom-end"
