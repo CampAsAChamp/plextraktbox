@@ -42,7 +42,7 @@ Dockerfile/compose/entrypoint so there's no retrofit later.
   config schema) rather than just a raw Docker image — check the current SCALE app format when this
   phase starts, since it has changed across releases.
   - Define the schema for user-configurable options (port, `/data` dataset path,
-  `PLEXTRAKTBOX_SECRET_KEY`, etc.) through TrueNAS's app config UI, not just env vars in a compose file.
+  `SECRET_KEY`, etc.) through TrueNAS's app config UI, not just env vars in a compose file.
   - Publish the container image to a public registry (e.g. GHCR) with versioned tags — a catalog entry
   can't point at a local-only image.
   - Submit to (or stand up) a TrueNAS apps catalog/train — either the official community catalog (via
@@ -158,11 +158,12 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 ## Security
 
-- `PLEXTRAKTBOX_SECRET_KEY` env (required, validated at startup) derives Fernet key + session signing key; never in DB.
+- `SECRET_KEY` env (required, validated at startup) derives Fernet key + session signing key; never in DB.
 - 3rd-party tokens Fernet-encrypted in `connection.secret_enc`, decrypted only in memory. bcrypt for local password.
 - Starlette SessionMiddleware (HttpOnly, SameSite=Lax, Secure over HTTPS); auth dependency gates all routes except `/api/setup/*` (self-disables once a user exists) and `/api/health`; require `X-Requested-With` on mutating requests (CSRF).
-- Trakt device OAuth: store refresh token, auto-refresh on expiry, surface re-auth in UI on failure.
+- Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
 - structlog redaction processor scrubs token/password-shaped values before persist/stream. Document running behind a reverse proxy for TLS.
+- **Planned (Phase 10):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
 
 
 
@@ -173,7 +174,7 @@ Each phase is independently runnable/testable. Check off as completed.
 - [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`, CI (ruff/mypy/pytest/vitest). *Verified: container boots, health OK, SPA loads (container + Vite dev + backend static).* → [test plan](docs/phase-0-test-plan.md)
 - [x] **Rename** — `media-sync` package → `plextraktbox` (package, env prefix, Docker/CI/docs).
 - [x] **Phase 1 — Auth + wizard (user)** — user model, bcrypt, sessions, auth dep, `setup/user`+`login`/`logout`, SPA setup-gate→login→dashboard. → [test plan](docs/phase-1-test-plan.md)
-- [ ] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex token + Trakt device + LB creds + TMDB key steps, re-auth UI. *(test plan: TBD — copy [template](docs/phase-test-plan-template.md))*
+- [ ] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex PIN auth + Trakt device + LB creds + TMDB key steps, re-auth UI. → [test plan](docs/phase-2-test-plan.md)
 - [ ] **Phase 3 — Sync engine core** — MediaItem/guid/matcher/plugins/sources/3 reconcilers/engine + dry-run; temporary synchronous `POST /api/jobs/{id}/run`. *Full unit coverage of matching + each source-of-truth reconciler vs fakes; dry-run = zero writes.* *(test plan: TBD)*
 - [ ] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. *(test plan: TBD)*
 - [ ] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. *(test plan: TBD)*
@@ -181,6 +182,7 @@ Each phase is independently runnable/testable. Check off as completed.
 - [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, polish. *(test plan: TBD)*
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount, document the "Launch Docker Image" / custom-app setup in the README, do a real install on the user's TrueNAS box end to end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while. *(test plan: TBD)*
+- [ ] **Phase 10 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
 
 
 
@@ -204,6 +206,7 @@ and the table in `testing.md`.
 - **API:** httpx AsyncClient + in-memory SQLite
 - **Frontend:** vitest + RTL (+ MSW where needed)
 - **TrueNAS (Phases 8–9):** real hardware / catalog install — documented in those phase test plans
+- **Doppler (Phase 10):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
 
 
 

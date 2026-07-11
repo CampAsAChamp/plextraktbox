@@ -7,7 +7,7 @@ Shared setup and mise tasks: [testing.md](testing.md).
 ## 1. Container end-to-end
 
 ```bash
-# First time only: cp .env.example .env and set PLEXTRAKTBOX_SECRET_KEY
+# First time only: cp .env.example .env and set SECRET_KEY
 
 mise run up   # or: podman compose up --build
 ```
@@ -35,7 +35,7 @@ Open the URL Vite prints (usually `http://localhost:5173`) → same shell, badge
 ```bash
 cd frontend && npm run build
 cd ../backend && source .venv/bin/activate
-PLEXTRAKTBOX_SECRET_KEY=dev PLEXTRAKTBOX_DATA_DIR=./data uvicorn plextraktbox.main:app
+SECRET_KEY=dev DATA_DIR=./data uvicorn plextraktbox.main:app
 ```
 
 Open `http://localhost:8000/` — exercises the `_mount_spa` static-file fallback, a different code path than the Vite dev proxy.

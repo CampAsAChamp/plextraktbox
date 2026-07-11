@@ -19,7 +19,7 @@ separate Vite dev server for smoke testing.
 
 ```bash
 # First time only (skip if you already have .env from Phase 0):
-# cp .env.example .env && set PLEXTRAKTBOX_SECRET_KEY
+# cp .env.example .env && set SECRET_KEY and Trakt API app credentials
 
 mise run up   # or: podman compose up --build
 ```
@@ -27,8 +27,8 @@ mise run up   # or: podman compose up --build
 Open **http://localhost:8000**.
 
 ```bash
-mise run down      # stop, keep data volume
-mise run down-v    # stop and wipe volume (fresh DB / first-run wizard)
+mise run down      # stop, keep ./data
+mise run down-v    # stop and wipe ./data (fresh DB / first-run wizard)
 mise run rebuild   # down-v + build + up
 ```
 
@@ -45,7 +45,7 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | ----- | ----- | --------- | ------ |
 | 0 | Scaffold, health, SPA shell | [phase-0-test-plan.md](phase-0-test-plan.md) | Done |
 | 1 | Auth, sessions, setup wizard | [phase-1-test-plan.md](phase-1-test-plan.md) | Done |
-| 2 | Connections + wizard steps | — | TBD when phase lands |
+| 2 | Connections + wizard steps | [phase-2-test-plan.md](phase-2-test-plan.md) | In progress |
 | 3 | Sync engine core + dry-run | — | TBD when phase lands |
 | 4 | Jobs, runs, scheduler | — | TBD when phase lands |
 | 5 | Logging pipeline + live viewer | — | TBD when phase lands |
@@ -53,13 +53,24 @@ mise run check     # lint, typecheck, and tests (CI parity)
 | 7 | Hardening + e2e smoke | — | TBD when phase lands |
 | 8 | TrueNAS personal install | — | TBD when phase lands |
 | 9 | TrueNAS App Catalog | — | TBD when phase lands |
+| 10 | Doppler secret management (dev/CI) | — | TBD when phase lands |
 
 When a phase is implemented, copy [phase-test-plan-template.md](phase-test-plan-template.md),
 fill in the checklist, add a row link above, and link it from the phase line in PLAN.md.
 
-## Local dev (two terminals)
+## Local dev (hot reload)
 
-Use only for **day-to-day frontend development** (Vite hot reload):
+For **day-to-day development** with hot reload, use either:
+
+**One terminal (container dev):**
+
+```bash
+mise run up-dev     # backend :8000 + Vite :5173, bind-mounted source
+mise run rebuild-dev # no-cache image rebuild after dependency changes
+mise run down-dev
+```
+
+**Two terminals (native, no Docker):**
 
 ```bash
 mise run dev-backend    # terminal 1 — uvicorn on :8000
@@ -67,4 +78,5 @@ mise run dev-frontend   # terminal 2 — Vite on :5173
 ```
 
 See [phase-0-test-plan.md](phase-0-test-plan.md) §2 for details. Open the Vite URL (usually
-http://localhost:5173); both processes must be running for the health badge to go green.
+http://localhost:5173); both processes must be running for the health badge to go green. Do not
+run `up` and `up-dev` together — both use port 8000.

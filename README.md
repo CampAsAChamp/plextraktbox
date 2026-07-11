@@ -29,7 +29,7 @@ See [PLAN.md](PLAN.md) for the full design doc and phase-by-phase progress track
 One terminal — the image serves the API and built UI together on port 8000.
 
 ```bash
-# First time only: cp .env.example .env and set PLEXTRAKTBOX_SECRET_KEY
+# First time only: cp .env.example .env and set SECRET_KEY (and Trakt API app credentials for the Trakt onboarding step)
 mise run up   # or: podman compose up --build
 # open http://localhost:8000 — setup wizard on first run, then login → dashboard
 ```
@@ -40,7 +40,23 @@ See [docs/testing.md](docs/testing.md) for the full smoke-test checklist (includ
 
 ## Local development
 
-Use two terminals only when you want Vite hot reload while editing the frontend.
+Hot reload while editing — pick one approach:
+
+**Container dev (one terminal):**
+
+```bash
+mise run up-dev   # backend :8000 + Vite :5173 with bind mounts and reload
+# open http://localhost:5173
+mise run down-dev
+```
+
+`up-dev` runs `compose up --build`, which rebuilds images when Dockerfiles or dependency
+files change, but still uses layer cache. After changing `pyproject.toml` or
+`package.json`, use `mise run rebuild-dev` for a no-cache image rebuild (also recreates
+the frontend `node_modules` volume). Source edits under `backend/` and `frontend/` reload
+live via bind mounts — no rebuild needed for those.
+
+**Native dev (two terminals, no Docker):**
 
 ```bash
 mise trust && mise install   # first time only
@@ -49,9 +65,9 @@ mise run dev-backend         # terminal 1 — uvicorn on :8000
 mise run dev-frontend        # terminal 2 — Vite on :5173
 ```
 
-`mise` pins Python 3.12 and Node 22 (matching CI) and sets `PLEXTRAKTBOX_SECRET_KEY` / `PLEXTRAKTBOX_DATA_DIR` automatically.
+`mise` pins Python 3.12 and Node 22 (matching CI) and sets `SECRET_KEY` / `DATA_DIR` automatically.
 
-Open the Vite URL (usually http://localhost:5173) for the dev SPA, or hit the backend directly once the SPA is built. Both `dev-backend` and `dev-frontend` must be running for the dev UI to show a green health badge.
+Open the Vite URL (usually http://localhost:5173) for the dev SPA. Both backend and frontend must be running for the health badge to go green. Do not run `up` and `up-dev` at the same time — they both bind port 8000.
 
 ## Deploying on TrueNAS
 
@@ -80,7 +96,7 @@ app. That's a heavier, later effort with its own steps:
 1. Package the app per TrueNAS SCALE's current app spec (a chart/`app.yaml`-style app definition with a
    config schema), not just a raw Docker image — check the current SCALE app format when this phase
    starts, since it has changed across releases.
-2. Expose the user-configurable options (HTTP port, `/data` dataset path, `PLEXTRAKTBOX_SECRET_KEY`,
+2. Expose the user-configurable options (HTTP port, `/data` dataset path, `SECRET_KEY`,
    etc.) through that config schema so they render as real fields in the TrueNAS app UI.
 3. Publish the container image to a public registry (e.g. GHCR) with versioned tags — a catalog entry
    needs a real, pullable image, not a local build.
