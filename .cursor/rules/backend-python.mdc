@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Backend (Python / FastAPI)
 
-- Python 3.12, `from __future__ import annotations`, type hints throughout
+- Python 3.14, `from __future__ import annotations`, type hints throughout
 - Package: `plextraktbox` under `backend/plextraktbox/`
 - SQLModel models + Alembic migrations in `backend/migrations/`
 - structlog for logging; redact tokens/passwords before persist/stream

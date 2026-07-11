@@ -13,7 +13,7 @@ Self-hosted Plex / Letterboxd / Trakt sync app. Single Docker container: FastAPI
 
 ## Stack
 
-Python 3.12 + FastAPI (backend), React 18 + Vite + Mantine (frontend). Tooling via `mise.toml`.
+Python 3.14 + FastAPI (backend), React 18 + Vite + Mantine (frontend). Tooling via `mise.toml`.
 
 ## Commands
 

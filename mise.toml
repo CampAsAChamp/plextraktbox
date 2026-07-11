@@ -3,8 +3,8 @@
 # First run in this repo: mise trust && mise install
 
 [tools]
-python = "3.12"
-node = "22"
+python = "3.14"
+node = "24"
 
 [env]
 SECRET_KEY = "dev"

@@ -1,5 +1,5 @@
 # ---- Stage 1: build the React SPA ----
-FROM node:22-alpine AS frontend
+FROM node:24-alpine AS frontend
 # Trust Zscaler (and similar TLS-inspecting proxies) so npm can reach the registry.
 COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/zscaler-root-ca.pem
@@ -11,7 +11,7 @@ COPY frontend/ ./
 RUN npm run build -- --outDir dist --emptyOutDir
 
 # ---- Stage 2: python runtime ----
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
 ENV SSL_CERT_FILE=/etc/ssl/certs/zscaler-root-ca.pem \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/zscaler-root-ca.pem \

@@ -81,7 +81,7 @@ Source of truth per data type:
 
 [![My Skills](https://skillicons.dev/icons?i=python,fastapi,react,ts,docker,vite,sqlite,linux)](https://skillicons.dev)
 
-* [Python 3.12](https://www.python.org/) + [FastAPI](https://fastapi.tiangolo.com/) — backend API, scheduler, sync engine
+* [Python 3.14](https://www.python.org/) + [FastAPI](https://fastapi.tiangolo.com/) — backend API, scheduler, sync engine
 * [SQLModel](https://sqlmodel.tiangolo.com/) + [Alembic](https://alembic.sqlalchemy.org/) — SQLite persistence and migrations
 * [APScheduler](https://apscheduler.readthedocs.io/) + [structlog](https://www.structlog.org/) — job scheduling and structured logging
 * [plexapi](https://github.com/pkkid/python-plexapi) + [trakt.py](https://github.com/fuzion24/Trakt.py) — Plex and Trakt clients
@@ -98,7 +98,7 @@ Target deployment environment is **TrueNAS SCALE** via its custom-app / "Launch 
 
 ### Prerequisites
 
-* [mise](https://mise.jdx.dev/getting-started.html) — pins Python 3.12 and Node 22 (matching CI) and defines project tasks
+* [mise](https://mise.jdx.dev/getting-started.html) — pins Python 3.14 and Node 24 and defines project tasks
 * [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) — for container workflows (`mise run up`, `mise run up-dev`)
 
 ### Quick Start (Container)

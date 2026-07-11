@@ -1,5 +1,5 @@
 # Dev frontend image: npm deps baked in; source is bind-mounted for Vite HMR.
-FROM node:22-alpine
+FROM node:24-alpine
 
 COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/zscaler-root-ca.pem

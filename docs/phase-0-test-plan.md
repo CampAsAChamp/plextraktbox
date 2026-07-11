@@ -42,4 +42,4 @@ Open `http://localhost:8000/` — exercises the `_mount_spa` static-file fallbac
 
 ## 4. Quick sanity read
 
-Skim [Dockerfile](../Dockerfile) and [docker-compose.yml](../docker-compose.yml) for the base images (`python:3.12-slim`, `node:22-alpine`). Confirm `.env` is not committed (`git status`).
+Skim [Dockerfile](../Dockerfile) and [docker-compose.yml](../docker-compose.yml) for the base images (`python:3.14-slim`, `node:24-alpine`). Confirm `.env` is not committed (`git status`).
