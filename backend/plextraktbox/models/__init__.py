@@ -8,6 +8,7 @@ Tables are added incrementally per build phase.
 
 from __future__ import annotations
 
+from plextraktbox.models.connection import Connection  # noqa: F401
 from plextraktbox.models.user import User  # noqa: F401
 
-__all__ = ["User"]
+__all__ = ["Connection", "User"]
