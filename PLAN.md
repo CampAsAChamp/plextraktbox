@@ -103,7 +103,7 @@ plextraktbox/
 └── frontend/src/
     ├── App.tsx (router + auth-gate + setup-gate)
     ├── api/ client, jobs, runs, logs(SSE hook), auth
-    ├── components/ LogViewer/, JobForm/, layout/
+    ├── components/ LogViewer/, JobForm/, layout/(account menu w/ Gravatar avatar)
     └── pages/ SetupWizard/, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer), Settings
 ```
 
@@ -125,7 +125,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 
 ## Data model (SQLite; secrets Fernet-encrypted at rest)
 
-- **user** — username, email, password_hash(bcrypt); single row enforced in app.
+- **user** — username, email, password_hash(bcrypt); single row enforced in app. Profile image derived from email via [Gravatar](https://gravatar.com) (`avatar_url` on auth responses).
 - **connection** — service(plex|trakt|letterboxd|tmdb), status, `config_json`(non-secret: urls/usernames/libraries), `secret_enc`(tokens/password/api key), `token_expires_at`.
 - **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json?`.
 - **job_run** — job_id, trigger(scheduled|manual), dry_run, status(running|success|failed|partial), started/finished_at, `summary_json`, error.
@@ -177,9 +177,9 @@ Each phase is independently runnable/testable. Check off as completed.
 - [x] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex PIN auth + Trakt device + LB creds + TMDB key steps, re-auth UI. → [test plan](docs/phase-2-test-plan.md)
 - [x] **Phase 3 — Sync engine core** — MediaItem/guid/matcher/plugins/sources/3 reconcilers/engine + dry-run; temporary synchronous `POST /api/jobs/{id}/run`. *Full unit coverage of matching + each source-of-truth reconciler vs fakes; dry-run = zero writes.* → [test plan](docs/phase-3-test-plan.md)
 - [x] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. → [test plan](docs/phase-4-test-plan.md)
-- [ ] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. *(test plan: TBD)*
+- [x] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. → [test plan](docs/phase-5-test-plan.md)
 - [ ] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/email/inapp, per-job override + global, test buttons, in-app bell. *(test plan: TBD)*
-- [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, **GitHub Actions CI** (restore `.github/workflows/ci.yml`: backend ruff/mypy/pytest, frontend typecheck/vitest/build; fix current failures; mirror `mise run check`), polish. *(test plan: TBD)*
+- [ ] **Phase 7 — Hardening** — retention job, redaction, error surfaces, OpenAPI→TS types, README, e2e smoke, **GitHub Actions CI** (restore `.github/workflows/ci.yml`: backend ruff/mypy/pytest, frontend typecheck/vitest/build; fix current failures; mirror `mise run check`), polish. **Gravatar:** `avatar_url` on `UserResponse` (MD5 of normalized email → identicon fallback); navbar account menu shows avatar + email; future Settings controls for Gravatar default style (`d=`) or custom avatar URL override. *(test plan: TBD)*
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount, document the "Launch Docker Image" / custom-app setup in the README, do a real install on the user's TrueNAS box end to end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
 - [ ] **Phase 9 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 8 has run successfully for a while. *(test plan: TBD)*
 - [ ] **Phase 10 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*

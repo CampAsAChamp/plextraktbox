@@ -120,7 +120,7 @@ After **Run now** on a dry-run job:
 - [ ] Job name, started/finished timestamps
 - [ ] **Summary** grid: Matched, Planned, Added, Removed, Rated, Watched, Skipped, Errors — expect
   **zeros** with current in-memory sources
-- [ ] Note at bottom: live logs arrive in Phase 5 (check backend container logs for `sync.run.complete`)
+- [x] Run detail shows summary and **Logs** panel (Phase 5)
 
 Failure case (optional): stop one connection or wipe a connection row → **Run now** should show red
 toast / run detail with **failed** and error mentioning missing connections.

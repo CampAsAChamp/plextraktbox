@@ -193,7 +193,7 @@ The app is built incrementally; each phase is independently runnable and testabl
 - [x] **Phase 2 — Connections** — Plex, Trakt, Letterboxd, TMDB connection flows
 - [x] **Phase 3 — Sync engine core** — matching, reconcilers, dry-run engine
 - [ ] **Phase 4 — Jobs + runs + scheduler** — job CRUD, APScheduler, run history UI
-- [ ] **Phase 5 — Logging pipeline + live viewer** — structlog, SSE, LogViewer
+- [x] **Phase 5 — Logging pipeline + live viewer** — structlog, SSE, LogViewer
 - [ ] **Phase 6 — Notifications** — Discord, email, in-app alerts
 - [ ] **Phase 7 — Hardening** — retention, CI, polish, OpenAPI → TS types
 - [ ] **Phase 8 — TrueNAS deployment (personal install)** — real install on user's box

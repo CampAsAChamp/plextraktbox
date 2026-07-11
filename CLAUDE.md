@@ -76,7 +76,7 @@ Personal repo — plain imperative commit subjects (no conventional commits unle
 
 ## Phase progress
 
-See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–4 are done; Phase 5 (logging pipeline + live viewer) is next.
+See [PLAN.md#phase-tracker](PLAN.md#phase-tracker). Phases 0–5 are done; Phase 6 (notifications) is next.
 
 When a phase lands, add/update its test plan under `docs/` and link from PLAN.md.
 
