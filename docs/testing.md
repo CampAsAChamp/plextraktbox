@@ -1,7 +1,8 @@
 # Testing guide
 
-How to verify each project phase. Shared setup lives here; per-phase checklists live in
-`docs/phase-N-test-plan.md` files linked from [PLAN.md](../PLAN.md#phase-tracker).
+How to verify each project phase. Phase **scope** lives in [phases/](phases/); per-phase
+**checklists** live in [phases/test-plans/](phases/test-plans/), linked from
+[PLAN.md](PLAN.md#phase-tracker) and [phases/README.md](phases/README.md).
 
 ## Prerequisites
 
@@ -41,26 +42,28 @@ mise run check     # lint, typecheck, and tests (CI parity)
 
 ## Phase test plans
 
-| Phase | Scope | Test plan | Status |
-| ----- | ----- | --------- | ------ |
-| 0 | Scaffold, health, SPA shell | [phase-0-test-plan.md](phase-0-test-plan.md) | Done |
-| 1 | Auth, sessions, setup wizard | [phase-1-test-plan.md](phase-1-test-plan.md) | Done |
-| 2 | Connections + wizard steps | [phase-2-test-plan.md](phase-2-test-plan.md) | Done |
-| 3 | Sync engine core + dry-run | [phase-3-test-plan.md](phase-3-test-plan.md) | Done |
-| 4 | Jobs, runs, scheduler | [phase-4-test-plan.md](phase-4-test-plan.md) | Done |
-| 5 | Logging pipeline + live viewer | [phase-5-test-plan.md](phase-5-test-plan.md) | Done |
-| 6 | Notifications | [phase-6-test-plan.md](phase-6-test-plan.md) | Done |
-| 7 | Client-backed sources (movies) | [phase-7-test-plan.md](phase-7-test-plan.md) | Next |
-| 8 | Settings, safety & operations | — | TBD when phase lands |
-| 9 | Dashboard & scheduling UX | — | TBD when phase lands |
-| 10 | TV sync (shows + episodes) | — | TBD when phase lands |
-| 11 | TrueNAS personal install | — | TBD when phase lands |
-| 12 | TrueNAS App Catalog | — | TBD when phase lands |
-| 13 | Doppler secret management (dev/CI) | — | TBD when phase lands |
-| 14 | UI polish & layout rework | — | TBD when phase lands |
+| Phase | Scope doc | Test plan | Status |
+| ----- | --------- | --------- | ------ |
+| 0 | [phases/phase-0.md](phases/phase-0.md) | [phase-0-test-plan.md](phases/test-plans/phase-0-test-plan.md) | Done |
+| 1 | [phases/phase-1.md](phases/phase-1.md) | [phase-1-test-plan.md](phases/test-plans/phase-1-test-plan.md) | Done |
+| 2 | [phases/phase-2.md](phases/phase-2.md) | [phase-2-test-plan.md](phases/test-plans/phase-2-test-plan.md) | Done |
+| 3 | [phases/phase-3.md](phases/phase-3.md) | [phase-3-test-plan.md](phases/test-plans/phase-3-test-plan.md) | Done |
+| 4 | [phases/phase-4.md](phases/phase-4.md) | [phase-4-test-plan.md](phases/test-plans/phase-4-test-plan.md) | Done |
+| 5 | [phases/phase-5.md](phases/phase-5.md) | [phase-5-test-plan.md](phases/test-plans/phase-5-test-plan.md) | Done |
+| 6 | [phases/phase-6.md](phases/phase-6.md) | [phase-6-test-plan.md](phases/test-plans/phase-6-test-plan.md) | Done |
+| 7 | [phases/phase-7.md](phases/phase-7.md) | [phase-7-test-plan.md](phases/test-plans/phase-7-test-plan.md) | Next |
+| 8 | [phases/phase-8.md](phases/phase-8.md) | — | TBD when phase lands |
+| 9 | [phases/phase-9.md](phases/phase-9.md) | — | TBD when phase lands |
+| 10 | [phases/phase-10.md](phases/phase-10.md) | — | TBD when phase lands |
+| 11 | [phases/phase-11.md](phases/phase-11.md) | — | TBD when phase lands |
+| 12 | [phases/phase-12.md](phases/phase-12.md) | — | TBD when phase lands |
+| 13 | [phases/phase-13.md](phases/phase-13.md) | — | TBD when phase lands |
+| 14 | [phases/phase-14.md](phases/phase-14.md) | — | TBD when phase lands |
 
-When a phase is implemented, copy [phase-test-plan-template.md](phase-test-plan-template.md),
-fill in the checklist, add a row link above, and link it from the phase line in PLAN.md.
+When a phase is implemented, update its [phases/phase-N.md](phases/phase-0.md) doc, copy
+[phases/test-plans/phase-test-plan-template.md](phases/test-plans/phase-test-plan-template.md),
+fill in the checklist, and update the tables in this file, [phases/README.md](phases/README.md), and
+[PLAN.md](PLAN.md#phase-tracker).
 
 ## Local dev (hot reload)
 
@@ -81,7 +84,7 @@ mise run dev-backend    # terminal 1 — uvicorn on :8000
 mise run dev-frontend   # terminal 2 — Vite on :5173
 ```
 
-See [phase-0-test-plan.md](phase-0-test-plan.md) §2 for details. Open the Vite URL (usually
+See [phases/test-plans/phase-0-test-plan.md](phases/test-plans/phase-0-test-plan.md) §2 for details. Open the Vite URL (usually
 http://localhost:5173); both processes must be running for the health badge to go green. Do not
 run `up` and `up-dev` together — both use port 8000.
 
