@@ -60,11 +60,13 @@ plans against live data. `apply_*` stays stubbed until [Phase 8](phase-8.md).
 | Item | Phase |
 | ---- | ----- |
 | `apply_*` writes to Plex and Trakt | 8 |
-| Global settings, dry-run guards, exclude list | 9 |
-| Connection health monitoring job | 9 |
-| Dashboard ops view, schedule picker | 10 |
+| Frontend prototype (run detail + logs) | 9 |
+| Frontend redesign (full migration) | 10 |
 | TV shows and episodes | 11 |
-| TrueNAS packaging, GHCR, reverse proxy | 12 |
+| Global settings, dry-run guards, exclude list | 12 |
+| Connection health monitoring job | 12 |
+| Dashboard ops view, schedule picker | 13 |
+| TrueNAS packaging, GHCR, reverse proxy | 15 |
 
 ## Verification
 

@@ -1,51 +1,49 @@
-# Phase 13 — TrueNAS App Catalog publication
+# Phase 13 — Dashboard & scheduling UX
 
 **Status:** Planned
 
 ## Goal
 
-Get **plextraktbox** listed in the **TrueNAS App Catalog** so anyone can install it like an
-official/community app — not just via manual "Launch Docker Image."
-
-This is **milestone 2** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-**Do not start until Phase 12 has been running
-successfully on real hardware for a while** — publishing before the app is proven is premature.
+Make day-to-day operation pleasant: see job health at a glance, pick schedules without writing cron
+by hand, and export run logs for debugging.
 
 ## Deliverables
 
-### App packaging
+### Dashboard ops view
 
-- Package per **current TrueNAS SCALE app spec** (chart / `app.yaml`-style definition with config
-  schema) — verify format at phase start; it changes across SCALE releases
-- Config schema exposes user-facing fields: HTTP port, `/data` dataset path, `SECRET_KEY`, Trakt app
-  credentials, etc. — not raw env-only compose
+- Per-job **last run** status + summary counts (matched/added/errors)
+- Failure/partial run alerts surfaced prominently
+- Quick **Run** and **Dry-run** actions from dashboard
 
-### Image registry
+### Scheduling UX
 
-- Public registry (e.g. GHCR) with **versioned tags** — catalog cannot point at local-only images
+- **Next scheduled run** — APScheduler next-fire-time API; display in user's timezone on Jobs +
+  Dashboard
+- **Friendly schedule picker** — presets ("Daily 3am", "Every 6 hours") → cron; advanced raw cron
+  still available
+- **Cron preview in local time** — show next N run times under the cron field
 
-### Catalog submission
+### Job & run utilities
 
-- Submit to official community catalog **or** stand up a self-hosted custom catalog URL
-- Confirm current submission/review requirements at phase start (catalog mechanics move over time)
-- Pass TrueNAS validation/review
+- **Clone job** — duplicate config to a new job
+- **Export run logs** — download `.txt` or `.jsonl` from run detail
 
-### Verification
+## Key files (expected)
 
-- Clean TrueNAS instance installs from catalog UI
-- App behaves identically to Phase 12 manual install
+- `backend/plextraktbox/api/jobs.py` — next-run endpoint
+- `frontend/src/pages/Dashboard/`, `components/JobForm/` (schedule picker)
+- `frontend/src/pages/RunDetail/` (export button)
 
 ## Prerequisites
 
-[Phase 12](phase-12.md) — personal install stable on real hardware
+[Phase 12](phase-12.md) — settings and safety rails in place; [Phase 10](phase-10.md) UI stack
 
-## Notes
+## Defers to later phases
 
-See [deploy/truenas.md](../deploy/truenas.md) for the two-milestone overview. This doc is the
-implementation checklist for catalog work.
+Nothing critical — last major product UX phase before deploy tooling.
 
 ## Verification
 
-Test plan TBD — catalog install on clean SCALE box.
+Test plan TBD when phase lands.
 
 **Next:** [Phase 14 — Doppler secrets](phase-14.md)

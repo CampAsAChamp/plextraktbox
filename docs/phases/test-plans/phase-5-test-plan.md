@@ -65,4 +65,4 @@ mise run dev-bootstrap
 - Manual **Run now** blocks until the job finishes. With `SYNC_RUN_DELAY_SECONDS=10` in `.env`
   (dev only), runs stay `running` long enough to open the run detail page and watch live logs.
 - Sensitive context keys (`token`, `password`, `secret`, etc.) are redacted before persist/stream.
-- Full log retention pruning arrives in Phase 9.
+- Full log retention pruning arrives in Phase 12.

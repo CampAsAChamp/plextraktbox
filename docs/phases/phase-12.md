@@ -1,63 +1,72 @@
-# Phase 12 — TrueNAS deployment (personal install)
+# Phase 12 — Settings, safety & operations
 
 **Status:** Planned
 
 ## Goal
 
-Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "Launch Docker Image" —
-no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
-
-This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-Do not conflate with Phase 13 (catalog publication).
+Global app settings, safety rails around live sync, operational health/backup tooling, and CI so the
+app is safe to run unattended on a home server.
 
 ## Deliverables
 
-### Container permissions
+### Settings model + UI
 
-- Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
-  dataset
-- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
+- **`setting` table** + Settings page (on [Phase 10](phase-10.md) UI stack)
+- Default cron expression
+- `log_retention_days`
+- **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
 
-### Published image
+### Safety guards
 
-- **GHCR** (or equivalent) with versioned tags — pull without local build
-- Release tagging workflow documented
+- **First run must be dry-run** — per-job `require_dry_run_first` blocks live apply until ≥1
+  successful dry-run exists for that job
+- **Exclude/ignore list** — global TMDB/IMDb ids in settings; optional per-job override via
+  `exclude_ids_json`
 
-### Reverse proxy / TLS
+### Connection health
 
-- Document Caddy or Traefik example in front of the TrueNAS app (HTTPS, `Secure` cookies)
-- No host-network or privileged requirements
+- Scheduled `test_connection()` job
+- Update connection `status` on failure/expiry
+- Optional notification when status becomes `needs_reauth`
 
-### Install documentation
+### Operations
 
-- Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
-- Env vars, port mapping, dataset mount path
-- First-run wizard → connections → job → scheduled run → notification
+- **Log retention** — scheduled job prunes old `log_entry` / `job_run` rows per `log_retention_days`
+- **Richer `/api/health`** — version, scheduler alive, DB writable, connection status summary
+- **SQLite backup** — Settings download button + README note for ZFS snapshots
+- **Password change** in Settings
 
-### Real install verification
+### Quality & DX
 
-- End-to-end on user's TrueNAS hardware: wizard, cron job fires, logs stream, Discord/in-app notify
+- structlog redaction audit; improve error surfaces in API/UI
+- **GitHub Actions CI** — restore `.github/workflows/ci.yml`, mirror `mise run check`
+- OpenAPI → TypeScript types generation
+- e2e smoke test
+- Gravatar/settings profile polish
 
-## Constraints (from day one)
+## Key files (expected)
 
-- Single container, SQLite, one HTTP port
-- `/data` on ZFS host-path, not Docker-managed volume
-- No Docker socket, no privileged mode, no macvlan
+- `backend/plextraktbox/models/setting.py`, `api/settings.py`, `api/health.py`
+- `backend/plextraktbox/scheduler/` — retention + health jobs
+- `frontend/src/pages/Settings/`
+- `.github/workflows/ci.yml`
 
 ## Prerequisites
 
-[Phases 7–8](phase-7.md) minimum (real movie sync); [Phase 11](phase-11.md) if TV is in scope before
-deploy. Phases 9–10 strongly recommended for unattended operation.
+[Phase 8](phase-8.md) — real movie sync proven; [Phase 10](phase-10.md) UI stack; [Phase 11](phase-11.md)
+if TV is in scope
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| TrueNAS App Catalog listing | 13 |
+| Dashboard ops view, friendly cron picker | 13 |
+| Log export download | 13 |
 | Doppler maintainer workflow | 14 |
+| TrueNAS deploy docs | 15 |
 
 ## Verification
 
-Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
+Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
 
-**Next:** [Phase 13 — TrueNAS catalog](phase-13.md) — only after Phase 12 runs successfully for a while
+**Next:** [Phase 13 — Dashboard & scheduling UX](phase-13.md)

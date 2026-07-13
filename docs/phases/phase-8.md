@@ -37,14 +37,17 @@ movies — building on the fetch path proven in [Phase 7](phase-7.md). Letterbox
 
 | Item | Phase |
 | ---- | ----- |
-| Global settings, dry-run guards, exclude list | 9 |
-| Connection health monitoring job | 9 |
-| Dashboard ops view, schedule picker | 10 |
+| Frontend prototype (run detail + logs) | 9 |
+| Frontend redesign (full migration) | 10 |
 | TV shows and episodes | 11 |
-| TrueNAS packaging, GHCR, reverse proxy | 12 |
+| Global settings, dry-run guards, exclude list | 12 |
+| Connection health monitoring job | 12 |
+| Dashboard ops view, schedule picker | 13 |
+| Doppler maintainer workflow | 14 |
+| TrueNAS packaging, GHCR, reverse proxy | 15 |
 
 ## Verification
 
 [phase-8-test-plan.md](test-plans/phase-8-test-plan.md)
 
-**Next:** [Phase 9 — Settings & operations](phase-9.md)
+**Next:** [Phase 9 — Frontend prototype](phase-9.md)

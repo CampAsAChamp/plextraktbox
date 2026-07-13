@@ -153,8 +153,8 @@ Do not run `up` and `up-dev` at the same time — they both bind port 8000.
 ## Deploying on TrueNAS
 
 The intended install target is **TrueNAS SCALE** (custom app / "Launch Docker Image", `/data` on a ZFS
-dataset, single HTTP port). Personal install is [Phase 12](docs/phases/phase-12.md); App Catalog
-publication is [Phase 13](docs/phases/phase-13.md).
+dataset, single HTTP port). Personal install is [Phase 15](docs/phases/phase-15.md); App Catalog
+publication is [Phase 16](docs/phases/phase-16.md).
 
 Full constraints, milestones, and install shape: **[docs/deploy/truenas.md](docs/deploy/truenas.md)**.
 

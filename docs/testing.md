@@ -63,7 +63,7 @@ Reference for phase test plans and automated tests:
 
 - **Container (default):** `mise run up` → http://localhost:8000
 - **Local dev (hot reload):** see [dev-workflow.md](dev-workflow.md)
-- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions lands in Phase 9)
+- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions lands in Phase 12)
 - **Sync engine (Phase 3+):** fakes in `tests/fakes/` via `SyncContext` (no network); assert
   source-of-truth per data type; dry-run = zero writes
 - **HTTP/time:** `respx`, `freezegun`
@@ -71,6 +71,7 @@ Reference for phase test plans and automated tests:
 - **Frontend:** vitest + RTL (+ MSW where needed)
 - **Client-backed fetch (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
 - **Client-backed apply (Phase 8):** respx for apply payloads; cautious manual live-run verification
-- **TrueNAS (Phases 12–13):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
+- **Frontend prototype (Phase 9):** run detail + log viewer spike; go/no-go before Phase 10
+- **Frontend redesign (Phase 10):** full Radix + Tailwind migration; manual smoke all flows; update Vitest/RTL tests
+- **TrueNAS (Phases 15–16):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
 - **Doppler (Phase 14):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
-- **UI polish (Phase 15):** visual/layout pass only — manual smoke across main flows

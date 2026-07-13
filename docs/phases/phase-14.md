@@ -35,7 +35,7 @@ remains the default).
 
 ## Prerequisites
 
-[Phase 9](phase-9.md) CI restoration recommended; not blocked on TrueNAS phases
+[Phase 12](phase-12.md) CI restoration recommended; not blocked on TrueNAS phases
 
 ## Verification
 
@@ -44,4 +44,4 @@ Test plan TBD:
 - Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
 - `doppler run mise run check` passes without hand-edited `.env`
 
-**Next:** [Phase 15 — UI polish](phase-15.md)
+**Next:** [Phase 15 — TrueNAS install](phase-15.md)

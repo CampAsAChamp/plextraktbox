@@ -31,7 +31,7 @@ per-job overrides.
 
 ## Defers to later phases
 
-- Notification on connection `needs_reauth` (Phase 9)
+- Notification on connection `needs_reauth` (Phase 12)
 
 ## Verification
 

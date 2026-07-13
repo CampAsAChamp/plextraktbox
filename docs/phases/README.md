@@ -19,13 +19,14 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 6 | [Notifications](phase-6.md) | Done | Discord, in-app bell | [phase-6](test-plans/phase-6-test-plan.md) |
 | 7 | [Client-backed fetch (movies)](phase-7.md) | **Next** | Real Plex/Trakt/LB fetch | [phase-7](test-plans/phase-7-test-plan.md) |
 | 8 | [Client-backed apply (movies)](phase-8.md) | Planned | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
-| 9 | [Settings & operations](phase-9.md) | Planned | Safety guards, health, backup, CI | TBD |
-| 10 | [Dashboard & scheduling UX](phase-10.md) | Planned | Ops view, schedule picker, export | TBD |
+| 9 | [Frontend prototype](phase-9.md) | Planned | Run detail + log viewer spike | TBD |
+| 10 | [Frontend redesign](phase-10.md) | Planned | Full Radix + Tailwind migration | TBD |
 | 11 | [TV sync](phase-11.md) | Planned | Shows and episodes | TBD |
-| 12 | [TrueNAS install](phase-12.md) | Planned | Personal box, GHCR, TLS docs | TBD |
-| 13 | [TrueNAS catalog](phase-13.md) | Planned | App catalog publication | TBD |
+| 12 | [Settings & operations](phase-12.md) | Planned | Safety guards, health, backup, CI | TBD |
+| 13 | [Dashboard & scheduling UX](phase-13.md) | Planned | Ops view, schedule picker, export | TBD |
 | 14 | [Doppler secrets](phase-14.md) | Planned | Maintainer dev/CI workflow | TBD |
-| 15 | [UI polish](phase-15.md) | Planned | Visual/layout pass | TBD |
+| 15 | [TrueNAS install](phase-15.md) | Planned | Personal box, GHCR, TLS docs | TBD |
+| 16 | [TrueNAS catalog](phase-16.md) | Planned | App catalog publication | TBD |
 
 **Current focus:** Phase 7 — wire source **fetch** to real APIs for movies; Phases 0–6 are complete.
 

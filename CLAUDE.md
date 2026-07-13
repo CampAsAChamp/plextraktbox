@@ -19,7 +19,7 @@ Letterboxd has **no write API** — `LetterboxdSource.apply_*` must stay unsuppo
 ## Stack
 
 - **Backend:** Python 3.14, FastAPI, SQLModel, Alembic, APScheduler, structlog, plexapi, trakt.py, letterboxd_stats
-- **Frontend:** React 18, TypeScript, Vite, Mantine, TanStack Query, react-hook-form + zod
+- **Frontend:** React 18, TypeScript, Vite, Mantine (Phases 9–10 → Radix + Tailwind), TanStack Query, react-hook-form + zod
 - **Tooling:** [mise.toml](mise.toml) pins Python/Node and defines all dev tasks
 - **Deploy target:** TrueNAS SCALE (single container, `/data` ZFS mount, port 8000)
 
@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 are done; **Phase 7 (client-backed fetch, movies)** is next, then apply (8), settings/safety (9), dashboard UX (10), and TV sync (11). Visual/layout polish is intentionally deferred to **Phase 15**.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 are done; **Phase 7 (client-backed fetch, movies)** is next, then apply (8), UI prototype (9), full redesign (10), TV sync (11), settings/safety (12), dashboard UX (13), Doppler (14), and TrueNAS deploy (15–16).
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

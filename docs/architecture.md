@@ -17,7 +17,7 @@ Repo and package name: `plextraktbox`.
 
 The user will run this on **TrueNAS** (not just any Docker host). Packaging constraints and the
 two-milestone deploy plan (personal install → App Catalog) are documented in
-[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so Phase 12
+[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so Phase 15
 drops in without rework.
 
 
@@ -44,7 +44,9 @@ drops in without rework.
 ## Tech choices
 
 **Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
-**Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine** (admin UI components), `@microsoft/fetch-event-source` (SSE), react-hook-form + zod, `@tanstack/react-virtual` (log virtualization). Tests: Vitest + RTL + MSW.
+**Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine** (current UI;
+**Phases 9–10** prototype then migrate to Radix + Tailwind ops-console design), `@microsoft/fetch-event-source` (SSE),
+react-hook-form + zod, `@tanstack/react-virtual` (log virtualization). Tests: Vitest + RTL + MSW.
 
 ## Directory structure
 
@@ -129,7 +131,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - 3rd-party tokens Fernet-encrypted in `connection.secret_enc`, decrypted only in memory. bcrypt for local password.
 - Starlette SessionMiddleware (HttpOnly, SameSite=Lax, Secure over HTTPS); auth dependency gates all routes except `/api/setup/*` (self-disables once a user exists) and `/api/health`; require `X-Requested-With` on mutating requests (CSRF).
 - Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
-- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in [deploy/truenas.md](deploy/truenas.md) (Phase 12).
+- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in [deploy/truenas.md](deploy/truenas.md) (Phase 15).
 - **Planned (Phase 14):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
 
 

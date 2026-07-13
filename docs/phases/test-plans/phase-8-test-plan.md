@@ -17,10 +17,11 @@ setup: [testing.md](../../testing.md).
 
 ## What Phase 8 defers to later phases
 
-- Global settings, dry-run guards, exclude list, connection health job (Phase 9)
-- Dashboard ops, schedule picker, clone/export (Phase 10)
+- Frontend prototype (Phase 9); full redesign (Phase 10)
 - TV shows and episodes (Phase 11)
-- TrueNAS packaging, GHCR, reverse proxy docs (Phase 12)
+- Global settings, dry-run guards, exclude list, connection health job (Phase 12)
+- Dashboard ops, schedule picker, clone/export (Phase 13)
+- TrueNAS packaging, GHCR, reverse proxy docs (Phase 15)
 
 ## 1. Automated tests
 
@@ -50,4 +51,4 @@ mise run up-dev
 
 - Use a tiny, reversible test library/watchlist before disabling dry-run
 - Trakt token refresh on apply failure should surface in run logs
-- Safety guards (first-run dry-run, exclude list) arrive in Phase 9
+- Safety guards (first-run dry-run, exclude list) arrive in Phase 12

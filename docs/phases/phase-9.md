@@ -1,70 +1,74 @@
-# Phase 9 — Settings, safety & operations
+# Phase 9 — Frontend prototype
 
 **Status:** Planned
 
 ## Goal
 
-Global app settings, safety rails around live sync, operational health/backup tooling, and CI so the
-app is safe to run unattended on a home server.
+Validate the **ops-console** UI direction before committing to a full frontend rewrite. Build a
+**standalone prototype** of run detail + live log viewer on Radix + Tailwind with real sync data —
+without migrating the rest of the app off Mantine yet.
+
+If the prototype feels wrong, pivot here cheaply. Phase 10 carries the approved direction across all
+pages.
 
 ## Deliverables
 
-### Settings model + UI
+### Stack spike
 
-- **`setting` table** + Settings page
-- Default cron expression
-- `log_retention_days`
-- **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
+- Add Tailwind CSS + Radix UI to the frontend (coexists briefly with Mantine)
+- Design tokens: color, typography (UI sans + log monospace), spacing, radius
+- 3–5 base primitives needed for the prototype (Button, Badge, ScrollArea, etc.)
 
-### Safety guards
+### Prototype screens
 
-- **First run must be dry-run** — per-job `require_dry_run_first` blocks live apply until ≥1
-  successful dry-run exists for that job
-- **Exclude/ignore list** — global TMDB/IMDb ids in settings; optional per-job override via
-  `exclude_ids_json`
+- **Run detail** — split pane: run summary + counts left, live log stream right
+- **Log viewer chrome** — monospace stream, level coloring, live SSE indicator, virtualized scroll
+- Route reachable from existing run history (feature flag, `/runs/:id/v2`, or parallel route — TBD
+  at implementation)
 
-### Connection health
+### Design validation
 
-- Scheduled `test_connection()` job
-- Update connection `status` on failure/expiry
-- Optional notification when status becomes `needs_reauth`
+- Ops-console aesthetic: charcoal base, amber/green status semantics (not Mantine default blue)
+- Sidebar or minimal chrome — enough to judge layout density and hierarchy
+- Test with **real job runs** from Phases 7–8 (non-zero fetch/plan/apply logs)
 
-### Operations
+### Exit criteria (go / no-go for Phase 10)
 
-- **Log retention** — scheduled job prunes old `log_entry` / `job_run` rows per `log_retention_days`
-- **Richer `/api/health`** — version, scheduler alive, DB writable, connection status summary
-- **SQLite backup** — Settings download button + README note for ZFS snapshots
-- **Password change** in Settings
-
-### Quality & DX
-
-- structlog redaction audit; improve error surfaces in API/UI
-- **GitHub Actions CI** — restore `.github/workflows/ci.yml`, mirror `mise run check`
-- OpenAPI → TypeScript types generation
-- e2e smoke test
-- Gravatar/settings profile polish
+- [ ] Prototype readable for long log sessions (contrast, density, font choice)
+- [ ] Live SSE stream feels good in the new layout
+- [ ] Split-pane run detail works on desktop; acceptable fallback on mobile
+- [ ] You would ship this look — not another vibe-coded dashboard
 
 ## Key files (expected)
 
-- `backend/plextraktbox/models/setting.py`, `api/settings.py`, `api/health.py`
-- `backend/plextraktbox/scheduler/` — retention + health jobs
-- `frontend/src/pages/Settings/`
-- `.github/workflows/ci.yml`
+- `frontend/src/prototype/` or `frontend/src/features/run-detail-v2/` — isolated prototype tree
+- `frontend/tailwind.config.*`, token/CSS files
+- Existing `LogViewer` SSE logic reused or wrapped — no backend changes
 
 ## Prerequisites
 
-[Phase 8](phase-8.md) — real sync on movies proven with dry-run + cautious live runs
+[Phase 8](phase-8.md) — movie fetch + apply working so the prototype exercises real run data and
+logs
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| Dashboard ops view, friendly cron picker | 10 |
-| Log export download | 10 |
-| TrueNAS deploy docs | 12 |
+| Full app migration off Mantine | 10 |
+| Sidebar shell + all pages | 10 |
+| TV job form extensions | 11 |
+| Settings page (global guards, backup, CI) | 12 |
+| Dashboard ops view, schedule picker | 13 |
+
+## Out of scope
+
+- Migrating login, wizard, connections, jobs list, dashboard, or settings off Mantine
+- Removing `@mantine/*` dependencies (Phase 10)
+- New sync features or API endpoints
 
 ## Verification
 
-Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+Test plan TBD when phase lands — manual review of prototype with real runs; optional screenshot
+checklist for go/no-go before Phase 10.
 
-**Next:** [Phase 10 — Dashboard & scheduling UX](phase-10.md)
+**Next:** [Phase 10 — Frontend redesign](phase-10.md)

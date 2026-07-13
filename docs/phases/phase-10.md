@@ -1,51 +1,95 @@
-# Phase 10 — Dashboard & scheduling UX
+# Phase 10 — Frontend redesign
 
 **Status:** Planned
 
 ## Goal
 
-Make day-to-day operation pleasant: see job health at a glance, pick schedules without writing cron
-by hand, and export run logs for debugging.
+Replace the default Mantine admin-dashboard look with the **ops-console** direction validated in
+[Phase 9](phase-9.md) — migrate all existing flows onto Radix + Tailwind and remove Mantine.
+**No new sync features or API endpoints.**
+
+## Design direction
+
+Carry forward the approved Phase 9 prototype:
+
+- Sidebar navigation (replace header nav + stacked sections)
+- Split-pane run detail — promote prototype to production route
+- Monospace for logs, run IDs, cron; distinct sans for UI chrome
+- Intentional color system (charcoal base, amber/green status semantics)
+- Consistent icon set (single library, one weight)
+- Dense, repeat-use layouts for jobs/runs tables
+
+## Stack
+
+| Keep | Replace |
+| ---- | ------- |
+| React 18, Vite, TypeScript | Mantine components + default theme |
+| TanStack Query, React Router | — |
+| react-hook-form + zod | — |
+| `@tanstack/react-virtual`, fetch-event-source | — |
+| Vitest + RTL (+ MSW) | — |
+| Phase 9 tokens + run-detail prototype | — |
+
+**Styling:** Radix UI primitives + **Tailwind CSS** + project-owned design tokens. Do **not** adopt
+shadcn/ui defaults wholesale.
 
 ## Deliverables
 
-### Dashboard ops view
+### Design system (extend Phase 9)
 
-- Per-job **last run** status + summary counts (matched/added/errors)
-- Failure/partial run alerts surfaced prominently
-- Quick **Run** and **Dry-run** actions from dashboard
+- Complete base component set: Input, Select, Alert, Table, Dialog, Menu, Nav
+- Layout shell: sidebar + main content; account menu, notification bell, API health
 
-### Scheduling UX
+### Page migration (existing flows)
 
-- **Next scheduled run** — APScheduler next-fire-time API; display in user's timezone on Jobs +
-  Dashboard
-- **Friendly schedule picker** — presets ("Daily 3am", "Every 6 hours") → cron; advanced raw cron
-  still available
-- **Cron preview in local time** — show next N run times under the cron field
+Migrate to new components — behavior unchanged:
 
-### Job & run utilities
+- Login, setup wizard, connections
+- Jobs list / create / edit
+- Run history + run detail + log viewer (from Phase 9 prototype)
+- Dashboard (current minimal version)
+- Settings (pre–Phase 12 scope: timezone/display prefs, notifications)
 
-- **Clone job** — duplicate config to a new job
-- **Export run logs** — download `.txt` or `.jsonl` from run detail
+### UX polish
+
+- Empty, loading, and error states
+- Focus order, labels, contrast (accessibility basics)
+- Light/dark theme via tokens (dark default)
+
+### Cleanup
+
+- Remove `@mantine/*` dependencies
+- Delete prototype route/tree once production routes ship
+- Update [architecture.md](../architecture.md) frontend stack
 
 ## Key files (expected)
 
-- `backend/plextraktbox/api/jobs.py` — next-run endpoint
-- `frontend/src/pages/Dashboard/`, `components/JobForm/` (schedule picker)
-- `frontend/src/pages/RunDetail/` (export button)
+- `frontend/src/components/ui/` — Radix + Tailwind primitives
+- `frontend/src/components/layout/` — production shell
+- `frontend/package.json` — Mantine removed
 
 ## Prerequisites
 
-[Phase 9](phase-9.md) — settings and safety rails in place
+[Phase 9](phase-9.md) — prototype approved (go decision on look, layout, and log viewer)
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| Visual/layout polish | 15 |
+| TV job form extensions | 11 |
+| Settings page (global guards, backup, CI) | 12 |
+| Dashboard ops view, schedule picker, log export | 13 |
+| Doppler maintainer workflow | 14 |
+| TrueNAS packaging, GHCR, reverse proxy | 15 |
+
+## Out of scope
+
+- New sync data types, reconciler rules, or API endpoints
+- TrueNAS / deployment changes
 
 ## Verification
 
-Test plan TBD when phase lands.
+Test plan TBD when phase lands — manual smoke across all migrated flows; Vitest/RTL tests updated;
+Mantine fully removed from `package.json`.
 
 **Next:** [Phase 11 — TV sync](phase-11.md)
