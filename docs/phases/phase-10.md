@@ -48,7 +48,7 @@ Migrate to new components — behavior unchanged:
 - Jobs list / create / edit
 - Run history + run detail + log viewer (from Phase 9 prototype)
 - Dashboard (current minimal version)
-- Settings (pre–Phase 12 scope: timezone/display prefs, notifications)
+- Settings (pre–Phase 13 scope: timezone/display prefs, notifications)
 
 ### UX polish
 
@@ -77,10 +77,11 @@ Migrate to new components — behavior unchanged:
 | Item | Phase |
 | ---- | ----- |
 | TV job form extensions | 11 |
-| Settings page (global guards, backup, CI) | 12 |
-| Dashboard ops view, schedule picker, log export | 13 |
-| Doppler maintainer workflow | 14 |
-| TrueNAS packaging, GHCR, reverse proxy | 15 |
+| Settings page (global guards, backup) | 13 |
+| GitHub Actions CI | 12 |
+| Dashboard ops view, schedule picker, log export | 14 |
+| Doppler maintainer workflow | 15 |
+| TrueNAS packaging, GHCR, reverse proxy | 16 |
 
 ## Out of scope
 

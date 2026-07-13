@@ -1,62 +1,47 @@
-# Phase 15 — TrueNAS deployment (personal install)
+# Phase 15 — Doppler secret management
 
 **Status:** Planned
 
 ## Goal
 
-Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "Launch Docker Image" —
-no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
-
-This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-Do not conflate with Phase 16 (catalog publication).
+Optional [Doppler](https://www.doppler.com/) integration for **maintainer** dev and CI workflows —
+without making Doppler a runtime dependency for self-hosted TrueNAS users (`.env` / app config
+remains the default).
 
 ## Deliverables
 
-### Container permissions
+### Doppler project setup
 
-- Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
-  dataset
-- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
+- Doppler project + `dev` / `ci` configs mapping existing env vars:
+  - `SECRET_KEY`
+  - `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
+  - Other secrets from `.env.example`
 
-### Published image
+### Repo integration
 
-- **GHCR** (or equivalent) with versioned tags — pull without local build
-- Release tagging workflow documented
+- `doppler.yaml` in repo root
+- Document `doppler setup` + `doppler run` for local dev and `mise run up`
+- Optional `doppler run --` wrapper tasks in `mise.toml`
 
-### Reverse proxy / TLS
+### CI
 
-- Document Caddy or Traefik example in front of the TrueNAS app (HTTPS, `Secure` cookies)
-- No host-network or privileged requirements
+- Service-token injection for integration tests that need real credentials
+- No committed `.env` required for maintainers with Doppler CLI
 
-### Install documentation
+### Production notes
 
-- Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
-- Env vars, port mapping, dataset mount path
-- First-run wizard → connections → job → scheduled run → notification
-
-### Real install verification
-
-- End-to-end on user's TrueNAS hardware: wizard, cron job fires, logs stream, Discord/in-app notify
-
-## Constraints (from day one)
-
-- Single container, SQLite, one HTTP port
-- `/data` on ZFS host-path, not Docker-managed volume
-- No Docker socket, no privileged mode, no macvlan
+- Entrypoint/compose notes for **optional** production injection (advanced users only)
+- Self-hosted installs unchanged — `.env` or TrueNAS app config UI
 
 ## Prerequisites
 
-[Phases 7–8](phase-7.md) minimum (real movie sync); [Phase 11](phase-11.md) if TV is in scope before
-deploy. Phases 12–13 strongly recommended for unattended operation.
-
-## Defers to later phases
-
-| Item | Phase |
-| ---- | ----- |
-| TrueNAS App Catalog listing | 16 |
+[Phase 12](phase-12.md) CI restoration recommended; not blocked on TrueNAS phases
 
 ## Verification
 
-Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
+Test plan TBD:
 
-**Next:** [Phase 16 — TrueNAS catalog](phase-16.md) — only after Phase 15 runs successfully for a while
+- Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
+- `doppler run mise run check` passes without hand-edited `.env`
+
+**Next:** [Phase 16 — TrueNAS install](phase-16.md)

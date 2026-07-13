@@ -33,8 +33,8 @@ LogViewer for both in-progress and completed runs.
 
 ## Defers to later phases
 
-- Log export download (Phase 13)
-- Log retention pruning job (Phase 12)
+- Log export download (Phase 14)
+- Log retention pruning job (Phase 13)
 
 ## Verification
 

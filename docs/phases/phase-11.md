@@ -42,13 +42,13 @@ redesign landed so TV UI is not built on Mantine
 
 | Item | Phase |
 | ---- | ----- |
-| Global settings, dry-run guards, exclude list | 12 |
-| Dashboard ops view, schedule picker | 13 |
-| Doppler maintainer workflow | 14 |
-| TrueNAS packaging, GHCR, reverse proxy | 15 |
+| Global settings, dry-run guards, exclude list | 13 |
+| Dashboard ops view, schedule picker | 14 |
+| Doppler maintainer workflow | 15 |
+| TrueNAS packaging, GHCR, reverse proxy | 16 |
 
 ## Verification
 
 Test plan TBD when phase lands.
 
-**Next:** [Phase 12 — Settings & operations](phase-12.md)
+**Next:** [Phase 12 — CI & quality](phase-12.md)

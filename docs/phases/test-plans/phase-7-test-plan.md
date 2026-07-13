@@ -28,9 +28,9 @@ reporting. `apply_*` stays stubbed until [Phase 8](phase-8-test-plan.md).
 - `apply_*` writes to Plex and Trakt (Phase 8)
 - Frontend prototype (Phase 9); full redesign (Phase 10)
 - TV shows and episodes (Phase 11)
-- Global settings, dry-run guards, exclude list, connection health job (Phase 12)
-- Dashboard ops, schedule picker, clone/export (Phase 13)
-- TrueNAS packaging, GHCR, reverse proxy docs (Phase 15)
+- Global settings, dry-run guards, exclude list, connection health job (Phase 13)
+- Dashboard ops, schedule picker, clone/export (Phase 14)
+- TrueNAS packaging, GHCR, reverse proxy docs (Phase 16)
 
 ## 1. Automated tests
 

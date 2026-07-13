@@ -1,47 +1,49 @@
-# Phase 14 — Doppler secret management
+# Phase 14 — Dashboard & scheduling UX
 
 **Status:** Planned
 
 ## Goal
 
-Optional [Doppler](https://www.doppler.com/) integration for **maintainer** dev and CI workflows —
-without making Doppler a runtime dependency for self-hosted TrueNAS users (`.env` / app config
-remains the default).
+Make day-to-day operation pleasant: see job health at a glance, pick schedules without writing cron
+by hand, and export run logs for debugging.
 
 ## Deliverables
 
-### Doppler project setup
+### Dashboard ops view
 
-- Doppler project + `dev` / `ci` configs mapping existing env vars:
-  - `SECRET_KEY`
-  - `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
-  - Other secrets from `.env.example`
+- Per-job **last run** status + summary counts (matched/added/errors)
+- Failure/partial run alerts surfaced prominently
+- Quick **Run** and **Dry-run** actions from dashboard
 
-### Repo integration
+### Scheduling UX
 
-- `doppler.yaml` in repo root
-- Document `doppler setup` + `doppler run` for local dev and `mise run up`
-- Optional `doppler run --` wrapper tasks in `mise.toml`
+- **Next scheduled run** — APScheduler next-fire-time API; display in user's timezone on Jobs +
+  Dashboard
+- **Friendly schedule picker** — presets ("Daily 3am", "Every 6 hours") → cron; advanced raw cron
+  still available
+- **Cron preview in local time** — show next N run times under the cron field
 
-### CI
+### Job & run utilities
 
-- Service-token injection for integration tests that need real credentials
-- No committed `.env` required for maintainers with Doppler CLI
+- **Clone job** — duplicate config to a new job
+- **Export run logs** — download `.txt` or `.jsonl` from run detail
 
-### Production notes
+## Key files (expected)
 
-- Entrypoint/compose notes for **optional** production injection (advanced users only)
-- Self-hosted installs unchanged — `.env` or TrueNAS app config UI
+- `backend/plextraktbox/api/jobs.py` — next-run endpoint
+- `frontend/src/pages/Dashboard/`, `components/JobForm/` (schedule picker)
+- `frontend/src/pages/RunDetail/` (export button)
 
 ## Prerequisites
 
-[Phase 12](phase-12.md) CI restoration recommended; not blocked on TrueNAS phases
+[Phase 13](phase-13.md) — settings and safety rails in place; [Phase 10](phase-10.md) UI stack
+
+## Defers to later phases
+
+Nothing critical — last major product UX phase before deploy tooling.
 
 ## Verification
 
-Test plan TBD:
+Test plan TBD when phase lands.
 
-- Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
-- `doppler run mise run check` passes without hand-edited `.env`
-
-**Next:** [Phase 15 — TrueNAS install](phase-15.md)
+**Next:** [Phase 15 — Doppler secrets](phase-15.md)

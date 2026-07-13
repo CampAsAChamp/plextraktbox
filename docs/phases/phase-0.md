@@ -15,7 +15,7 @@ shell, and persists data on a `/data` volume — the foundation every later phas
 - Multi-stage **Dockerfile** (build Vite SPA → copy into Python runtime image)
 - **docker-compose.yml** with `/data` volume mount and `.env.example`
 - `GET /api/health` returning status + version
-- Minimal React/Vite SPA shell with health badge
+- Minimal React/Vite SPA shell with health badge (live version via `/api/health` — see [Phase 18](phase-18.md))
 - `mise.toml` tasks for install, dev, container workflows
 
 ## Key files

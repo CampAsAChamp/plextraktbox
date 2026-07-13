@@ -1,51 +1,65 @@
-# Phase 16 — TrueNAS App Catalog publication
+# Phase 16 — TrueNAS deployment (personal install)
 
 **Status:** Planned
 
 ## Goal
 
-Get **plextraktbox** listed in the **TrueNAS App Catalog** so anyone can install it like an
-official/community app — not just via manual "Launch Docker Image."
+Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "Launch Docker Image" —
+no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
 
-This is **milestone 2** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-**Do not start until Phase 15 has been running
-successfully on real hardware for a while** — publishing before the app is proven is premature.
+This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
+Do not conflate with Phase 17 (catalog publication).
 
 ## Deliverables
 
-### App packaging
+### Container permissions
 
-- Package per **current TrueNAS SCALE app spec** (chart / `app.yaml`-style definition with config
-  schema) — verify format at phase start; it changes across SCALE releases
-- Config schema exposes user-facing fields: HTTP port, `/data` dataset path, `SECRET_KEY`, Trakt app
-  credentials, etc. — not raw env-only compose
+- Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
+  dataset
+- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
 
-### Image registry
+### Published image
 
-- Public registry (e.g. GHCR) with **versioned tags** — catalog cannot point at local-only images
+- **GHCR** (or equivalent) with versioned tags — pull without local build
+- Release tagging workflow documented (automated in [Phase 19](phase-19.md))
 
-### Catalog submission
+### Reverse proxy / TLS
 
-- Submit to official community catalog **or** stand up a self-hosted custom catalog URL
-- Confirm current submission/review requirements at phase start (catalog mechanics move over time)
-- Pass TrueNAS validation/review
+- Document Caddy or Traefik example in front of the TrueNAS app (HTTPS, `Secure` cookies)
+- No host-network or privileged requirements
 
-### Verification
+### Install documentation
 
-- Clean TrueNAS instance installs from catalog UI
-- App behaves identically to Phase 15 manual install
+- Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
+- Env vars, port mapping, dataset mount path
+- First-run wizard → connections → job → scheduled run → notification
+
+### Real install verification
+
+- End-to-end on user's TrueNAS hardware: wizard, cron job fires, logs stream, Discord/in-app notify
+
+## Constraints (from day one)
+
+- Single container, SQLite, one HTTP port
+- `/data` on ZFS host-path, not Docker-managed volume
+- No Docker socket, no privileged mode, no macvlan
 
 ## Prerequisites
 
-[Phase 15](phase-15.md) — personal install stable on real hardware
+[Phases 7–8](phase-7.md) minimum (real movie sync); [Phase 11](phase-11.md) if TV is in scope before
+deploy. Phases 13–14 strongly recommended for unattended operation.
 
-## Notes
+**Release pipeline:** [Phase 19](phase-19.md) (GHCR publish) should land **before** this phase — see
+[delivery order](README.md#delivery-order). [Phase 18](phase-18.md) (version in UI) is already done.
 
-See [deploy/truenas.md](../deploy/truenas.md) for the two-milestone overview. This doc is the
-implementation checklist for catalog work.
+## Defers to later phases
+
+| Item | Phase |
+| ---- | ----- |
+| TrueNAS App Catalog listing | 17 |
 
 ## Verification
 
-Test plan TBD — catalog install on clean SCALE box.
+Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
 
-This is the last planned development phase in the current roadmap.
+**Next:** [Phase 17 — TrueNAS catalog](phase-17.md) — only after Phase 16 runs successfully for a while

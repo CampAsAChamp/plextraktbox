@@ -22,13 +22,37 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 9 | [Frontend prototype](phase-9.md) | Planned | Run detail + log viewer spike | TBD |
 | 10 | [Frontend redesign](phase-10.md) | Planned | Full Radix + Tailwind migration | TBD |
 | 11 | [TV sync](phase-11.md) | Planned | Shows and episodes | TBD |
-| 12 | [Settings & operations](phase-12.md) | Planned | Safety guards, health, backup, CI | TBD |
-| 13 | [Dashboard & scheduling UX](phase-13.md) | Planned | Ops view, schedule picker, export | TBD |
-| 14 | [Doppler secrets](phase-14.md) | Planned | Maintainer dev/CI workflow | TBD |
-| 15 | [TrueNAS install](phase-15.md) | Planned | Personal box, GHCR, TLS docs | TBD |
-| 16 | [TrueNAS catalog](phase-16.md) | Planned | App catalog publication | TBD |
+| 12 | [CI & quality](phase-12.md) | Planned | GitHub Actions, e2e, API types | TBD |
+| 13 | [Settings & operations](phase-13.md) | Planned | Safety guards, health, backup | TBD |
+| 14 | [Dashboard & scheduling UX](phase-14.md) | Planned | Ops view, schedule picker, export | TBD |
+| 15 | [Doppler secrets](phase-15.md) | Planned | Maintainer dev/CI workflow | TBD |
+| 16 | [TrueNAS install](phase-16.md) | Planned | Personal box, GHCR, TLS docs | TBD |
+| 17 | [TrueNAS catalog](phase-17.md) | Planned | App catalog publication | TBD |
+| 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
+| 19 | [Automated releases](phase-19.md) | Planned | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 
-**Current focus:** Phase 7 — wire source **fetch** to real APIs for movies; Phases 0–6 are complete.
+**Current focus:** Phase 7 — wire source **fetch** to real APIs for movies; Phases 0–6 and 18 are complete.
+
+## Delivery order
+
+Phase numbers follow implementation order where possible. [Phase 18](phase-18.md) shipped early;
+use the tracks below when parallel work makes sense.
+
+```
+Product (primary)     7 → 8 → 9–11 (as needed) → 13 → 14
+
+Release / deploy      18 ✓ → 12 → 19 → 16 → 17
+
+Maintainer (optional) 15 — Doppler; anytime for dev/CI secrets
+```
+
+| Track | Order | Notes |
+| ----- | ----- | ----- |
+| **Product** | 7 → 8 | Real movie sync is the main milestone |
+| **Product** | 9 → 10, 11 | UI spike/redesign and TV can overlap 7–8 or follow |
+| **Ops** | 13 → 14 | Settings/safety, then dashboard UX — after core sync works |
+| **Release** | 12 → **19** → **16** → 17 | CI before automated releases; GHCR before TrueNAS install |
+| **Maintainer** | 15 | Independent of deploy |
 
 When a phase lands: update its scope doc (mark done), copy
 [test-plans/phase-test-plan-template.md](test-plans/phase-test-plan-template.md) →
