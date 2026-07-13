@@ -2,9 +2,10 @@
 
 Self-hosted Plex / Letterboxd / Trakt sync app. Single Docker container: FastAPI + React SPA + SQLite + APScheduler.
 
-- **Design doc:** `PLAN.md` (architecture, phase tracker — source of truth for "why")
+- **Design doc:** `docs/PLAN.md` (architecture, locked decisions — source of truth for "why")
+- **Phase roadmap:** `docs/phases/` (scope per phase) + `docs/PLAN.md` tracker (status)
 - **Agent guide:** `CLAUDE.md`
-- **Testing:** `docs/testing.md` + `docs/phase-*-test-plan.md`
+- **Testing:** `docs/testing.md` + `docs/phases/test-plans/`
 
 ## Stack
 

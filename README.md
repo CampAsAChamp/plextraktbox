@@ -13,7 +13,9 @@
     All-in-one, self-hosted tool that keeps Plex, Letterboxd, and Trakt in sync — with a web UI, built-in scheduler, live log streaming, and notifications.
     <br />
     <br />
-    <a href="PLAN.md"><strong>Explore the design doc »</strong></a>
+    <a href="docs/PLAN.md"><strong>Architecture &amp; design »</strong></a>
+    <br />
+    <a href="docs/phases/README.md"><strong>Phase roadmap »</strong></a>
     <br />
     <br />
     <a href="docs/testing.md">Testing guide</a>
@@ -55,7 +57,8 @@
 
 It replaces stitching together two separate projects — [letterboxd-plex-sync](https://github.com/CampAsAChamp/letterboxd-plex-sync) and [PlexTraktSync](https://github.com/Taxel/PlexTraktSync) — with one app, one UI, and one scheduler.
 
-See [PLAN.md](PLAN.md) for the full design doc and phase-by-phase progress tracker.
+See [docs/PLAN.md](docs/PLAN.md) for architecture and locked decisions. Per-phase scope and deliverables live
+in [docs/phases/](docs/phases/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -186,23 +189,29 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-The app is built incrementally; each phase is independently runnable and testable. See [PLAN.md#phase-tracker](PLAN.md#phase-tracker) for the checklist and current progress.
+The app is built incrementally; each phase is independently runnable and testable.
 
-- [x] **Phase 0 — Scaffold** — layout, Docker, compose, config, DB, health endpoint
-- [x] **Phase 1 — Auth + wizard** — single local user, sessions, setup gate
-- [x] **Phase 2 — Connections** — Plex, Trakt, Letterboxd, TMDB connection flows
-- [x] **Phase 3 — Sync engine core** — matching, reconcilers, dry-run engine
-- [x] **Phase 4 — Jobs + runs + scheduler** — job CRUD, APScheduler, run history UI
-- [x] **Phase 5 — Logging pipeline + live viewer** — structlog, SSE, LogViewer
-- [x] **Phase 6 — Notifications** — Discord, in-app alerts
-- [ ] **Phase 7 — Client-backed sources (movies)** — real Plex/Trakt/Letterboxd fetch + apply, library scoping, caching
-- [ ] **Phase 8 — Settings, safety & operations** — global settings, dry-run guards, health, backup, CI
-- [ ] **Phase 9 — Dashboard & scheduling UX** — ops dashboard, schedule picker, clone/export
-- [ ] **Phase 10 — TV sync** — shows and episodes
-- [ ] **Phase 11 — TrueNAS deployment (personal install)** — GHCR image, reverse proxy docs, real install
-- [ ] **Phase 12 — TrueNAS App Catalog publication** — packaged app + public image
-- [ ] **Phase 13 — Doppler secret management** — optional maintainer dev/CI workflow
-- [ ] **Phase 14 — UI polish & layout rework** — visual and layout pass after functionality is stable
+- **Progress tracker:** [docs/PLAN.md#phase-tracker](docs/PLAN.md#phase-tracker)
+- **Phase scope (expanded):** [docs/phases/](docs/phases/)
+- **Verification checklists:** [docs/testing.md](docs/testing.md)
+
+| Phase | Status | Doc |
+| ----- | ------ | --- |
+| 0 — Scaffold | Done | [phase-0](docs/phases/phase-0.md) |
+| 1 — Auth + wizard | Done | [phase-1](docs/phases/phase-1.md) |
+| 2 — Connections | Done | [phase-2](docs/phases/phase-2.md) |
+| 3 — Sync engine core | Done | [phase-3](docs/phases/phase-3.md) |
+| 4 — Jobs + scheduler | Done | [phase-4](docs/phases/phase-4.md) |
+| 5 — Logging + live viewer | Done | [phase-5](docs/phases/phase-5.md) |
+| 6 — Notifications | Done | [phase-6](docs/phases/phase-6.md) |
+| 7 — Client-backed sources (movies) | **Next** | [phase-7](docs/phases/phase-7.md) |
+| 8 — Settings & operations | Planned | [phase-8](docs/phases/phase-8.md) |
+| 9 — Dashboard & scheduling UX | Planned | [phase-9](docs/phases/phase-9.md) |
+| 10 — TV sync | Planned | [phase-10](docs/phases/phase-10.md) |
+| 11 — TrueNAS install | Planned | [phase-11](docs/phases/phase-11.md) |
+| 12 — TrueNAS catalog | Planned | [phase-12](docs/phases/phase-12.md) |
+| 13 — Doppler secrets | Planned | [phase-13](docs/phases/phase-13.md) |
+| 14 — UI polish | Planned | [phase-14](docs/phases/phase-14.md) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
