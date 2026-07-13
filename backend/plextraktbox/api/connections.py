@@ -19,6 +19,9 @@ from plextraktbox.schemas.connection import (
     LetterboxdConnectionTestRequest,
     PlexConnectionRequest,
     PlexConnectionTestRequest,
+    PlexLibrariesResponse,
+    PlexLibrariesUpdateRequest,
+    PlexLibraryInfo,
     PlexPinPollRequest,
     PlexPinPollResponse,
     PlexPinStartResponse,
@@ -185,6 +188,47 @@ def plex_pin_poll(
         machine_id=summary.config.get("machine_id"),
     )
     return PlexPinPollResponse(status="ok", connection=summary)
+
+
+@router.get(
+    "/plex/libraries",
+    response_model=PlexLibrariesResponse,
+)
+def list_plex_libraries(_user: CurrentUserDep, session: SessionDep) -> PlexLibrariesResponse:
+    try:
+        libraries = conn_svc.list_plex_libraries(session)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    connection = conn_svc.get_connection(session, Service.PLEX)
+    config = connection.public_config() if connection else {}
+    selected: list[str] = []
+    raw = config.get("libraries") or []
+    if isinstance(raw, list):
+        for entry in raw:
+            if isinstance(entry, dict) and entry.get("id") is not None:
+                selected.append(str(entry["id"]))
+    return PlexLibrariesResponse(
+        libraries=[PlexLibraryInfo(**entry) for entry in libraries],
+        selected_ids=selected,
+    )
+
+
+@router.put(
+    "/plex/libraries",
+    response_model=ConnectionSummary,
+    dependencies=[Depends(require_csrf)],
+)
+def update_plex_libraries(
+    body: PlexLibrariesUpdateRequest,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> ConnectionSummary:
+    try:
+        connection = conn_svc.update_plex_libraries(session, body.library_ids)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return ConnectionSummary.from_connection(connection, Service.PLEX)
 
 
 @router.post(

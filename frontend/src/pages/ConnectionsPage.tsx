@@ -2,6 +2,7 @@ import {
   Accordion,
   Alert,
   Button,
+  Checkbox,
   Group,
   List,
   PasswordInput,
@@ -25,6 +26,7 @@ import type {
   PlexPinPollInput,
   PlexPinPollResult,
   PlexPinStart,
+  PlexLibrariesResponse,
   Service,
   TmdbConnectionInput,
   TraktDevicePollInput,
@@ -108,6 +110,90 @@ function ClearConnectionButton({
     >
       Clear {SERVICE_LABELS[service]} connection
     </Button>
+  );
+}
+
+function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
+  const queryClient = useQueryClient();
+  const librariesQuery = useQuery({
+    queryKey: ["connections", "plex", "libraries"],
+    queryFn: () => api.get<PlexLibrariesResponse>("/connections/plex/libraries"),
+    enabled,
+  });
+  const [selected, setSelected] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (librariesQuery.data) {
+      setSelected(librariesQuery.data.selected_ids);
+    }
+  }, [librariesQuery.data]);
+
+  const save = useMutation({
+    mutationFn: (libraryIds: string[]) =>
+      api.put<ConnectionSummary>("/connections/plex/libraries", { library_ids: libraryIds }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["connections", "plex", "libraries"] });
+      notifications.show({ color: "green", message: "Plex library selection saved" });
+    },
+    onError: (error: unknown) => {
+      notifications.show({
+        color: "red",
+        message: error instanceof ApiError ? String(error.message) : "Could not save Plex libraries",
+      });
+    },
+  });
+
+  if (!enabled) {
+    return null;
+  }
+
+  if (librariesQuery.isLoading) {
+    return <Text size="sm">Loading Plex libraries…</Text>;
+  }
+
+  if (librariesQuery.isError || !librariesQuery.data) {
+    return (
+      <Alert color="yellow" title="Could not load Plex libraries">
+        Connect and test Plex first, then choose which Plex libraries to sync.
+      </Alert>
+    );
+  }
+
+  const { libraries } = librariesQuery.data;
+  if (libraries.length === 0) {
+    return (
+      <Alert color="yellow" title="No Plex libraries">
+        Add a Plex library to your server to sync ratings and watched history.
+      </Alert>
+    );
+  }
+
+  return (
+    <Stack gap="xs">
+      <Text fw={500} size="sm">
+        Plex libraries to sync
+      </Text>
+      <Text c="dimmed" size="sm">
+        Ratings and watched history are fetched from the Plex libraries you select. Leave all
+        unchecked to include every Plex library.
+      </Text>
+      <Checkbox.Group value={selected} onChange={setSelected}>
+        <Stack gap="xs">
+          {libraries.map((library) => (
+            <Checkbox key={library.id} value={library.id} label={library.title} />
+          ))}
+        </Stack>
+      </Checkbox.Group>
+      <Button
+        variant="light"
+        w="fit-content"
+        loading={save.isPending}
+        onClick={() => save.mutate(selected)}
+      >
+        Save Plex library selection
+      </Button>
+    </Stack>
   );
 }
 
@@ -228,6 +314,7 @@ function PlexStep({
             loading={testSaved.isPending}
           />
         ) : null}
+        <ClearConnectionButton service="plex" connection={connection} onCleared={onCleared} />
       </Group>
       {pollError ? (
         <Alert color="red" title="Could not finish Plex setup">
@@ -280,7 +367,7 @@ function PlexStep({
           </Stack>
         </Alert>
       ) : null}
-      <ClearConnectionButton service="plex" connection={connection} onCleared={onCleared} />
+      <PlexLibraryPicker enabled={plexConnected} />
     </Stack>
   );
 }

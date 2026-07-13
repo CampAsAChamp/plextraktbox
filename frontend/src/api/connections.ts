@@ -73,3 +73,14 @@ export interface TraktDevicePollResult {
   status: "pending" | "ok";
   connection: ConnectionSummary | null;
 }
+
+export interface PlexLibraryInfo {
+  id: string;
+  title: string;
+  type: string;
+}
+
+export interface PlexLibrariesResponse {
+  libraries: PlexLibraryInfo[];
+  selected_ids: string[];
+}

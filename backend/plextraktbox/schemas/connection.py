@@ -112,3 +112,18 @@ class PlexPinPollRequest(BaseModel):
 class PlexPinPollResponse(BaseModel):
     status: str
     connection: ConnectionSummary | None = None
+
+
+class PlexLibraryInfo(BaseModel):
+    id: str
+    title: str
+    type: str
+
+
+class PlexLibrariesResponse(BaseModel):
+    libraries: list[PlexLibraryInfo]
+    selected_ids: list[str]
+
+
+class PlexLibrariesUpdateRequest(BaseModel):
+    library_ids: list[str] = Field(default_factory=list)
