@@ -5,7 +5,7 @@
 ## Goal
 
 Persist sync jobs, run them on a cron schedule or on demand via APScheduler, and expose run history
-in the API and UI — still using in-memory source stubs until Phase 7.
+in the API and UI — still using in-memory source stubs until Phase 7 (fetch) / Phase 8 (apply).
 
 ## Deliverables
 
@@ -29,7 +29,7 @@ in the API and UI — still using in-memory source stubs until Phase 7.
 
 [Phase 3](phase-3.md)
 
-## Important limitation (until Phase 7)
+## Important limitation (until Phases 7–8)
 
 Sources wrap **MemorySource** with empty stores — runs complete successfully but summary counts are
 mostly **zero**. This is expected, not a bug. Dry-run behavior and scheduler wiring are what Phase 4
@@ -39,7 +39,7 @@ proves.
 
 - Live log streaming on run detail (Phase 5)
 - Notifications on run complete (Phase 6)
-- Real Plex/Trakt/Letterboxd data (Phase 7)
+- Real Plex/Trakt/Letterboxd data (Phases 7–8)
 
 ## Verification
 

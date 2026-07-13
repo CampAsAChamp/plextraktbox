@@ -1,4 +1,4 @@
-"""Plex source adapter (Phase 3: in-memory backing; Phase 7: client fetch/apply)."""
+"""Plex source adapter (Phase 3: in-memory; Phase 7: client fetch; Phase 8: client apply)."""
 
 from __future__ import annotations
 

@@ -1,70 +1,50 @@
-# Phase 8 — Settings, safety & operations
+# Phase 8 — Client-backed apply (movies)
 
 **Status:** Planned
 
 ## Goal
 
-Global app settings, safety rails around live sync, operational health/backup tooling, and CI so the
-app is safe to run unattended on a home server.
+Wire `apply_*` on Plex and Trakt sources to real APIs so live runs (with dry-run off) can sync
+movies — building on the fetch path proven in [Phase 7](phase-7.md). Letterboxd remains
+**read-only** — `apply_*` must stay unsupported.
 
 ## Deliverables
 
-### Settings model + UI
+### Live apply wiring
 
-- **`setting` table** + Settings page
-- Default cron expression
-- `log_retention_days`
-- **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
+- `PlexSource.apply_*` writes watchlist, ratings, and watched state to Plex (movies)
+- `TraktSource.apply_*` writes where reconcilers plan changes (movies)
+- `LetterboxdSource.apply_*` stays unsupported (no write API)
+- Dry-run continues to log "would …" with zero writes
 
-### Safety guards
+### Testing strategy
 
-- **First run must be dry-run** — per-job `require_dry_run_first` blocks live apply until ≥1
-  successful dry-run exists for that job
-- **Exclude/ignore list** — global TMDB/IMDb ids in settings; optional per-job override via
-  `exclude_ids_json`
+- Respx tests for apply HTTP payloads and error handling
+- Dry-run apply paths assert zero writes against mocked HTTP
+- Manual live-run on a small test job verifies writes land in Plex/Trakt (use caution)
 
-### Connection health
+## Key files
 
-- Scheduled `test_connection()` job
-- Update connection `status` on failure/expiry
-- Optional notification when status becomes `needs_reauth`
-
-### Operations
-
-- **Log retention** — scheduled job prunes old `log_entry` / `job_run` rows per `log_retention_days`
-- **Richer `/api/health`** — version, scheduler alive, DB writable, connection status summary
-- **SQLite backup** — Settings download button + README note for ZFS snapshots
-- **Password change** in Settings
-
-### Quality & DX
-
-- structlog redaction audit; improve error surfaces in API/UI
-- **GitHub Actions CI** — restore `.github/workflows/ci.yml`, mirror `mise run check`
-- OpenAPI → TypeScript types generation
-- e2e smoke test
-- Gravatar/settings profile polish
-
-## Key files (expected)
-
-- `backend/plextraktbox/models/setting.py`, `api/settings.py`, `api/health.py`
-- `backend/plextraktbox/scheduler/` — retention + health jobs
-- `frontend/src/pages/Settings/`
-- `.github/workflows/ci.yml`
+- `backend/plextraktbox/sync/sources/plex_source.py`, `trakt_source.py`
+- `backend/plextraktbox/clients/plex_client.py`, `trakt_client.py`
+- Existing engine/reconciler tests — apply paths with fakes + respx
 
 ## Prerequisites
 
-[Phase 7](phase-7.md) — real sync on movies proven with dry-run + cautious live runs
+[Phase 7](phase-7.md) — real fetches and dry-run plans proven with live creds
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| Dashboard ops view, friendly cron picker | 9 |
-| Log export download | 9 |
-| TrueNAS deploy docs | 11 |
+| Global settings, dry-run guards, exclude list | 9 |
+| Connection health monitoring job | 9 |
+| Dashboard ops view, schedule picker | 10 |
+| TV shows and episodes | 11 |
+| TrueNAS packaging, GHCR, reverse proxy | 12 |
 
 ## Verification
 
-Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+[phase-8-test-plan.md](test-plans/phase-8-test-plan.md)
 
-**Next:** [Phase 9 — Dashboard & scheduling UX](phase-9.md)
+**Next:** [Phase 9 — Settings & operations](phase-9.md)

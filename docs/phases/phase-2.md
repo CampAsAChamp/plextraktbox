@@ -33,8 +33,8 @@ onboarding; support re-auth when tokens expire.
 ## Defers to later phases
 
 - Plex library scoping picker (Phase 7)
-- Scheduled connection health checks (Phase 8)
-- Using connections in live sync fetches (Phase 7)
+- Scheduled connection health checks (Phase 9)
+- Using connections in live sync fetches (Phase 7); apply (Phase 8)
 
 ## Verification
 

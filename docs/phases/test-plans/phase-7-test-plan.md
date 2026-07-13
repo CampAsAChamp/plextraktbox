@@ -2,9 +2,9 @@
 
 **Scope:** [Phase 7](../phase-7.md)
 
-Client-backed sources (movies): wire `PlexSource`, `TraktSource`, and `LetterboxdSource` to real
-`clients/` fetch/apply; Plex library scoping, HTTP caching, pre-flight checks, and unmatched-item
-reporting.
+Client-backed **fetch** (movies): wire `PlexSource`, `TraktSource`, and `LetterboxdSource` to real
+`clients/` fetch paths; Plex library scoping, HTTP caching, pre-flight checks, and unmatched-item
+reporting. `apply_*` stays stubbed until [Phase 8](phase-8-test-plan.md).
 
 **Prerequisites:** [Phase 6](phase-6-test-plan.md) notifications passing; all four connections
 `ok` in Settings. Shared setup: [testing.md](../../testing.md).
@@ -12,7 +12,7 @@ reporting.
 ## What Phase 7 adds
 
 - `fetch_watchlist` / `fetch_ratings` / `fetch_watched` call live APIs (**movies first**)
-- `apply_*` writes to Plex and Trakt where reconcilers plan changes (Letterboxd stays read-only)
+- `apply_*` remains no-op / unsupported — dry-run shows plans only
 - TMDB client used for GUID resolution where sources need it
 - **Plex library scoping** — library picker in Connections; selected libraries stored in
   `config_json`; `PlexSource` honors scope for watched/ratings fetch
@@ -21,14 +21,15 @@ reporting.
   API/UI error when a connection is missing or needs re-auth
 - **Unmatched items report** — `RunSummary` tracks items with no cross-service identifier match;
   run-detail panel lists them for debugging
-- Unit tests remain on fakes; new respx-backed tests for client → `MediaItem` mapping
+- Unit tests remain on fakes; new respx-backed tests for client fetch → `MediaItem` mapping
 
 ## What Phase 7 defers to later phases
 
-- Global settings, dry-run guards, exclude list, connection health job (Phase 8)
-- Dashboard ops, schedule picker, clone/export (Phase 9)
-- TV shows and episodes (Phase 10)
-- TrueNAS packaging, GHCR, reverse proxy docs (Phase 11)
+- `apply_*` writes to Plex and Trakt (Phase 8)
+- Global settings, dry-run guards, exclude list, connection health job (Phase 9)
+- Dashboard ops, schedule picker, clone/export (Phase 10)
+- TV shows and episodes (Phase 11)
+- TrueNAS packaging, GHCR, reverse proxy docs (Phase 12)
 
 ## 1. Automated tests
 
@@ -38,8 +39,8 @@ mise run check           # CI parity before marking phase done
 ```
 
 - [ ] Unit reconciler/engine tests still pass with fakes (no network)
-- [ ] Respx tests cover Plex/Trakt/Letterboxd client responses → `MediaItem` fields
-- [ ] Dry-run apply paths assert zero writes against mocked HTTP
+- [ ] Respx tests cover Plex/Trakt/Letterboxd client responses → `MediaItem` fields (fetch)
+- [ ] Dry-run runs assert zero apply/write HTTP calls
 - [ ] Pre-flight rejects run when a required connection is not `ok`
 - [ ] Unmatched items appear in `RunSummary` when identifiers do not overlap
 
@@ -56,7 +57,6 @@ mise run up-dev          # or up + dev-bootstrap
 - [ ] Run detail shows unmatched items when deliberately mismatched content exists
 - [ ] Letterboxd → Plex ratings job (dry-run) shows LB ratings in plan logs
 - [ ] Run with a broken connection — pre-flight error before run starts (no orphan `running` run)
-- [ ] Disable dry-run on a small test job — verify writes land in Plex/Trakt (use caution)
 
 ## 3. API smoke (optional)
 
@@ -74,6 +74,6 @@ mise run dev-bootstrap   # after wipe; needs connection vars in .env
 
 ## 5. Notes
 
-- Letterboxd has no write API — `apply_*` on `LetterboxdSource` must remain unsupported
+- Live writes are [Phase 8](phase-8-test-plan.md) — all runs in this phase should stay dry-run
 - Trakt token refresh on expiry should work via existing connection layer
-- Per-item apply failures must not abort the run (existing engine behavior)
+- Per-item apply failures must not abort the run (existing engine behavior; verified again in Phase 8)

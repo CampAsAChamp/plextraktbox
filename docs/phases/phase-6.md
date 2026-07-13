@@ -31,10 +31,10 @@ per-job overrides.
 
 ## Defers to later phases
 
-- Notification on connection `needs_reauth` (Phase 8)
+- Notification on connection `needs_reauth` (Phase 9)
 
 ## Verification
 
 [phase-6-test-plan.md](test-plans/phase-6-test-plan.md)
 
-**Next:** [Phase 7 — Client-backed sources (movies)](phase-7.md) ← **current focus**
+**Next:** [Phase 7 — Client-backed fetch (movies)](phase-7.md) ← **current focus**

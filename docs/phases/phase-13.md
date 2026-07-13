@@ -1,47 +1,51 @@
-# Phase 13 — Doppler secret management
+# Phase 13 — TrueNAS App Catalog publication
 
 **Status:** Planned
 
 ## Goal
 
-Optional [Doppler](https://www.doppler.com/) integration for **maintainer** dev and CI workflows —
-without making Doppler a runtime dependency for self-hosted TrueNAS users (`.env` / app config
-remains the default).
+Get **plextraktbox** listed in the **TrueNAS App Catalog** so anyone can install it like an
+official/community app — not just via manual "Launch Docker Image."
+
+This is **milestone 2** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
+**Do not start until Phase 12 has been running
+successfully on real hardware for a while** — publishing before the app is proven is premature.
 
 ## Deliverables
 
-### Doppler project setup
+### App packaging
 
-- Doppler project + `dev` / `ci` configs mapping existing env vars:
-  - `SECRET_KEY`
-  - `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
-  - Other secrets from `.env.example`
+- Package per **current TrueNAS SCALE app spec** (chart / `app.yaml`-style definition with config
+  schema) — verify format at phase start; it changes across SCALE releases
+- Config schema exposes user-facing fields: HTTP port, `/data` dataset path, `SECRET_KEY`, Trakt app
+  credentials, etc. — not raw env-only compose
 
-### Repo integration
+### Image registry
 
-- `doppler.yaml` in repo root
-- Document `doppler setup` + `doppler run` for local dev and `mise run up`
-- Optional `doppler run --` wrapper tasks in `mise.toml`
+- Public registry (e.g. GHCR) with **versioned tags** — catalog cannot point at local-only images
 
-### CI
+### Catalog submission
 
-- Service-token injection for integration tests that need real credentials
-- No committed `.env` required for maintainers with Doppler CLI
+- Submit to official community catalog **or** stand up a self-hosted custom catalog URL
+- Confirm current submission/review requirements at phase start (catalog mechanics move over time)
+- Pass TrueNAS validation/review
 
-### Production notes
+### Verification
 
-- Entrypoint/compose notes for **optional** production injection (advanced users only)
-- Self-hosted installs unchanged — `.env` or TrueNAS app config UI
+- Clean TrueNAS instance installs from catalog UI
+- App behaves identically to Phase 12 manual install
 
 ## Prerequisites
 
-[Phase 8](phase-8.md) CI restoration recommended; not blocked on TrueNAS phases
+[Phase 12](phase-12.md) — personal install stable on real hardware
+
+## Notes
+
+See [deploy/truenas.md](../deploy/truenas.md) for the two-milestone overview. This doc is the
+implementation checklist for catalog work.
 
 ## Verification
 
-Test plan TBD:
+Test plan TBD — catalog install on clean SCALE box.
 
-- Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
-- `doppler run mise run check` passes without hand-edited `.env`
-
-**Next:** [Phase 14 — UI polish](phase-14.md)
+**Next:** [Phase 14 — Doppler secrets](phase-14.md)

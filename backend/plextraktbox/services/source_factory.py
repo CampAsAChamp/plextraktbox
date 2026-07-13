@@ -21,7 +21,7 @@ def _connection_ok(session: Session, service: Service) -> bool:
 def build_sources(session: Session, job: Job) -> dict[str, Source]:
     """Instantiate sources required by the job's source pair.
 
-    Phase 3 uses in-memory adapters; client-backed fetch/apply lands in Phase 7.
+    Phase 3 uses in-memory adapters; client-backed fetch lands in Phase 7; apply in Phase 8.
     """
     required = job.services_for_pair()
     missing = [name for name in required if not _connection_ok(session, Service(name))]

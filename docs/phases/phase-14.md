@@ -1,37 +1,47 @@
-# Phase 14 — UI polish & layout rework
+# Phase 14 — Doppler secret management
 
 **Status:** Planned
 
 ## Goal
 
-Intentional visual and layout pass once core functionality is stable. **No new product features** —
-cosmetic and UX refinement only. Earlier phases deliberately prioritize working features over
-aesthetics.
+Optional [Doppler](https://www.doppler.com/) integration for **maintainer** dev and CI workflows —
+without making Doppler a runtime dependency for self-hosted TrueNAS users (`.env` / app config
+remains the default).
 
-## Scope
+## Deliverables
 
-- Consistent spacing and typography across pages
-- Responsive layout fixes (mobile/tablet)
-- Navigation and page structure cleanup
-- Form and table polish (Jobs, Runs, Settings, Connections)
-- Empty, loading, and error states
-- Dark/light theme consistency (Mantine)
-- Accessibility basics (focus order, labels, contrast)
+### Doppler project setup
 
-## Out of scope
+- Doppler project + `dev` / `ci` configs mapping existing env vars:
+  - `SECRET_KEY`
+  - `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
+  - Other secrets from `.env.example`
 
-- New sync features, new API endpoints, or new data types
-- TrueNAS or deployment changes
-- Major component library swap
+### Repo integration
+
+- `doppler.yaml` in repo root
+- Document `doppler setup` + `doppler run` for local dev and `mise run up`
+- Optional `doppler run --` wrapper tasks in `mise.toml`
+
+### CI
+
+- Service-token injection for integration tests that need real credentials
+- No committed `.env` required for maintainers with Doppler CLI
+
+### Production notes
+
+- Entrypoint/compose notes for **optional** production injection (advanced users only)
+- Self-hosted installs unchanged — `.env` or TrueNAS app config UI
 
 ## Prerequisites
 
-[Phase 9](phase-9.md) or later — polish after dashboard/scheduling UX exists; ideally after Phase 10
-(TV) if TV UI is part of the pass
+[Phase 9](phase-9.md) CI restoration recommended; not blocked on TrueNAS phases
 
 ## Verification
 
-Test plan TBD — manual smoke across main flows (setup, connections, jobs, run detail, settings);
-visual regression checklist optional.
+Test plan TBD:
 
-This is the last planned development phase in the current roadmap.
+- Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
+- `doppler run mise run check` passes without hand-edited `.env`
+
+**Next:** [Phase 15 — UI polish](phase-15.md)

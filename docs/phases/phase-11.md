@@ -1,63 +1,48 @@
-# Phase 11 — TrueNAS deployment (personal install)
+# Phase 11 — TV sync
 
 **Status:** Planned
 
 ## Goal
 
-Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "Launch Docker Image" —
-no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
-
-This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-Do not conflate with Phase 12 (catalog publication).
+Extend client-backed sources and reconcilers to **shows and episodes** — watchlist, ratings, and
+watched/history where each service supports them — building on the movie path proven in Phases 7–8.
 
 ## Deliverables
 
-### Container permissions
+### Source extensions
 
-- Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
-  dataset
-- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
+- Plex/Trakt fetch + apply for TV libraries and episode-level watched state
+- Episode-level **Trakt ↔ Plex** watched matching (not just show-level)
+- `media_type` handling throughout engine and reconcilers for `show` / `episode`
+- Letterboxd remains **film-focused** — read-only; no TV write-back
 
-### Published image
+### Matching
 
-- **GHCR** (or equivalent) with versioned tags — pull without local build
-- Release tagging workflow documented
+- TVDB identifier priority where relevant (already scaffolded in `guid.py` / `matcher.py`)
+- Unmatched-items report includes episode-level gaps
 
-### Reverse proxy / TLS
+### Jobs & UI
 
-- Document Caddy or Traefik example in front of the TrueNAS app (HTTPS, `Secure` cookies)
-- No host-network or privileged requirements
+- Job data-type and source-pair options reflect TV scope where applicable
+- Run summary counts break out shows/episodes as needed
 
-### Install documentation
+## Key files (expected)
 
-- Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
-- Env vars, port mapping, dataset mount path
-- First-run wizard → connections → job → scheduled run → notification
-
-### Real install verification
-
-- End-to-end on user's TrueNAS hardware: wizard, cron job fires, logs stream, Discord/in-app notify
-
-## Constraints (from day one)
-
-- Single container, SQLite, one HTTP port
-- `/data` on ZFS host-path, not Docker-managed volume
-- No Docker socket, no privileged mode, no macvlan
+- `backend/plextraktbox/sync/sources/`, `reconcilers/`, `clients/plex_client.py`,
+  `trakt_client.py`
+- Tests: fakes extended for TV fixtures; respx mapping tests for show/episode payloads
 
 ## Prerequisites
 
-[Phase 7](phase-7.md) minimum (real movie sync); [Phase 10](phase-10.md) if TV is in scope before
-deploy. Phases 8–9 strongly recommended for unattended operation.
+[Phases 7–8](phase-7.md) — **movies working on real data** before starting TV; Phases 9–10 recommended
+for safety/ops UX but not strictly blocking
 
 ## Defers to later phases
 
-| Item | Phase |
-| ---- | ----- |
-| TrueNAS App Catalog listing | 12 |
-| Doppler maintainer workflow | 13 |
+Nothing critical — TV is the last major sync scope item before deployment phases.
 
 ## Verification
 
-Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
+Test plan TBD when phase lands.
 
-**Next:** [Phase 12 — TrueNAS catalog](phase-12.md) — only after Phase 11 runs successfully for a while
+**Next:** [Phase 12 — TrueNAS install](phase-12.md)

@@ -13,7 +13,7 @@ Shared setup: [testing.md](../../testing.md).
 **Runs do not pull real Plex / Trakt / Letterboxd data.** Sources are still in-memory stubs
 (`PlexSource`, `TraktSource`, `LetterboxdSource` wrap `MemorySource` with empty stores). The sync
 engine and scheduler run end-to-end, but fetches return nothing until client-backed sources land in
-[Phase 7](phase-7-test-plan.md).
+[Phases 7–8](phase-7-test-plan.md).
 
 What you *should* see in the UI:
 

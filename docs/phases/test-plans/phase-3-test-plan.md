@@ -48,7 +48,7 @@ curl -s -X POST http://localhost:8000/api/jobs/1/run \
 
 ## 3. Notes
 
-- Sources use in-memory adapters in Phase 3; client-backed fetch/apply is [Phase 7](phase-7-test-plan.md).
+- Sources use in-memory adapters in Phase 3; client-backed fetch is [Phase 7](phase-7-test-plan.md); apply is [Phase 8](phase-8-test-plan.md).
 - Reconcilers enforce source-of-truth: watchlist=Plex, ratings=Letterboxd, watched=Trakt.
 - Letterboxd is read-only (`apply_*` raises `NotSupported`).
 - Full scheduler, run history UI, and live logs arrive in Phases 4–5.

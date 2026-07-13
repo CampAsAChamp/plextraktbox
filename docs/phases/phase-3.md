@@ -37,8 +37,8 @@ in-memory fakes (no live APIs yet).
 ## Defers to later phases
 
 - APScheduler integration (Phase 4)
-- Real client-backed fetch/apply (Phase 7)
-- TV episode-level logic (Phase 10)
+- Real client-backed fetch (Phase 7); apply (Phase 8)
+- TV episode-level logic (Phase 11)
 
 ## Verification
 

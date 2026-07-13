@@ -17,7 +17,7 @@ Repo and package name: `plextraktbox`.
 
 The user will run this on **TrueNAS** (not just any Docker host). Packaging constraints and the
 two-milestone deploy plan (personal install → App Catalog) are documented in
-[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so Phase 11
+[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so Phase 12
 drops in without rework.
 
 
@@ -129,15 +129,15 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - 3rd-party tokens Fernet-encrypted in `connection.secret_enc`, decrypted only in memory. bcrypt for local password.
 - Starlette SessionMiddleware (HttpOnly, SameSite=Lax, Secure over HTTPS); auth dependency gates all routes except `/api/setup/*` (self-disables once a user exists) and `/api/health`; require `X-Requested-With` on mutating requests (CSRF).
 - Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
-- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in [deploy/truenas.md](deploy/truenas.md) (Phase 11).
-- **Planned (Phase 13):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
+- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in [deploy/truenas.md](deploy/truenas.md) (Phase 12).
+- **Planned (Phase 14):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
 
 
 
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 7 — real Plex/Trakt/Letterboxd fetch + apply for movies.
+**Current focus:** Phase 7 — real Plex/Trakt/Letterboxd **fetch** for movies; apply in Phase 8.
 
 
 

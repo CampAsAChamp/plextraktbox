@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 are done; **Phase 7 (client-backed sources, movies)** is next, followed by settings/safety (8), dashboard UX (9), and TV sync (10). Visual/layout polish is intentionally deferred to **Phase 14**.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 are done; **Phase 7 (client-backed fetch, movies)** is next, then apply (8), settings/safety (9), dashboard UX (10), and TV sync (11). Visual/layout polish is intentionally deferred to **Phase 15**.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

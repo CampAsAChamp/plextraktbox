@@ -17,16 +17,17 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 4 | [Jobs + scheduler](phase-4.md) | Done | Job CRUD, APScheduler, run history | [phase-4](test-plans/phase-4-test-plan.md) |
 | 5 | [Logging + live viewer](phase-5.md) | Done | structlog, SSE, LogViewer | [phase-5](test-plans/phase-5-test-plan.md) |
 | 6 | [Notifications](phase-6.md) | Done | Discord, in-app bell | [phase-6](test-plans/phase-6-test-plan.md) |
-| 7 | [Client-backed sources (movies)](phase-7.md) | **Next** | Real Plex/Trakt/LB fetch + apply | [phase-7](test-plans/phase-7-test-plan.md) |
-| 8 | [Settings & operations](phase-8.md) | Planned | Safety guards, health, backup, CI | TBD |
-| 9 | [Dashboard & scheduling UX](phase-9.md) | Planned | Ops view, schedule picker, export | TBD |
-| 10 | [TV sync](phase-10.md) | Planned | Shows and episodes | TBD |
-| 11 | [TrueNAS install](phase-11.md) | Planned | Personal box, GHCR, TLS docs | TBD |
-| 12 | [TrueNAS catalog](phase-12.md) | Planned | App catalog publication | TBD |
-| 13 | [Doppler secrets](phase-13.md) | Planned | Maintainer dev/CI workflow | TBD |
-| 14 | [UI polish](phase-14.md) | Planned | Visual/layout pass | TBD |
+| 7 | [Client-backed fetch (movies)](phase-7.md) | **Next** | Real Plex/Trakt/LB fetch | [phase-7](test-plans/phase-7-test-plan.md) |
+| 8 | [Client-backed apply (movies)](phase-8.md) | Planned | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
+| 9 | [Settings & operations](phase-9.md) | Planned | Safety guards, health, backup, CI | TBD |
+| 10 | [Dashboard & scheduling UX](phase-10.md) | Planned | Ops view, schedule picker, export | TBD |
+| 11 | [TV sync](phase-11.md) | Planned | Shows and episodes | TBD |
+| 12 | [TrueNAS install](phase-12.md) | Planned | Personal box, GHCR, TLS docs | TBD |
+| 13 | [TrueNAS catalog](phase-13.md) | Planned | App catalog publication | TBD |
+| 14 | [Doppler secrets](phase-14.md) | Planned | Maintainer dev/CI workflow | TBD |
+| 15 | [UI polish](phase-15.md) | Planned | Visual/layout pass | TBD |
 
-**Current focus:** Phase 7 — wire sources to real APIs for movies; Phases 0–6 are complete.
+**Current focus:** Phase 7 — wire source **fetch** to real APIs for movies; Phases 0–6 are complete.
 
 When a phase lands: update its scope doc (mark done), copy
 [test-plans/phase-test-plan-template.md](test-plans/phase-test-plan-template.md) →

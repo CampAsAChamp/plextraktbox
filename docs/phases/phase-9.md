@@ -1,51 +1,70 @@
-# Phase 9 — Dashboard & scheduling UX
+# Phase 9 — Settings, safety & operations
 
 **Status:** Planned
 
 ## Goal
 
-Make day-to-day operation pleasant: see job health at a glance, pick schedules without writing cron
-by hand, and export run logs for debugging.
+Global app settings, safety rails around live sync, operational health/backup tooling, and CI so the
+app is safe to run unattended on a home server.
 
 ## Deliverables
 
-### Dashboard ops view
+### Settings model + UI
 
-- Per-job **last run** status + summary counts (matched/added/errors)
-- Failure/partial run alerts surfaced prominently
-- Quick **Run** and **Dry-run** actions from dashboard
+- **`setting` table** + Settings page
+- Default cron expression
+- `log_retention_days`
+- **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
 
-### Scheduling UX
+### Safety guards
 
-- **Next scheduled run** — APScheduler next-fire-time API; display in user's timezone on Jobs +
-  Dashboard
-- **Friendly schedule picker** — presets ("Daily 3am", "Every 6 hours") → cron; advanced raw cron
-  still available
-- **Cron preview in local time** — show next N run times under the cron field
+- **First run must be dry-run** — per-job `require_dry_run_first` blocks live apply until ≥1
+  successful dry-run exists for that job
+- **Exclude/ignore list** — global TMDB/IMDb ids in settings; optional per-job override via
+  `exclude_ids_json`
 
-### Job & run utilities
+### Connection health
 
-- **Clone job** — duplicate config to a new job
-- **Export run logs** — download `.txt` or `.jsonl` from run detail
+- Scheduled `test_connection()` job
+- Update connection `status` on failure/expiry
+- Optional notification when status becomes `needs_reauth`
+
+### Operations
+
+- **Log retention** — scheduled job prunes old `log_entry` / `job_run` rows per `log_retention_days`
+- **Richer `/api/health`** — version, scheduler alive, DB writable, connection status summary
+- **SQLite backup** — Settings download button + README note for ZFS snapshots
+- **Password change** in Settings
+
+### Quality & DX
+
+- structlog redaction audit; improve error surfaces in API/UI
+- **GitHub Actions CI** — restore `.github/workflows/ci.yml`, mirror `mise run check`
+- OpenAPI → TypeScript types generation
+- e2e smoke test
+- Gravatar/settings profile polish
 
 ## Key files (expected)
 
-- `backend/plextraktbox/api/jobs.py` — next-run endpoint
-- `frontend/src/pages/Dashboard/`, `components/JobForm/` (schedule picker)
-- `frontend/src/pages/RunDetail/` (export button)
+- `backend/plextraktbox/models/setting.py`, `api/settings.py`, `api/health.py`
+- `backend/plextraktbox/scheduler/` — retention + health jobs
+- `frontend/src/pages/Settings/`
+- `.github/workflows/ci.yml`
 
 ## Prerequisites
 
-[Phase 8](phase-8.md) — settings and safety rails in place
+[Phase 8](phase-8.md) — real sync on movies proven with dry-run + cautious live runs
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| Visual/layout polish | 14 |
+| Dashboard ops view, friendly cron picker | 10 |
+| Log export download | 10 |
+| TrueNAS deploy docs | 12 |
 
 ## Verification
 
-Test plan TBD when phase lands.
+Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
 
-**Next:** [Phase 10 — TV sync](phase-10.md)
+**Next:** [Phase 10 — Dashboard & scheduling UX](phase-10.md)

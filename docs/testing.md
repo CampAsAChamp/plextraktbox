@@ -63,13 +63,14 @@ Reference for phase test plans and automated tests:
 
 - **Container (default):** `mise run up` → http://localhost:8000
 - **Local dev (hot reload):** see [dev-workflow.md](dev-workflow.md)
-- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions lands in Phase 8)
+- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions lands in Phase 9)
 - **Sync engine (Phase 3+):** fakes in `tests/fakes/` via `SyncContext` (no network); assert
   source-of-truth per data type; dry-run = zero writes
 - **HTTP/time:** `respx`, `freezegun`
 - **API:** httpx AsyncClient + in-memory SQLite
 - **Frontend:** vitest + RTL (+ MSW where needed)
-- **Client-backed sources (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
-- **TrueNAS (Phases 11–12):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
-- **Doppler (Phase 13):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
-- **UI polish (Phase 14):** visual/layout pass only — manual smoke across main flows
+- **Client-backed fetch (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
+- **Client-backed apply (Phase 8):** respx for apply payloads; cautious manual live-run verification
+- **TrueNAS (Phases 12–13):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
+- **Doppler (Phase 14):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
+- **UI polish (Phase 15):** visual/layout pass only — manual smoke across main flows

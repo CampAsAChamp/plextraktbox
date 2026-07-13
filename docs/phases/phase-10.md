@@ -1,48 +1,51 @@
-# Phase 10 — TV sync
+# Phase 10 — Dashboard & scheduling UX
 
 **Status:** Planned
 
 ## Goal
 
-Extend client-backed sources and reconcilers to **shows and episodes** — watchlist, ratings, and
-watched/history where each service supports them — building on the movie path proven in Phase 7.
+Make day-to-day operation pleasant: see job health at a glance, pick schedules without writing cron
+by hand, and export run logs for debugging.
 
 ## Deliverables
 
-### Source extensions
+### Dashboard ops view
 
-- Plex/Trakt fetch + apply for TV libraries and episode-level watched state
-- Episode-level **Trakt ↔ Plex** watched matching (not just show-level)
-- `media_type` handling throughout engine and reconcilers for `show` / `episode`
-- Letterboxd remains **film-focused** — read-only; no TV write-back
+- Per-job **last run** status + summary counts (matched/added/errors)
+- Failure/partial run alerts surfaced prominently
+- Quick **Run** and **Dry-run** actions from dashboard
 
-### Matching
+### Scheduling UX
 
-- TVDB identifier priority where relevant (already scaffolded in `guid.py` / `matcher.py`)
-- Unmatched-items report includes episode-level gaps
+- **Next scheduled run** — APScheduler next-fire-time API; display in user's timezone on Jobs +
+  Dashboard
+- **Friendly schedule picker** — presets ("Daily 3am", "Every 6 hours") → cron; advanced raw cron
+  still available
+- **Cron preview in local time** — show next N run times under the cron field
 
-### Jobs & UI
+### Job & run utilities
 
-- Job data-type and source-pair options reflect TV scope where applicable
-- Run summary counts break out shows/episodes as needed
+- **Clone job** — duplicate config to a new job
+- **Export run logs** — download `.txt` or `.jsonl` from run detail
 
 ## Key files (expected)
 
-- `backend/plextraktbox/sync/sources/`, `reconcilers/`, `clients/plex_client.py`,
-  `trakt_client.py`
-- Tests: fakes extended for TV fixtures; respx mapping tests for show/episode payloads
+- `backend/plextraktbox/api/jobs.py` — next-run endpoint
+- `frontend/src/pages/Dashboard/`, `components/JobForm/` (schedule picker)
+- `frontend/src/pages/RunDetail/` (export button)
 
 ## Prerequisites
 
-[Phase 7](phase-7.md) — **movies working on real data** before starting TV; Phase 8–9 recommended
-for safety/ops UX but not strictly blocking
+[Phase 9](phase-9.md) — settings and safety rails in place
 
 ## Defers to later phases
 
-Nothing critical — TV is the last major sync scope item before deployment phases.
+| Item | Phase |
+| ---- | ----- |
+| Visual/layout polish | 15 |
 
 ## Verification
 
 Test plan TBD when phase lands.
 
-**Next:** [Phase 11 — TrueNAS install](phase-11.md)
+**Next:** [Phase 11 — TV sync](phase-11.md)

@@ -1,21 +1,20 @@
-# Phase 7 — Client-backed sources (movies)
+# Phase 7 — Client-backed fetch (movies)
 
 **Status:** Next
 
 ## Goal
 
-Replace in-memory source stubs with real Plex, Trakt, and Letterboxd fetch/apply via `clients/` and
-decrypted connection secrets — **movies first** — so dry-runs show real item counts and live runs
-can sync data.
+Replace in-memory **fetch** stubs with real Plex, Trakt, and Letterboxd reads via `clients/` and
+decrypted connection secrets — **movies first** — so dry-runs show real item counts and reconcile
+plans against live data. `apply_*` stays stubbed until [Phase 8](phase-8.md).
 
 ## Deliverables
 
-### Live source wiring
+### Live fetch wiring
 
 - `source_factory` builds `PlexSource`, `TraktSource`, `LetterboxdSource` from `connection` rows
 - `fetch_watchlist` / `fetch_ratings` / `fetch_watched` call live APIs (movies)
-- `apply_*` writes to Plex and Trakt where reconcilers plan changes
-- Letterboxd remains **read-only** — `apply_*` must stay unsupported
+- `apply_*` remains no-op / unsupported (existing Phase 3 behavior) — dry-run plans only
 - TMDB client for GUID resolution where sources need it
 
 ### Plex library scoping
@@ -42,7 +41,7 @@ can sync data.
 ### Testing strategy
 
 - Unit tests stay on fakes + existing reconciler/engine tests
-- New **respx** tests for client HTTP → `MediaItem` field mapping
+- New **respx** tests for client HTTP → `MediaItem` field mapping (fetch paths)
 - Manual dry-run with real creds shows non-zero fetch/plan counts
 
 ## Key files
@@ -60,14 +59,15 @@ can sync data.
 
 | Item | Phase |
 | ---- | ----- |
-| Global settings, dry-run guards, exclude list | 8 |
-| Connection health monitoring job | 8 |
-| Dashboard ops view, schedule picker | 9 |
-| TV shows and episodes | 10 |
-| TrueNAS packaging, GHCR, reverse proxy | 11 |
+| `apply_*` writes to Plex and Trakt | 8 |
+| Global settings, dry-run guards, exclude list | 9 |
+| Connection health monitoring job | 9 |
+| Dashboard ops view, schedule picker | 10 |
+| TV shows and episodes | 11 |
+| TrueNAS packaging, GHCR, reverse proxy | 12 |
 
 ## Verification
 
 [phase-7-test-plan.md](test-plans/phase-7-test-plan.md)
 
-**Next:** [Phase 8 — Settings & operations](phase-8.md)
+**Next:** [Phase 8 — Client-backed apply (movies)](phase-8.md)
