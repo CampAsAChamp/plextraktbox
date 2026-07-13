@@ -1,10 +1,12 @@
 # Phase 4 verification checklist
 
+**Scope:** [Phase 4](../phase-4.md)
+
 Jobs + runs + scheduler: full job CRUD, APScheduler manager/runner, run history API,
 Jobs/Runs UI, and manual run via scheduler.
 
 **Prerequisites:** [Phase 2](phase-2-test-plan.md) connections configured (all four services `ok`).
-Shared setup: [testing.md](testing.md).
+Shared setup: [testing.md](../../testing.md).
 
 ## What Phase 4 does *not* do yet
 

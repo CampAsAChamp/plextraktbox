@@ -1,10 +1,10 @@
 # Phase 6 verification checklist
 
-**Scope:** Notifications — config model + CRUD UI, dispatcher, Discord/in-app channels,
+**Scope:** [Phase 6](../phase-6.md) — notifications — config model + CRUD UI, dispatcher, Discord/in-app channels,
 per-job override + global settings, test buttons, in-app bell.
 
 **Prerequisites:** [Phase 5](phase-5-test-plan.md) logging pipeline passing. Shared setup:
-[testing.md](testing.md).
+[testing.md](../../testing.md).
 
 ## What Phase 6 adds
 

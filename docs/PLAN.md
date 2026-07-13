@@ -1,8 +1,8 @@
 # plextraktbox — Plan & Progress Tracker
 
-This is the living design doc and phase tracker for the project. Check items off as phases land;
-update the design sections in place as decisions evolve (don't let this go stale — it's the source of
-truth for "why," not just "what").
+This is the living design doc and progress tracker for the project. **Per-phase scope and
+deliverables** live in [phases/](phases/); this file holds architecture, locked decisions, and the
+status checklist.
 
 ## Context
 
@@ -169,35 +169,43 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 ## Phase tracker
 
-Each phase is independently runnable/testable. Check off as completed.
+Each phase is independently runnable and testable. **Scope, deliverables, and dependencies** live in
+[phases/](phases/) (one doc per phase). This table is the progress checklist only — update status
+here and in [phases/README.md](phases/README.md) when a phase lands.
 
-- [x] **Phase 0 — Scaffold** — layout, pyproject, Vite, multi-stage Dockerfile, compose w/ `/data` volume, config+DB+Alembic baseline, `/api/health`. *Verified: container boots, health OK, SPA loads (container + Vite dev + backend static).* → [test plan](docs/phase-0-test-plan.md)
-- [x] **Rename** — `media-sync` package → `plextraktbox` (package, env prefix, Docker/CI/docs).
-- [x] **Phase 1 — Auth + wizard (user)** — user model, bcrypt, sessions, auth dep, `setup/user`+`login`/`logout`, SPA setup-gate→login→dashboard. → [test plan](docs/phase-1-test-plan.md)
-- [x] **Phase 2 — Connections + wizard steps** — connection model + Fernet, four clients w/ `test_connection()`, Plex PIN auth + Trakt device + LB creds + TMDB key steps, re-auth UI. → [test plan](docs/phase-2-test-plan.md)
-- [x] **Phase 3 — Sync engine core** — MediaItem/guid/matcher/plugins/sources/3 reconcilers/engine + dry-run; temporary synchronous `POST /api/jobs/{id}/run`. *Full unit coverage of matching + each source-of-truth reconciler vs fakes; dry-run = zero writes.* → [test plan](docs/phase-3-test-plan.md)
-- [x] **Phase 4 — Jobs + runs + scheduler** — Job/JobRun models, jobs CRUD API + JobForm UI, APScheduler manager+runner, run history list/detail. → [test plan](docs/phase-4-test-plan.md)
-- [x] **Phase 5 — Logging pipeline + live viewer** — structlog config, DB+pubsub handler, ring buffer, SSE endpoint, LogViewer (auto-scroll/colors/filter/virtualization), live + historical modes. → [test plan](docs/phase-5-test-plan.md)
-- [x] **Phase 6 — Notifications** — config model + CRUD UI, dispatcher, discord/inapp, per-job override + global, test buttons, in-app bell. → [test plan](docs/phase-6-test-plan.md)
-- [ ] **Phase 7 — Client-backed sources (movies)** — replace in-memory source stubs with real fetch/apply via `clients/` + decrypted `connection` secrets; `source_factory` wires config per job; TMDB for GUID resolution; **Plex library scoping** (library picker in Connections, stored in `config_json`, honored by `PlexSource`); **HTTP caching** (`requests-cache` SQLite backend for client HTTP); **pre-flight check** before run (required connections `ok`, clear error before `JobRun` is created); **unmatched items report** (`RunSummary` + run-detail panel for items with no cross-service match). Unit tests stay on fakes + respx mapping tests; manual dry-run shows non-zero fetch/plan counts. → [test plan](docs/phase-7-test-plan.md)
-- [ ] **Phase 8 — Settings, safety & operations** — **`setting` table** + Settings UI (default cron, `log_retention_days`, **global dry-run default**); runner resolves `override ?? job.dry_run ?? global`; **first run must be dry-run** (per-job `require_dry_run_first` blocks live apply until ≥1 successful dry-run exists); **exclude/ignore list** (global in settings + optional per-job override by TMDB/IMDb id); **connection health monitoring** (scheduled `test_connection()` job, update status, optional notification on `needs_reauth`); log **retention** pruning job; **richer `/health`** (version, scheduler alive, DB writable, connection status summary); **SQLite backup** (Settings download + README note for ZFS snapshots); **password change** in Settings; structlog redaction audit, error surfaces; **GitHub Actions CI** (restore `.github/workflows/ci.yml`, mirror `mise run check`); OpenAPI→TS types; e2e smoke; Gravatar settings polish. *(test plan: TBD)*
-- [ ] **Phase 9 — Dashboard & scheduling UX** — **dashboard ops view** (per-job last run status + summary counts, failure/partial alerts, quick Run / Dry-run once); **next scheduled run** (APScheduler next-fire-time API + Jobs/Dashboard display in user timezone); **friendly schedule picker** (presets like "Daily 3am" → cron, advanced raw cron still available); **cron preview in local time** (next N run times under cron field); **clone job**; **export run logs** (download `.txt` / `.jsonl` from run detail). *(test plan: TBD)*
-- [ ] **Phase 10 — TV sync** — extend client-backed sources + reconcilers for **shows and episodes** (watchlist, ratings, watched/history where each service supports it); episode-level Trakt↔Plex watched matching; Letterboxd remains film-focused (read-only). Builds on Phase 7 movie path — prove movies on real data first. *(test plan: TBD)*
-- [ ] **Phase 11 — TrueNAS deployment (personal install)** — confirm `PUID`/`PGID`-style permission handling against a ZFS dataset mount; **publish versioned container image to GHCR** (tagged releases for pull-without-build install); document **reverse proxy / TLS** (Caddy or Traefik example behind TrueNAS app); document "Launch Docker Image" / custom-app setup in README; real install end-to-end (wizard → jobs → scheduled run → notification). *(test plan: TBD)*
-- [ ] **Phase 12 — TrueNAS App Catalog publication** — package per current TrueNAS SCALE app spec, publish image to a public registry with versioned tags, submit to / stand up a catalog, get through review, verify catalog install. Only start once Phase 11 has run successfully for a while. *(test plan: TBD)*
-- [ ] **Phase 13 — Doppler secret management** — integrate [Doppler](https://www.doppler.com/) for maintainer dev/CI workflows while keeping `.env` as the self-hosted default. Scope: create Doppler project + `dev`/`ci` configs mapping existing env vars (`SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, etc.); add `doppler.yaml`; document `doppler setup` + `doppler run` for local dev and `mise run up`; optional `doppler run --` wrapper tasks in `mise.toml`; CI service-token injection for integration tests that need real creds; entrypoint/compose notes for optional production injection. Verify: fresh clone with Doppler CLI can boot container and pass `mise run check` without a hand-edited `.env`. *(test plan: TBD)*
-- [ ] **Phase 14 — UI polish & layout rework** — intentional visual and layout pass once core functionality is stable. Earlier phases prioritize working features over aesthetics. Scope: consistent spacing/typography, responsive layout fixes, nav and page structure, form and table polish, empty/loading/error states, dark/light consistency, accessibility basics. No new product features — cosmetic and UX refinement only. *(test plan: TBD)*
+| Phase | Status | Scope doc | Test plan |
+| ----- | ------ | --------- | --------- |
+| — Rename | Done | [rename](phases/rename.md) | — |
+| 0 — Scaffold | Done | [phase-0](phases/phase-0.md) | [phase-0-test-plan](phases/test-plans/phase-0-test-plan.md) |
+| 1 — Auth + wizard | Done | [phase-1](phases/phase-1.md) | [phase-1-test-plan](phases/test-plans/phase-1-test-plan.md) |
+| 2 — Connections | Done | [phase-2](phases/phase-2.md) | [phase-2-test-plan](phases/test-plans/phase-2-test-plan.md) |
+| 3 — Sync engine core | Done | [phase-3](phases/phase-3.md) | [phase-3-test-plan](phases/test-plans/phase-3-test-plan.md) |
+| 4 — Jobs + scheduler | Done | [phase-4](phases/phase-4.md) | [phase-4-test-plan](phases/test-plans/phase-4-test-plan.md) |
+| 5 — Logging + live viewer | Done | [phase-5](phases/phase-5.md) | [phase-5-test-plan](phases/test-plans/phase-5-test-plan.md) |
+| 6 — Notifications | Done | [phase-6](phases/phase-6.md) | [phase-6-test-plan](phases/test-plans/phase-6-test-plan.md) |
+| 7 — Client-backed sources (movies) | **Next** | [phase-7](phases/phase-7.md) | [phase-7-test-plan](phases/test-plans/phase-7-test-plan.md) |
+| 8 — Settings & operations | Planned | [phase-8](phases/phase-8.md) | TBD |
+| 9 — Dashboard & scheduling UX | Planned | [phase-9](phases/phase-9.md) | TBD |
+| 10 — TV sync | Planned | [phase-10](phases/phase-10.md) | TBD |
+| 11 — TrueNAS install | Planned | [phase-11](phases/phase-11.md) | TBD |
+| 12 — TrueNAS catalog | Planned | [phase-12](phases/phase-12.md) | TBD |
+| 13 — Doppler secrets | Planned | [phase-13](phases/phase-13.md) | TBD |
+| 14 — UI polish | Planned | [phase-14](phases/phase-14.md) | TBD |
+
+**Current focus:** Phase 7 — real Plex/Trakt/Letterboxd fetch + apply for movies.
 
 
 
 ## Verification
 
-Per-phase checklists live in `docs/phase-N-test-plan.md`. Start at [docs/testing.md](docs/testing.md) for
-shared setup (`mise run up`, `mise run test`, reset commands) and the phase index.
+- **Phase scope:** [phases/](phases/)
+- **Per-phase checklists:** [phases/test-plans/](phases/test-plans/)
+- **Shared setup:** [testing.md](testing.md) (`mise run up`, `mise run test`, reset commands)
 
-When a phase lands: copy [docs/phase-test-plan-template.md](docs/phase-test-plan-template.md) →
-`docs/phase-N-test-plan.md`, fill in automated + manual checks, link it from the phase tracker above
-and the table in `testing.md`.
+When a phase lands: update its scope doc, copy
+[phases/test-plans/phase-test-plan-template.md](phases/test-plans/phase-test-plan-template.md) →
+`phases/test-plans/phase-N-test-plan.md`, fill in automated + manual checks, and link it from the
+tables in this file, [phases/README.md](phases/README.md), and [testing.md](testing.md).
 
 **Testing conventions (reference for future phase docs):**
 
@@ -222,4 +230,3 @@ and the table in `testing.md`.
 - `backend/plextraktbox/scheduler/runner.py`
 - `backend/plextraktbox/logstream/pubsub.py`
 - `frontend/src/components/LogViewer/`
-

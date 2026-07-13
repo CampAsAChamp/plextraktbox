@@ -1,11 +1,13 @@
 # Phase 7 verification checklist
 
+**Scope:** [Phase 7](../phase-7.md)
+
 Client-backed sources (movies): wire `PlexSource`, `TraktSource`, and `LetterboxdSource` to real
 `clients/` fetch/apply; Plex library scoping, HTTP caching, pre-flight checks, and unmatched-item
 reporting.
 
 **Prerequisites:** [Phase 6](phase-6-test-plan.md) notifications passing; all four connections
-`ok` in Settings. Shared setup: [testing.md](testing.md).
+`ok` in Settings. Shared setup: [testing.md](../../testing.md).
 
 ## What Phase 7 adds
 

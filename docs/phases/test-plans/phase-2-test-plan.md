@@ -1,9 +1,11 @@
 # Phase 2 verification checklist
 
+**Scope:** [Phase 2](../phase-2.md)
+
 Connections + onboarding wizard: connection model with Fernet-encrypted secrets, four service
 clients with `test_connection()`, Plex/Trakt/Letterboxd/TMDB setup steps, re-auth UI.
 
-**Prerequisites:** [Phase 1](phase-1-test-plan.md) passing. Shared container setup: [testing.md](testing.md).
+**Prerequisites:** [Phase 1](phase-1-test-plan.md) passing. Shared container setup: [testing.md](../../testing.md).
 
 ## 1. Automated tests
 
@@ -37,7 +39,7 @@ Open http://localhost:5173 (Vite dev UI; API is proxied to :8000) and verify:
 
 ## 3. API smoke (optional)
 
-Create a session cookie jar first (see [testing.md](testing.md#api-smoke-sessions)):
+Create a session cookie jar first (see [testing.md](../../testing.md#api-smoke-sessions)):
 
 ```bash
 mise run api-login

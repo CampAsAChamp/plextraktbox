@@ -1,10 +1,10 @@
 # Phase 5 verification checklist
 
-**Scope:** Logging pipeline + live viewer — structlog run log persistence, SSE streaming,
+**Scope:** [Phase 5](../phase-5.md) — logging pipeline + live viewer — structlog run log persistence, SSE streaming,
 LogViewer with auto-scroll, filters, and virtualization.
 
 **Prerequisites:** [Phase 4](phase-4-test-plan.md) jobs + scheduler passing. Shared setup:
-[testing.md](testing.md).
+[testing.md](../../testing.md).
 
 ## What Phase 5 adds
 

@@ -1,9 +1,11 @@
 # Phase 1 verification checklist
 
+**Scope:** [Phase 1](../phase-1.md)
+
 Auth + first-run setup wizard: single local user, bcrypt password, session cookie, setup gate,
 login/logout, SPA routing (`/setup` → `/login` → dashboard).
 
-**Prerequisites:** [Phase 0](phase-0-test-plan.md) passing. Shared container setup: [testing.md](testing.md).
+**Prerequisites:** [Phase 0](phase-0-test-plan.md) passing. Shared container setup: [testing.md](../../testing.md).
 
 ## 1. Automated tests
 

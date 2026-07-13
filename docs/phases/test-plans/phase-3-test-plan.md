@@ -1,9 +1,11 @@
 # Phase 3 verification checklist
 
+**Scope:** [Phase 3](../phase-3.md)
+
 Sync engine core: MediaItem/guid/matcher, sources, three source-of-truth reconcilers,
 engine with dry-run, and temporary synchronous `POST /api/jobs/{id}/run`.
 
-**Prerequisites:** [Phase 2](phase-2-test-plan.md) passing. Shared setup: [testing.md](testing.md).
+**Prerequisites:** [Phase 2](phase-2-test-plan.md) passing. Shared setup: [testing.md](../../testing.md).
 
 ## 1. Automated tests
 
@@ -19,7 +21,7 @@ truth), watched (Trakt truth), dry-run = zero writes, job CRUD + manual run API.
 
 ## 2. API smoke (optional)
 
-Create a session cookie jar first (see [testing.md](testing.md#api-smoke-sessions)):
+Create a session cookie jar first (see [testing.md](../../testing.md#api-smoke-sessions)):
 
 ```bash
 mise run api-login

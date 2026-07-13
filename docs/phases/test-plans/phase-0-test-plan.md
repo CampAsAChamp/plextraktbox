@@ -1,8 +1,10 @@
 # Phase 0 verification checklist
 
+**Scope:** [Phase 0](../phase-0.md)
+
 Smoke tests for the scaffold. All four sections passed on 2026-07-10.
 
-Shared setup and mise tasks: [testing.md](testing.md).
+Shared setup and mise tasks: [testing.md](../../testing.md).
 
 ## 1. Container end-to-end
 
@@ -42,4 +44,4 @@ Open `http://localhost:8000/` — exercises the `_mount_spa` static-file fallbac
 
 ## 4. Quick sanity read
 
-Skim [Dockerfile](../Dockerfile) and [docker-compose.yml](../docker-compose.yml) for the base images (`python:3.14-slim`, `node:24-alpine`). Confirm `.env` is not committed (`git status`).
+Skim [Dockerfile](../../../Dockerfile) and [docker-compose.yml](../../../docker-compose.yml) for the base images (`python:3.14-slim`, `node:24-alpine`). Confirm `.env` is not committed (`git status`).
