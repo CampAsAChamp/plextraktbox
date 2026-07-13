@@ -1,11 +1,13 @@
-import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { getRun } from "../api/runs";
+import { HelpCircleIcon } from "../components/icons/HelpCircleIcon";
 import { LogViewer } from "../components/LogViewer/LogViewer";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatDateTime } from "../utils/dateTimeFormat";
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "../components/runs/RunBadges";
+import { UnmatchedItemsSection } from "../components/runs/UnmatchedItemsSection";
 
 const SUMMARY_LABELS: Record<string, string> = {
   matched: "Matched",
@@ -16,6 +18,20 @@ const SUMMARY_LABELS: Record<string, string> = {
   watched: "Watched",
   skipped: "Skipped",
   errors: "Errors",
+  unmatched_count: "Unmatched",
+};
+
+const SUMMARY_TOOLTIPS: Record<string, string> = {
+  matched: "Items matched across services that need a rating or watched update.",
+  planned: "Total changes planned for this run (add, remove, or update).",
+  added: "Watchlist items added to Trakt to match your Plex watchlist.",
+  removed: "Watchlist items removed from Trakt to match your Plex watchlist.",
+  rated: "Ratings synced from Letterboxd to Plex and Trakt.",
+  watched: "Items marked as watched in Plex based on your Trakt history.",
+  skipped: "Planned changes skipped because they were already applied or not needed.",
+  errors: "Planned changes that failed during apply.",
+  unmatched_count:
+    "Items that could not be matched across services or are missing TMDB/IMDb IDs.",
 };
 
 export function RunDetailPage() {
@@ -95,16 +111,35 @@ export function RunDetailPage() {
       <Stack gap="xs">
         <Text fw={500}>Summary</Text>
         <SimpleGrid cols={{ base: 2, sm: 4 }}>
-          {Object.entries(run.summary).map(([key, value]) => (
+          {Object.entries(run.summary)
+            .filter(([key]) => key !== "unmatched")
+            .map(([key, value]) => (
             <Stack key={key} gap={0}>
-              <Text size="xs" c="dimmed">
-                {SUMMARY_LABELS[key] ?? key}
-              </Text>
-              <Text fw={600}>{value}</Text>
+              <Tooltip
+                label={SUMMARY_TOOLTIPS[key] ?? SUMMARY_LABELS[key] ?? key}
+                multiline
+                w={260}
+                openDelay={500}
+              >
+                <Group
+                  gap={4}
+                  wrap="nowrap"
+                  c="dimmed"
+                  style={{ cursor: "help", width: "fit-content" }}
+                >
+                  <Text size="xs" c="inherit">
+                    {SUMMARY_LABELS[key] ?? key}
+                  </Text>
+                  <HelpCircleIcon size={12} />
+                </Group>
+              </Tooltip>
+              <Text fw={600}>{typeof value === "number" ? value : "—"}</Text>
             </Stack>
           ))}
         </SimpleGrid>
       </Stack>
+
+      <UnmatchedItemsSection items={run.summary.unmatched} />
 
       <Stack gap="xs">
         <Text fw={500}>Logs</Text>

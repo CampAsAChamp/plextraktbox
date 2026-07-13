@@ -17,7 +17,7 @@ class RunListItem(BaseModel):
     status: JobRunStatus
     started_at: UtcDatetime
     finished_at: UtcDatetime | None
-    summary: dict[str, int]
+    summary: dict[str, int | list[dict[str, str]]]
     error: str | None
 
     @classmethod

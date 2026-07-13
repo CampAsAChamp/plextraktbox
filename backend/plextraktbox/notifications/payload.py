@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -13,7 +14,7 @@ class NotificationPayload:
     status: str
     dry_run: bool
     trigger: str
-    summary: dict[str, int]
+    summary: dict[str, Any]
     duration_seconds: float | None
     error: str | None
     run_url: str
@@ -33,9 +34,19 @@ class NotificationPayload:
 
     def summary_lines(self) -> list[str]:
         parts: list[str] = []
-        for key in ("matched", "added", "removed", "rated", "watched", "skipped", "errors", "planned"):
+        for key in (
+            "matched",
+            "added",
+            "removed",
+            "rated",
+            "watched",
+            "skipped",
+            "errors",
+            "planned",
+            "unmatched_count",
+        ):
             value = self.summary.get(key, 0)
-            if value:
+            if isinstance(value, int) and value:
                 parts.append(f"{key}: {value}")
         return parts or ["No changes"]
 

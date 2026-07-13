@@ -41,6 +41,25 @@ class JobRun(SQLModel, table=True):
             raw: dict[str, Any] = json.loads(self.summary_json)
         except json.JSONDecodeError:
             return RunSummary()
+
+        from plextraktbox.sync.plans import UnmatchedItem
+
+        unmatched_raw = raw.get("unmatched") or []
+        unmatched: list[UnmatchedItem] = []
+        if isinstance(unmatched_raw, list):
+            for entry in unmatched_raw:
+                if not isinstance(entry, dict):
+                    continue
+                unmatched.append(
+                    UnmatchedItem(
+                        source=str(entry.get("source", "")),
+                        data_type=str(entry.get("data_type", "")),
+                        title=str(entry.get("title", "")),
+                        source_key=str(entry.get("source_key", "")),
+                        reason=str(entry.get("reason", "")),
+                    )
+                )
+
         return RunSummary(
             matched=int(raw.get("matched", 0)),
             added=int(raw.get("added", 0)),
@@ -50,6 +69,7 @@ class JobRun(SQLModel, table=True):
             skipped=int(raw.get("skipped", 0)),
             errors=int(raw.get("errors", 0)),
             planned=int(raw.get("planned", 0)),
+            unmatched=unmatched,
         )
 
     def set_summary(self, summary: RunSummary) -> None:

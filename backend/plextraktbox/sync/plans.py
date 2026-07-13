@@ -41,6 +41,15 @@ class ApplyResult:
 
 
 @dataclass
+class UnmatchedItem:
+    source: str
+    data_type: str
+    title: str
+    source_key: str
+    reason: str
+
+
+@dataclass
 class RunSummary:
     matched: int = 0
     added: int = 0
@@ -50,6 +59,7 @@ class RunSummary:
     skipped: int = 0
     errors: int = 0
     planned: int = 0
+    unmatched: list[UnmatchedItem] = field(default_factory=list)
 
     def merge_apply(self, result: ApplyResult, *, action: ChangeAction) -> None:
         if action == ChangeAction.ADD:
@@ -61,7 +71,7 @@ class RunSummary:
         self.skipped += result.skipped
         self.errors += result.errors
 
-    def to_dict(self) -> dict[str, int]:
+    def to_dict(self) -> dict[str, int | list[dict[str, str]]]:
         return {
             "matched": self.matched,
             "added": self.added,
@@ -71,6 +81,17 @@ class RunSummary:
             "skipped": self.skipped,
             "errors": self.errors,
             "planned": self.planned,
+            "unmatched_count": len(self.unmatched),
+            "unmatched": [
+                {
+                    "source": item.source,
+                    "data_type": item.data_type,
+                    "title": item.title,
+                    "source_key": item.source_key,
+                    "reason": item.reason,
+                }
+                for item in self.unmatched
+            ],
         }
 
 

@@ -7,12 +7,14 @@ from collections import defaultdict
 import structlog
 
 from plextraktbox.sync.context import SyncContext
+from plextraktbox.sync.matcher import MediaMatcher
 from plextraktbox.sync.plans import (
     ApplyResult,
     ChangeAction,
     DataType,
     PlannedChange,
     RunSummary,
+    UnmatchedItem,
 )
 from plextraktbox.sync.plugins import get_plugin_manager
 from plextraktbox.sync.reconcilers import DEFAULT_RECONCILERS
@@ -37,9 +39,24 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
             log.warning("sync.reconciler.missing", data_type=data_type.value)
             continue
 
+        log.info(
+            "sync.data_type.start",
+            message=f"Planning {data_type.value} changes",
+            data_type=data_type.value,
+        )
+
         plan = await reconciler.plan(ctx)
         summary.planned += len(plan.changes)
         summary.matched += _count_matched(plan.changes)
+        await _collect_unmatched(ctx, data_type, summary)
+
+        log.info(
+            "sync.data_type.done",
+            message=f"Planned {len(plan.changes)} {data_type.value} change(s)",
+            data_type=data_type.value,
+            planned=len(plan.changes),
+            matched=_count_matched(plan.changes),
+        )
 
         for change in plan.changes:
             prefix = "would" if ctx.dry_run else "will"
@@ -138,3 +155,63 @@ def _merge_summary(
             summary.watched += result.applied
     summary.skipped += result.skipped
     summary.errors += result.errors
+
+
+async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: RunSummary) -> None:
+    """Record fetched items missing identifiers or cross-service matches."""
+    seen: set[tuple[str, str, str]] = set()
+
+    def add(item: object, *, source: str, reason: str) -> None:
+        from plextraktbox.sync.media_item import MediaItem
+
+        if not isinstance(item, MediaItem):
+            return
+        key = (source, data_type.value, item.source_key or item.title)
+        if key in seen:
+            return
+        seen.add(key)
+        summary.unmatched.append(
+            UnmatchedItem(
+                source=source,
+                data_type=data_type.value,
+                title=item.title,
+                source_key=item.source_key or item.match_key() or item.title,
+                reason=reason,
+            )
+        )
+
+    for source_name in ctx.source_names():
+        items = await ctx.fetch(source_name, data_type)
+        for item in items:
+            if not item.identifiers:
+                add(item, source=source_name, reason="missing identifiers")
+
+    if data_type == DataType.WATCHLIST and "plex" in ctx.sources and "trakt" in ctx.sources:
+        truth = [i for i in await ctx.fetch("plex", data_type) if i.watchlisted]
+        target = [i for i in await ctx.fetch("trakt", data_type) if i.watchlisted]
+        matcher = MediaMatcher()
+        matcher.add_many(target)
+        for item in truth:
+            if item.identifiers and matcher.find(item) is None:
+                add(item, source="plex", reason="no trakt match")
+
+    if data_type == DataType.RATINGS and "letterboxd" in ctx.sources:
+        truth = [i for i in await ctx.fetch("letterboxd", data_type) if i.rating is not None]
+        for target_name in ("plex", "trakt"):
+            if target_name not in ctx.sources:
+                continue
+            target_items = await ctx.fetch(target_name, data_type)
+            matcher = MediaMatcher()
+            matcher.add_many(target_items)
+            for item in truth:
+                if item.identifiers and matcher.find(item) is None:
+                    add(item, source="letterboxd", reason=f"no {target_name} match")
+
+    if data_type == DataType.WATCHED and "trakt" in ctx.sources and "plex" in ctx.sources:
+        truth = [i for i in await ctx.fetch("trakt", data_type) if i.watched]
+        target_items = await ctx.fetch("plex", data_type)
+        matcher = MediaMatcher()
+        matcher.add_many(target_items)
+        for item in truth:
+            if item.identifiers and matcher.find(item) is None:
+                add(item, source="trakt", reason="no plex match")
