@@ -66,9 +66,7 @@ def download_export(username: str, password: str) -> LetterboxdExport:
         resp = client.get(EXPORT_URL)
         content_type = resp.headers.get("content-type", "")
         if resp.status_code != 200 or "application/zip" not in content_type:
-            raise ConnectionError(
-                f"Failed to download Letterboxd export (HTTP {resp.status_code})"
-            )
+            raise ConnectionError(f"Failed to download Letterboxd export (HTTP {resp.status_code})")
 
         ratings_csv: str | None = None
         watchlist_csv: str | None = None

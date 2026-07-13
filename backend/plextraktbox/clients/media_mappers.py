@@ -39,7 +39,7 @@ def _plex_user_rating(video: Any) -> float | None:
         return None
     try:
         value = float(raw)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
     return value if value > 0 else None
 
@@ -48,7 +48,7 @@ def _plex_is_watched(video: Any) -> bool:
     view_count = getattr(video, "viewCount", 0) or 0
     try:
         return int(view_count) > 0
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return False
 
 
@@ -97,7 +97,7 @@ def media_item_from_trakt_movie(
     if resolved_rating is None and "rating" in payload:
         try:
             resolved_rating = float(payload["rating"])
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             resolved_rating = None
 
     resolved_watched_at = watched_at
