@@ -51,7 +51,26 @@ function truncateCompactJson(value: string, maxLength: number): string {
 }
 
 export function hasExpandableContext(context: Record<string, unknown>): boolean {
-  return Object.keys(context).length > 0;
+  return Object.keys(logContextForDisplay(context)).length > 0;
+}
+
+export function formatLogDisplayMessage(line: LogEntry): string {
+  const contextual = line.context.message;
+  if (typeof contextual === "string" && contextual.trim()) {
+    return contextual;
+  }
+  return line.message;
+}
+
+export function logContextForDisplay(
+  context: Record<string, unknown>,
+): Record<string, unknown> {
+  const contextual = context.message;
+  if (typeof contextual !== "string" || !contextual.trim()) {
+    return context;
+  }
+  const { message: _message, ...rest } = context;
+  return rest;
 }
 
 export function shouldPrettyPrintContextValue(value: unknown): boolean {

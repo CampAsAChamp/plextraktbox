@@ -15,6 +15,17 @@ from plextraktbox.models.connection import Service
 log = get_logger(__name__)
 
 _CONNECTIONS_PREFIX = "/api/connections/"
+_SKIP_LOG_PATHS = frozenset(
+    {
+        "/api/health",
+        "/api/notifications/inapp/unread-count",
+    }
+)
+
+
+def should_log_access(path: str) -> bool:
+    """Return False for high-frequency polling routes that add log noise."""
+    return path not in _SKIP_LOG_PATHS
 
 
 def service_from_path(path: str) -> str | None:
@@ -54,17 +65,19 @@ class AccessLogMiddleware(BaseHTTPMiddleware):
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         response = await call_next(request)
-        service = service_from_path(request.url.path)
-        log.info(
-            format_access_log_line(
-                request.method,
-                request.url.path,
+        path = request.url.path
+        if should_log_access(path):
+            service = service_from_path(path)
+            log.info(
+                format_access_log_line(
+                    request.method,
+                    path,
+                    service=service,
+                    status_code=response.status_code,
+                ),
+                method=request.method,
+                path=path,
                 service=service,
                 status_code=response.status_code,
-            ),
-            method=request.method,
-            path=request.url.path,
-            service=service,
-            status_code=response.status_code,
-        )
+            )
         return response

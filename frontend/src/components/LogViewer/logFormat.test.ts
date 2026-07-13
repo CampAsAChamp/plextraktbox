@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   formatContextValue,
   formatContextValueCompact,
+  formatLogDisplayMessage,
   hasExpandableContext,
   isJsonLikeString,
+  logContextForDisplay,
   shouldPrettyPrintContextValue,
   shouldRenderStatusBadge,
   shouldSyntaxHighlightContextValue,
@@ -65,6 +67,51 @@ describe("hasExpandableContext", () => {
   it("is true when context has fields", () => {
     expect(hasExpandableContext({ status: "success" })).toBe(true);
     expect(hasExpandableContext({})).toBe(false);
+  });
+
+  it("ignores message when it is the only display field", () => {
+    expect(hasExpandableContext({ message: "Fetching ratings from letterboxd" })).toBe(false);
+    expect(
+      hasExpandableContext({ message: "Fetching ratings", source: "letterboxd" }),
+    ).toBe(true);
+  });
+});
+
+describe("formatLogDisplayMessage", () => {
+  it("prefers context message when present", () => {
+    expect(
+      formatLogDisplayMessage({
+        id: 1,
+        run_id: 1,
+        ts: "2026-01-01T00:00:00Z",
+        level: "info",
+        logger: "sync",
+        message: "sync.fetch.start",
+        context: { message: "Fetching ratings from letterboxd" },
+      }),
+    ).toBe("Fetching ratings from letterboxd");
+  });
+
+  it("falls back to event name", () => {
+    expect(
+      formatLogDisplayMessage({
+        id: 1,
+        run_id: 1,
+        ts: "2026-01-01T00:00:00Z",
+        level: "info",
+        logger: "sync",
+        message: "sync.run.complete",
+        context: {},
+      }),
+    ).toBe("sync.run.complete");
+  });
+});
+
+describe("logContextForDisplay", () => {
+  it("drops message when used as display text", () => {
+    expect(
+      logContextForDisplay({ message: "Fetching ratings", source: "letterboxd" }),
+    ).toEqual({ source: "letterboxd" });
   });
 });
 

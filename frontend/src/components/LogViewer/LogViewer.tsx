@@ -1,11 +1,9 @@
 import {
   ActionIcon,
-  Badge,
   Box,
   Button,
   Group,
   ScrollArea,
-  Select,
   Stack,
   Text,
   TextInput,
@@ -19,7 +17,9 @@ import {
   estimateLogLineHeight,
   formatContextValue,
   formatContextValueCompact,
+  formatLogDisplayMessage,
   hasExpandableContext,
+  logContextForDisplay,
   LOG_LOGGER_BRACKET_COLOR,
   LOG_LOGGER_NAME_COLOR,
   shouldPrettyPrintContextValue,
@@ -33,23 +33,8 @@ import { TimezonePreferenceControls } from "../../settings/TimezonePreferenceCon
 import { formatTimestamp } from "../../utils/dateTimeFormat";
 import { LiveStreamAccent, LiveStreamIndicator } from "./LiveStreamIndicator";
 import { useLogStream } from "./useLogStream";
-
-const LEVEL_OPTIONS = [
-  { value: "", label: "All levels" },
-  { value: "debug", label: "Debug" },
-  { value: "info", label: "Info" },
-  { value: "warning", label: "Warn" },
-  { value: "error", label: "Error" },
-];
-
-const LEVEL_COLORS: Record<string, string> = {
-  debug: "gray",
-  info: "blue",
-  warning: "yellow",
-  warn: "yellow",
-  error: "red",
-  critical: "red",
-};
+import { LogLevelMultiSelect } from "./LogLevelMultiSelect";
+import { LogLevelBadge, type LogLevel } from "./logLevels";
 
 type LogViewerProps = {
   runId: number;
@@ -174,7 +159,9 @@ type LogLineProps = {
 
 function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps) {
   const level = line.level.toLowerCase();
-  const expandable = hasExpandableContext(line.context);
+  const displayMessage = formatLogDisplayMessage(line);
+  const displayContext = logContextForDisplay(line.context);
+  const expandable = hasExpandableContext(displayContext);
 
   return (
     <Box
@@ -191,20 +178,13 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
         <Text span c="dimmed" style={{ minWidth: 92, flexShrink: 0 }}>
           {formatTimestamp(line.ts, displayPreferences)}
         </Text>
-        <Badge
-          size="xs"
-          variant="light"
-          color={LEVEL_COLORS[level] ?? "gray"}
-          style={{ minWidth: 52, textTransform: "uppercase", flexShrink: 0 }}
-        >
-          {level}
-        </Badge>
+        <LogLevelBadge level={level} fixedWidth />
         {line.logger ? <LogLoggerLabel logger={line.logger} /> : null}
         <Box style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
           {expanded ? (
             <>
-              <Text style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{line.message}</Text>
-              <LogContextExpanded context={line.context} />
+              <Text style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{displayMessage}</Text>
+              <LogContextExpanded context={displayContext} />
             </>
           ) : (
             <Box
@@ -214,8 +194,8 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
                 textOverflow: "ellipsis",
               }}
             >
-              <Text span>{line.message}</Text>
-              {expandable ? <LogContextInline context={line.context} /> : null}
+              <Text span>{displayMessage}</Text>
+              {expandable ? <LogContextInline context={displayContext} /> : null}
             </Box>
           )}
         </Box>
@@ -242,16 +222,16 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
   const { preferences } = useDisplayPreferences();
   const parentRef = useRef<HTMLDivElement>(null);
   const [stickToBottom, setStickToBottom] = useState(true);
-  const [levelFilter, setLevelFilter] = useState("");
+  const [levelFilters, setLevelFilters] = useState<LogLevel[]>([]);
   const [search, setSearch] = useState("");
   const [expandedLineIds, setExpandedLineIds] = useState<Set<number>>(() => new Set());
 
   const historyQuery = useQuery({
-    queryKey: ["runs", runId, "logs", levelFilter, search],
+    queryKey: ["runs", runId, "logs", levelFilters, search],
     queryFn: () =>
       listRunLogs(runId, {
         limit: 2000,
-        level: levelFilter || undefined,
+        level: levelFilters.length === 1 ? levelFilters[0] : undefined,
         search: search || undefined,
       }),
     enabled: !isLive,
@@ -263,13 +243,14 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
 
   const filteredLines = useMemo(() => {
     const needle = search.trim().toLowerCase();
+    const levelSet = new Set(levelFilters);
     return rawLines.filter((line) => {
-      if (levelFilter && line.level.toLowerCase() !== levelFilter) return false;
+      if (levelSet.size > 0 && !levelSet.has(line.level.toLowerCase() as LogLevel)) return false;
       if (!needle) return true;
-      const haystack = `${line.message} ${line.logger} ${JSON.stringify(line.context)}`.toLowerCase();
+      const haystack = `${formatLogDisplayMessage(line)} ${line.message} ${line.logger} ${JSON.stringify(line.context)}`.toLowerCase();
       return haystack.includes(needle);
     });
-  }, [rawLines, levelFilter, search]);
+  }, [rawLines, levelFilters, search]);
 
   const rowVirtualizer = useVirtualizer({
     count: filteredLines.length,
@@ -317,13 +298,11 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
     <Stack gap="sm">
       <Group justify="space-between" align="flex-end">
         <Group align="flex-end">
-          <Select
+          <LogLevelMultiSelect
             label="Level"
-            data={LEVEL_OPTIONS}
-            value={levelFilter}
-            onChange={(value) => setLevelFilter(value ?? "")}
-            w={160}
-            allowDeselect={false}
+            value={levelFilters}
+            onChange={setLevelFilters}
+            clearable
           />
           <TextInput
             label="Search"
