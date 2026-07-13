@@ -7,7 +7,7 @@
 Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "Launch Docker Image" —
 no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
 
-This is **milestone 1** of two TrueNAS milestones (see [PLAN.md](../PLAN.md#deployment-target-truenas)).
+This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
 Do not conflate with Phase 12 (catalog publication).
 
 ## Deliverables
@@ -16,7 +16,7 @@ Do not conflate with Phase 12 (catalog publication).
 
 - Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
   dataset
-- Document ownership expectations in README
+- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
 
 ### Published image
 
@@ -30,7 +30,7 @@ Do not conflate with Phase 12 (catalog publication).
 
 ### Install documentation
 
-- Step-by-step "Launch Docker Image" / custom-app setup in README
+- Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
 - Env vars, port mapping, dataset mount path
 - First-run wizard → connections → job → scheduled run → notification
 

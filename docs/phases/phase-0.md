@@ -39,4 +39,9 @@ None — first phase.
 [phase-0-test-plan.md](test-plans/phase-0-test-plan.md) — container boot, health OK, SPA loads (container +
 Vite dev + backend static).
 
-**Next:** [Rename](rename.md) → [Phase 1 — Auth + wizard](phase-1.md)
+## Historical note — package rename
+
+Between Phase 0 and Phase 1, the project was renamed from `media-sync` to **plextraktbox** (Python
+package, env prefix, Docker/CI/docs). No separate test plan — covered by Phase 0 smoke tests.
+
+**Next:** [Phase 1 — Auth + wizard](phase-1.md)

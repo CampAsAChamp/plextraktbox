@@ -13,12 +13,16 @@
     All-in-one, self-hosted tool that keeps Plex, Letterboxd, and Trakt in sync — with a web UI, built-in scheduler, live log streaming, and notifications.
     <br />
     <br />
-    <a href="docs/PLAN.md"><strong>Architecture &amp; design »</strong></a>
+    <a href="docs/README.md"><strong>Documentation »</strong></a>
     <br />
-    <a href="docs/phases/README.md"><strong>Phase roadmap »</strong></a>
+    <a href="docs/architecture.md">Architecture</a>
+    ·
+    <a href="docs/phases/README.md">Phase roadmap</a>
     <br />
     <br />
     <a href="docs/testing.md">Testing guide</a>
+    ·
+    <a href="docs/dev-workflow.md">Dev workflow</a>
     ·
     <a href="https://github.com/CampAsAChamp/plextraktbox/issues">Report Bug</a>
     ·
@@ -57,8 +61,8 @@
 
 It replaces stitching together two separate projects — [letterboxd-plex-sync](https://github.com/CampAsAChamp/letterboxd-plex-sync) and [PlexTraktSync](https://github.com/Taxel/PlexTraktSync) — with one app, one UI, and one scheduler.
 
-See [docs/PLAN.md](docs/PLAN.md) for architecture and locked decisions. Per-phase scope and deliverables live
-in [docs/phases/](docs/phases/).
+See [docs/architecture.md](docs/architecture.md) for design and locked decisions.
+[docs/phases/](docs/phases/) has the roadmap; [docs/README.md](docs/README.md) is the doc index.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -88,7 +92,7 @@ Source of truth per data type:
 * [Mantine](https://mantine.dev/) + [TanStack Query](https://tanstack.com/query) — UI components and data fetching
 * Single [Docker](https://www.docker.com/) container — FastAPI serves the built SPA, runs the scheduler, and stores data on a `/data` volume
 
-Target deployment environment is **TrueNAS SCALE** via its custom-app / "Launch Docker Image" flow, with `/data` mounted to a ZFS dataset — see [Deploying on TrueNAS](#deploying-on-truenas).
+Target deployment environment is **TrueNAS SCALE** — see [docs/deploy/truenas.md](docs/deploy/truenas.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -111,7 +115,8 @@ mise run up                  # or: podman compose up --build
 # open http://localhost:8000 — setup wizard on first run, then login → dashboard
 ```
 
-Run `mise tasks` to list everything. See [docs/testing.md](docs/testing.md) for the full smoke-test checklist (including how to reset with `mise run down-v`).
+Run `mise tasks` to list everything. See [docs/testing.md](docs/testing.md) for smoke tests and
+[docs/dev-workflow.md](docs/dev-workflow.md) for hot reload and dev bootstrap.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -147,26 +152,11 @@ Do not run `up` and `up-dev` at the same time — they both bind port 8000.
 <!-- DEPLOYING ON TRUENAS -->
 ## Deploying on TrueNAS
 
-The intended install target is a **TrueNAS SCALE** box, not just any Docker host. Once the app is far enough along to run a real scheduled job (see [Roadmap](#roadmap)), the deployment shape is:
+The intended install target is **TrueNAS SCALE** (custom app / "Launch Docker Image", `/data` on a ZFS
+dataset, single HTTP port). Personal install is [Phase 11](docs/phases/phase-11.md); App Catalog
+publication is [Phase 12](docs/phases/phase-12.md).
 
-* Run the built image via TrueNAS's **custom app** / "Launch Docker Image" flow (or a catalog app if one is published later) rather than assuming raw `docker run`/Compose access.
-* Mount `/data` to a **ZFS dataset** (a host-path volume), not a Docker-managed volume, so the SQLite DB and caches live on the pool and survive app reinstalls.
-* Expose a single HTTP port (8000) — no host networking, no privileged mode, no Docker-socket access, so it drops cleanly into TrueNAS's app UI.
-* Respect the dataset's permission model: if the app needs a specific `PUID`/`PGID` to write to the mounted dataset, that's configured the same way other self-hosted TrueNAS apps handle it.
-
-This isn't wired up yet — it's a deployment milestone (Phase 11) that follows once jobs, the scheduler, logging, and live sync are in place, but the container has been kept dependency-free (single image, SQLite, one port) from Phase 0 specifically so this drops in without rework.
-
-### Getting into the TrueNAS App Catalog (Phase 12, later)
-
-Running the container on the user's own box (Phase 11) is a separate milestone from getting `plextraktbox` **listed in the TrueNAS App Catalog** so it can be installed like any official/community app. That's a heavier, later effort with its own steps:
-
-1. Package the app per TrueNAS SCALE's current app spec (a chart/`app.yaml`-style app definition with a config schema), not just a raw Docker image — check the current SCALE app format when this phase starts, since it has changed across releases.
-2. Expose the user-configurable options (HTTP port, `/data` dataset path, `SECRET_KEY`, etc.) through that config schema so they render as real fields in the TrueNAS app UI.
-3. Publish the container image to a public registry (e.g. GHCR) with versioned tags — a catalog entry needs a real, pullable image, not a local build.
-4. Submit to the official community catalog (via their contribution process) or stand up a self-hosted custom catalog added by URL — whichever fits — and confirm the current submission/review requirements at the time, since catalog mechanics are a moving target.
-5. Verify the app installs and behaves correctly from the catalog on a clean TrueNAS instance.
-
-Don't start this until Phase 11 (the personal install) has been running successfully for a while — publishing before the app is proven on real hardware is premature.
+Full constraints, milestones, and install shape: **[docs/deploy/truenas.md](docs/deploy/truenas.md)**.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -189,29 +179,9 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-The app is built incrementally; each phase is independently runnable and testable.
+Built incrementally — **Phase 7** (real movie sync) is next; Phases 0–6 are done.
 
-- **Progress tracker:** [docs/PLAN.md#phase-tracker](docs/PLAN.md#phase-tracker)
-- **Phase scope (expanded):** [docs/phases/](docs/phases/)
-- **Verification checklists:** [docs/testing.md](docs/testing.md)
-
-| Phase | Status | Doc |
-| ----- | ------ | --- |
-| 0 — Scaffold | Done | [phase-0](docs/phases/phase-0.md) |
-| 1 — Auth + wizard | Done | [phase-1](docs/phases/phase-1.md) |
-| 2 — Connections | Done | [phase-2](docs/phases/phase-2.md) |
-| 3 — Sync engine core | Done | [phase-3](docs/phases/phase-3.md) |
-| 4 — Jobs + scheduler | Done | [phase-4](docs/phases/phase-4.md) |
-| 5 — Logging + live viewer | Done | [phase-5](docs/phases/phase-5.md) |
-| 6 — Notifications | Done | [phase-6](docs/phases/phase-6.md) |
-| 7 — Client-backed sources (movies) | **Next** | [phase-7](docs/phases/phase-7.md) |
-| 8 — Settings & operations | Planned | [phase-8](docs/phases/phase-8.md) |
-| 9 — Dashboard & scheduling UX | Planned | [phase-9](docs/phases/phase-9.md) |
-| 10 — TV sync | Planned | [phase-10](docs/phases/phase-10.md) |
-| 11 — TrueNAS install | Planned | [phase-11](docs/phases/phase-11.md) |
-| 12 — TrueNAS catalog | Planned | [phase-12](docs/phases/phase-12.md) |
-| 13 — Doppler secrets | Planned | [phase-13](docs/phases/phase-13.md) |
-| 14 — UI polish | Planned | [phase-14](docs/phases/phase-14.md) |
+See [docs/phases/README.md](docs/phases/README.md) for the full phase index (status, scope, test plans).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

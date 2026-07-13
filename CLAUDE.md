@@ -2,9 +2,9 @@
 
 Self-hosted app that keeps **Plex**, **Letterboxd**, and **Trakt** in sync — web UI, scheduler, live log streaming, notifications. Single Docker container (FastAPI + React SPA + SQLite + APScheduler).
 
-**Design doc:** [docs/PLAN.md](docs/PLAN.md) (architecture, locked decisions — keep in sync when behavior changes).
-**Phase roadmap:** [docs/phases/](docs/phases/) (scope per phase) + [docs/PLAN.md#phase-tracker](docs/PLAN.md#phase-tracker) (status).
-**Human docs:** [README.md](README.md), [docs/testing.md](docs/testing.md).
+**Design doc:** [docs/architecture.md](docs/architecture.md) (architecture, locked decisions — keep in sync when behavior changes).
+**Phase index:** [docs/phases/README.md](docs/phases/README.md) (status, scope, test plans).
+**Human docs:** [README.md](README.md), [docs/README.md](docs/README.md), [docs/testing.md](docs/testing.md), [docs/dev-workflow.md](docs/dev-workflow.md).
 
 ## Sync model (source of truth)
 
@@ -33,7 +33,7 @@ backend/plextraktbox/
   models/        SQLModel tables
   services/      business logic (jobs, sync_run, source_factory)
 frontend/src/    React SPA (setup wizard, connections, jobs, run history)
-docs/            phase test plans + testing guide
+docs/            architecture, phases, testing, dev-workflow, deploy
 ```
 
 ## Commands
@@ -77,10 +77,10 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/PLAN.md#phase-tracker](docs/PLAN.md#phase-tracker) and [docs/phases/](docs/phases/). Phases 0–6 are done; **Phase 7 (client-backed sources, movies)** is next, followed by settings/safety (8), dashboard UX (9), and TV sync (10). Visual/layout polish is intentionally deferred to **Phase 14** — earlier phases prioritize working features.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 are done; **Phase 7 (client-backed sources, movies)** is next, followed by settings/safety (8), dashboard UX (9), and TV sync (10). Visual/layout polish is intentionally deferred to **Phase 14**.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
-`docs/phases/test-plans/`, and link from `docs/PLAN.md`.
+`docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.
 
 ## Keeping this file current
 

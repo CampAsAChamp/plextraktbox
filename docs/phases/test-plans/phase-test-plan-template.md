@@ -2,7 +2,7 @@
 
 > Copy this file to `docs/phases/test-plans/phase-N-test-plan.md` when phase N is implemented.
 > Replace placeholders, delete this block, and link it from [testing.md](../../testing.md),
-> [phases/README.md](../README.md), and [PLAN.md](../../PLAN.md#phase-tracker).
+> [phases/README.md](../README.md), and [docs/README.md](../../README.md).
 
 **Scope:** _(one-line summary — see [phase-N.md](../phase-0.md) for full deliverables)_
 

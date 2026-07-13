@@ -7,7 +7,8 @@
 Get **plextraktbox** listed in the **TrueNAS App Catalog** so anyone can install it like an
 official/community app — not just via manual "Launch Docker Image."
 
-This is **milestone 2** of two TrueNAS milestones. **Do not start until Phase 11 has been running
+This is **milestone 2** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
+**Do not start until Phase 11 has been running
 successfully on real hardware for a while** — publishing before the app is proven is premature.
 
 ## Deliverables
@@ -40,7 +41,7 @@ successfully on real hardware for a while** — publishing before the app is pro
 
 ## Notes
 
-README "Deploying on TrueNAS" section already distinguishes Phase 11 vs 12; this doc is the
+See [deploy/truenas.md](../deploy/truenas.md) for the two-milestone overview. This doc is the
 implementation checklist for catalog work.
 
 ## Verification
