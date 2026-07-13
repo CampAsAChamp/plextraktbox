@@ -107,13 +107,17 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
         />
 
         <Radio.Group
-          label="Source pair"
+          label="Job Type"
           value={sourcePair}
           onChange={(value) => setSourcePair(value as SourcePair)}
         >
           <Stack gap="xs" mt="xs">
             {SOURCE_PAIRS.map((pair) => (
-              <Radio key={pair} value={pair} label={<SourcePairLabel sourcePair={pair} />} />
+              <Radio
+                key={pair}
+                value={pair}
+                label={<SourcePairLabel sourcePair={pair} variant="logo" logoSize={24} />}
+              />
             ))}
           </Stack>
         </Radio.Group>

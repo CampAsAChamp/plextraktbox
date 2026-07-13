@@ -133,7 +133,7 @@ export function JobsPage() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
-              <Table.Th>Pair</Table.Th>
+              <Table.Th>Job Type</Table.Th>
               <Table.Th>Data</Table.Th>
               <Table.Th>Schedule</Table.Th>
               <Table.Th>Dry run</Table.Th>
@@ -151,7 +151,7 @@ export function JobsPage() {
                   <Text fw={500}>{job.name}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <SourcePairLabel sourcePair={job.source_pair} />
+                  <SourcePairLabel sourcePair={job.source_pair} variant="logo" />
                 </Table.Td>
                 <Table.Td>
                   <Group gap={4}>
