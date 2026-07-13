@@ -32,6 +32,13 @@ class SyncContext:
         if source is None:
             raise KeyError(f"Unknown source: {source_name}")
 
+        self.log.info(
+            "sync.fetch.start",
+            message=f"Fetching {data_type.value} from {source_name}",
+            source=source_name,
+            data_type=data_type.value,
+        )
+
         if data_type == DataType.WATCHLIST:
             items = await source.fetch_watchlist()
         elif data_type == DataType.RATINGS:
@@ -46,6 +53,18 @@ class SyncContext:
         for item in items:
             if not isinstance(item, MediaItem):
                 raise TypeError(f"{source_name}.{data_type} returned non-MediaItem")
+
+        with_ids = sum(1 for item in items if item.identifiers)
+        self.log.info(
+            "sync.fetch.done",
+            message=(
+                f"Fetched {len(items)} {data_type.value} item(s) from {source_name} ({with_ids} with IDs)"
+            ),
+            source=source_name,
+            data_type=data_type.value,
+            count=len(items),
+            with_ids=with_ids,
+        )
 
         self._cache[cache_key] = items
         return items

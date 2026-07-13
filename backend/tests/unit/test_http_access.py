@@ -1,6 +1,6 @@
 """Tests for HTTP access log formatting."""
 
-from plextraktbox.http_access import format_access_log_line, service_from_path
+from plextraktbox.http_access import format_access_log_line, service_from_path, should_log_access
 
 
 def test_service_from_path_for_connection_routes() -> None:
@@ -21,6 +21,12 @@ def test_format_access_log_line_with_service() -> None:
         format_access_log_line("POST", "/api/connections/plex/test", service="PLEX", status_code=200)
         == "POST PLEX /api/connections/plex/test 200"
     )
+
+
+def test_should_log_access_skips_noisy_poll_routes() -> None:
+    assert should_log_access("/api/health") is False
+    assert should_log_access("/api/notifications/inapp/unread-count") is False
+    assert should_log_access("/api/jobs") is True
 
 
 def test_format_access_log_line_without_service() -> None:

@@ -282,20 +282,17 @@ def test_plex_saved_connection_test_without_body(client: TestClient) -> None:
 @respx.mock
 def test_save_letterboxd_connection(client: TestClient) -> None:
     _create_user_and_login(client)
-    respx.get("https://letterboxd.com/sign-in/").mock(
+    respx.get("https://letterboxd.com/").mock(
         return_value=httpx.Response(
             200,
-            text="<html></html>",
-            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/"},
         )
     )
     respx.post("https://letterboxd.com/user/login.do").mock(
         return_value=httpx.Response(
-            302,
-            headers={
-                "location": "/nick/",
-                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
-            },
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
         )
     )
 
@@ -314,20 +311,17 @@ def test_save_letterboxd_connection(client: TestClient) -> None:
 @respx.mock
 def test_save_letterboxd_keeps_password_when_omitted(client: TestClient) -> None:
     _create_user_and_login(client)
-    respx.get("https://letterboxd.com/sign-in/").mock(
+    respx.get("https://letterboxd.com/").mock(
         return_value=httpx.Response(
             200,
-            text="<html></html>",
-            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/"},
         )
     )
     respx.post("https://letterboxd.com/user/login.do").mock(
         return_value=httpx.Response(
-            302,
-            headers={
-                "location": "/nick/",
-                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
-            },
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
         )
     )
 
@@ -358,20 +352,17 @@ def test_save_letterboxd_keeps_password_when_omitted(client: TestClient) -> None
 @respx.mock
 def test_letterboxd_saved_connection_test_without_body(client: TestClient) -> None:
     _create_user_and_login(client)
-    respx.get("https://letterboxd.com/sign-in/").mock(
+    respx.get("https://letterboxd.com/").mock(
         return_value=httpx.Response(
             200,
-            text="<html></html>",
-            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/"},
         )
     )
     respx.post("https://letterboxd.com/user/login.do").mock(
         return_value=httpx.Response(
-            302,
-            headers={
-                "location": "/nick/",
-                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
-            },
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
         )
     )
 
@@ -536,20 +527,17 @@ def test_all_connections_configured(client: TestClient) -> None:
     respx.get("https://api.themoviedb.org/3/configuration").mock(
         return_value=httpx.Response(200, json={"images": {}})
     )
-    respx.get("https://letterboxd.com/sign-in/").mock(
+    respx.get("https://letterboxd.com/").mock(
         return_value=httpx.Response(
             200,
-            text="<html></html>",
-            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/"},
         )
     )
     respx.post("https://letterboxd.com/user/login.do").mock(
         return_value=httpx.Response(
-            302,
-            headers={
-                "location": "/nick/",
-                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
-            },
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
         )
     )
     respx.post("https://api.trakt.tv/oauth/device/code").mock(

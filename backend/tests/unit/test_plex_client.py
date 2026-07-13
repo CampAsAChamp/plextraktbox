@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import httpx
 import respx
 
@@ -11,6 +13,58 @@ PLEX_IDENTITY_XML = (
     '<?xml version="1.0" encoding="UTF-8"?>'
     '<MediaContainer friendlyName="Home Plex" machineIdentifier="abc123"/>'
 )
+
+
+def test_plex_server_ssl_verify_for_direct_urls() -> None:
+    assert plex_client.plex_server_ssl_verify("https://10-0-0-25.abc.plex.direct:32400") is False
+    assert plex_client.plex_server_ssl_verify("http://192.168.1.10:32400") is True
+    assert plex_client.plex_server_ssl_verify("https://plex.example.com:32400") is True
+
+
+@respx.mock
+def test_list_libraries_reads_sections_xml() -> None:
+    respx.get("https://10-0-0-25.abc.plex.direct:32400/library/sections").mock(
+        return_value=httpx.Response(
+            200,
+            text=(
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                '<MediaContainer size="2">'
+                '<Directory key="1" type="movie" title="Movies"/>'
+                '<Directory key="2" type="show" title="TV Shows"/>'
+                "</MediaContainer>"
+            ),
+        )
+    )
+
+    libraries = plex_client.list_libraries(
+        "https://10-0-0-25.abc.plex.direct:32400",
+        "plex-token",
+    )
+
+    assert len(libraries) == 1
+    assert libraries[0].id == "1"
+    assert libraries[0].title == "Movies"
+
+
+@respx.mock
+def test_list_libraries_sorts_alphabetically() -> None:
+    respx.get("http://plex.local:32400/library/sections").mock(
+        return_value=httpx.Response(
+            200,
+            text=(
+                '<?xml version="1.0" encoding="UTF-8"?>'
+                '<MediaContainer size="3">'
+                '<Directory key="3" type="movie" title="Z Movies"/>'
+                '<Directory key="1" type="movie" title="Alpha"/>'
+                '<Directory key="2" type="movie" title="beta"/>'
+                "</MediaContainer>"
+            ),
+        )
+    )
+
+    libraries = plex_client.list_libraries("http://plex.local:32400", "plex-token")
+
+    assert [library.title for library in libraries] == ["Alpha", "beta", "Z Movies"]
 
 
 @respx.mock
@@ -76,3 +130,39 @@ def test_test_connection_reads_identity_xml() -> None:
 
     assert result.ok is True
     assert result.details == {"friendly_name": "Home Plex", "machine_id": "abc123"}
+
+
+def test_fetch_ratings_movies_includes_unrated_library_items(monkeypatch) -> None:
+    rated = SimpleNamespace(
+        type="movie",
+        title="Rated Film",
+        ratingKey="1",
+        guid="tmdb://603",
+        guids=[],
+        userRating=8.0,
+        viewCount=1,
+        lastViewedAt=None,
+    )
+    unrated = SimpleNamespace(
+        type="movie",
+        title="Unrated Film",
+        ratingKey="2",
+        guid="tmdb://949",
+        guids=[],
+        userRating=None,
+        viewCount=0,
+        lastViewedAt=None,
+    )
+    monkeypatch.setattr(
+        plex_client,
+        "fetch_library_movies",
+        lambda *_args, **_kwargs: [rated, unrated],
+    )
+
+    items = plex_client.fetch_ratings_movies("http://plex.local:32400", "plex-token")
+
+    assert len(items) == 2
+    assert items[0].title == "Rated Film"
+    assert items[0].rating == 8.0
+    assert items[1].title == "Unrated Film"
+    assert items[1].rating is None

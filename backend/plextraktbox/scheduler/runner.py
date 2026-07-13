@@ -118,7 +118,15 @@ def _execute_run_in_session(
     final_status = JobRunStatus.FAILED.value
     try:
         _apply_dev_run_delay(run_logger)
-        sources = build_sources(session, job)
+        run_logger.info(
+            "sync.run.start",
+            message=f"Starting sync job: {job.name}",
+            job_name=job.name,
+            dry_run=dry_run,
+            data_types=sorted(dt.value for dt in job.data_types()),
+            source_pair=job.source_pair.value,
+        )
+        sources = build_sources(session, job, log=run_logger)
         ctx = SyncContext(
             sources=sources,
             data_types=job.data_types(),

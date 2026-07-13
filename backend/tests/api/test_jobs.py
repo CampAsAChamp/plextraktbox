@@ -3,10 +3,48 @@
 from __future__ import annotations
 
 import httpx
+import pytest
 import respx
 from fastapi.testclient import TestClient
 
 HEADERS = {"X-Requested-With": "XMLHttpRequest"}
+
+
+def _mock_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Avoid live Plex/Trakt/Letterboxd HTTP during scheduler-backed job runs."""
+    from plextraktbox.sync.sources.letterboxd_source import LetterboxdSource
+
+    async def empty_fetch(*args: object, **kwargs: object) -> list:
+        return []
+
+    monkeypatch.setattr(
+        "plextraktbox.services.connections.ensure_trakt_access_token",
+        lambda session, connection: "access",
+    )
+    monkeypatch.setattr("plextraktbox.clients.plex_client.fetch_watchlist_movies", lambda token: [])
+    monkeypatch.setattr(
+        "plextraktbox.clients.plex_client.fetch_watched_movies",
+        lambda url, token, library_ids=None: [],
+    )
+    monkeypatch.setattr(
+        "plextraktbox.clients.plex_client.fetch_ratings_movies",
+        lambda url, token, library_ids=None: [],
+    )
+    monkeypatch.setattr(
+        "plextraktbox.clients.trakt_client.fetch_watchlist_movies",
+        lambda client_id, access_token: [],
+    )
+    monkeypatch.setattr(
+        "plextraktbox.clients.trakt_client.fetch_watched_movies",
+        lambda client_id, access_token: [],
+    )
+    monkeypatch.setattr(
+        "plextraktbox.clients.letterboxd_client.fetch_watchlist_movies",
+        lambda *args, **kwargs: [],
+    )
+    monkeypatch.setattr(LetterboxdSource, "fetch_watchlist", empty_fetch)
+    monkeypatch.setattr(LetterboxdSource, "fetch_ratings", empty_fetch)
+    monkeypatch.setattr(LetterboxdSource, "fetch_watched", empty_fetch)
 
 
 def _create_user_and_login(client: TestClient) -> None:
@@ -72,20 +110,17 @@ def _configure_connections(client: TestClient) -> None:
     respx.get("https://api.themoviedb.org/3/configuration").mock(
         return_value=httpx.Response(200, json={"images": {}})
     )
-    respx.get("https://letterboxd.com/sign-in/").mock(
+    respx.get("https://letterboxd.com/").mock(
         return_value=httpx.Response(
             200,
-            text="<html></html>",
-            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/; HttpOnly"},
+            headers={"set-cookie": "com.xk72.webparts.csrf=test-csrf; Path=/"},
         )
     )
     respx.post("https://letterboxd.com/user/login.do").mock(
         return_value=httpx.Response(
-            302,
-            headers={
-                "location": "/nick/",
-                "set-cookie": "letterboxd.signed.in.as=nick; Path=/",
-            },
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
         )
     )
     respx.post("https://api.trakt.tv/oauth/device/code").mock(
@@ -142,9 +177,10 @@ def test_jobs_require_auth(client: TestClient) -> None:
 
 
 @respx.mock
-def test_create_and_run_plex_trakt_job(client: TestClient) -> None:
+def test_create_and_run_plex_trakt_job(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     _create_user_and_login(client)
     _configure_connections(client)
+    _mock_live_fetch(monkeypatch)
 
     create = client.post(
         "/api/jobs",

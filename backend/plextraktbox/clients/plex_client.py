@@ -1,15 +1,21 @@
-"""Plex server connection test and PIN-based account linking."""
+"""Plex server connection test, PIN-based account linking, and library fetch."""
 
 from __future__ import annotations
 
 import hashlib
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from urllib.parse import urlencode
+from typing import Any
+from urllib.parse import urlencode, urlparse
 
 import httpx
+from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 
 from plextraktbox.clients.base import ConnectionTestResult
+from plextraktbox.clients.http_cache import get_cached_requests_session, get_plex_server_requests_session
+from plextraktbox.clients.media_mappers import media_item_from_plex_video
+from plextraktbox.sync.media_item import MediaItem
 
 PLEX_PINS_URL = "https://plex.tv/api/v2/pins"
 PLEX_RESOURCES_URL = "https://plex.tv/api/v2/resources"
@@ -18,6 +24,17 @@ PLEX_PRODUCT = "plextraktbox"
 PLEX_VERSION = "0.1.0"
 PIN_EXPIRES_IN = 1800
 PIN_POLL_INTERVAL = 2
+
+
+def plex_server_ssl_verify(url: str) -> bool:
+    """Return whether to verify TLS for a Plex Media Server base URL.
+
+    ``*.plex.direct`` certificates use a Plex-issued CA that fails Python 3.13+
+    strict X.509 checks (Basic Constraints not marked critical). Skipping
+    verification for those hosts matches PlexTraktSync and other self-hosted tools.
+    """
+    host = (urlparse(url).hostname or "").lower()
+    return not host.endswith(".plex.direct")
 
 
 @dataclass(frozen=True)
@@ -36,6 +53,13 @@ class PlexDiscoveredServer:
     token: str
     friendly_name: str
     machine_id: str
+
+
+@dataclass(frozen=True)
+class PlexLibraryInfo:
+    id: str
+    title: str
+    library_type: str
 
 
 def plex_client_identifier(secret_key: str) -> str:
@@ -220,11 +244,13 @@ def pick_best_server(servers: list[PlexDiscoveredServer]) -> PlexDiscoveredServe
 def test_connection(url: str, token: str) -> ConnectionTestResult:
     """Probe ``/identity`` with httpx (same TLS stack as Plex.tv PIN/resources calls)."""
     base = url.rstrip("/")
+    verify = plex_server_ssl_verify(base)
     try:
         resp = httpx.get(
             f"{base}/identity",
             headers={"X-Plex-Token": token, "Accept": "application/xml"},
             timeout=10.0,
+            verify=verify,
         )
         resp.raise_for_status()
     except httpx.HTTPError as exc:
@@ -253,3 +279,114 @@ def test_connection(url: str, token: str) -> ConnectionTestResult:
         message="Connected to Plex",
         details={"friendly_name": friendly_name, "machine_id": machine_id},
     )
+
+
+def _plex_server(url: str, token: str) -> PlexServer:
+    verify = plex_server_ssl_verify(url)
+    session = get_plex_server_requests_session(verify)
+    return PlexServer(url.rstrip("/"), token, session=session)
+
+
+def list_libraries(url: str, token: str) -> list[PlexLibraryInfo]:
+    """Return Plex libraries on the connected Plex server."""
+    base = url.rstrip("/")
+    verify = plex_server_ssl_verify(base)
+    resp = httpx.get(
+        f"{base}/library/sections",
+        headers={"X-Plex-Token": token, "Accept": "application/xml"},
+        timeout=30.0,
+        verify=verify,
+    )
+    resp.raise_for_status()
+
+    try:
+        root = ET.fromstring(resp.text)
+    except ET.ParseError as exc:
+        raise ValueError("Plex library list failed: invalid response") from exc
+
+    libraries: list[PlexLibraryInfo] = []
+    for directory in root.findall(".//Directory"):
+        if str(directory.attrib.get("type", "")).lower() != "movie":
+            continue
+        section_id = directory.attrib.get("key")
+        title = directory.attrib.get("title")
+        if not section_id or not title:
+            continue
+        libraries.append(
+            PlexLibraryInfo(
+                id=str(section_id),
+                title=str(title),
+                library_type="movie",
+            )
+        )
+    libraries.sort(key=lambda lib: lib.title.casefold())
+    return libraries
+
+
+def fetch_watchlist_movies(token: str) -> list[MediaItem]:
+    """Fetch account-level Plex watchlist movies."""
+    session = get_cached_requests_session()
+    account = MyPlexAccount(token=token, session=session)
+    items: list[MediaItem] = []
+    for entry in account.watchlist():
+        if str(getattr(entry, "type", "")).lower() != "movie":
+            continue
+        item = media_item_from_plex_video(entry)
+        if item is not None:
+            item.watchlisted = True
+            items.append(item)
+    return items
+
+
+def fetch_library_movies(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[Any]:
+    """Return raw plexapi movie objects from selected libraries (all movie libs when unset)."""
+    server = _plex_server(url, token)
+    selected = {str(value) for value in library_ids or []}
+    movies: list[Any] = []
+    for section in server.library.sections():
+        if str(getattr(section, "type", "")).lower() != "movie":
+            continue
+        section_key = str(section.key)
+        if selected and section_key not in selected:
+            continue
+        movies.extend(section.all())
+    return movies
+
+
+def fetch_ratings_movies(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[MediaItem]:
+    """Fetch scoped Plex library movies for ratings reconciliation.
+
+    Returns every movie in the selected libraries, including items without a Plex
+    rating yet, so Letterboxd ratings can match against the full catalog.
+    """
+    items: list[MediaItem] = []
+    for video in fetch_library_movies(url, token, library_ids=library_ids):
+        item = media_item_from_plex_video(video)
+        if item is not None:
+            items.append(item)
+    return items
+
+
+def fetch_watched_movies(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[MediaItem]:
+    """Fetch watched movies from scoped Plex libraries."""
+    items: list[MediaItem] = []
+    for video in fetch_library_movies(url, token, library_ids=library_ids):
+        item = media_item_from_plex_video(video)
+        if item is not None and item.watched:
+            items.append(item)
+    return items

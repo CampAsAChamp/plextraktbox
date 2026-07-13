@@ -5,9 +5,16 @@ from __future__ import annotations
 import json
 import time
 
+import pytest
+import respx
 from fastapi.testclient import TestClient
 
-from tests.api.test_jobs import HEADERS, _configure_connections, _create_user_and_login
+from tests.api.test_jobs import (
+    HEADERS,
+    _configure_connections,
+    _create_user_and_login,
+    _mock_live_fetch,
+)
 
 
 def _run_job_and_get_id(client: TestClient) -> int:
@@ -34,61 +41,53 @@ def test_run_logs_require_auth(client: TestClient) -> None:
     assert resp.status_code == 401
 
 
-def test_run_logs_after_job_run(client: TestClient) -> None:
-    import respx
+@respx.mock
+def test_run_logs_after_job_run(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    _create_user_and_login(client)
+    _configure_connections(client)
+    _mock_live_fetch(monkeypatch)
+    run_id = _run_job_and_get_id(client)
 
-    @respx.mock
-    def _run() -> None:
-        _create_user_and_login(client)
-        _configure_connections(client)
-        run_id = _run_job_and_get_id(client)
+    deadline = time.monotonic() + 5
+    items: list[dict] = []
+    while time.monotonic() < deadline:
+        resp = client.get(f"/api/runs/{run_id}/logs")
+        assert resp.status_code == 200
+        body = resp.json()
+        items = body["items"]
+        if items:
+            break
+        time.sleep(0.05)
 
-        deadline = time.monotonic() + 5
-        items: list[dict] = []
-        while time.monotonic() < deadline:
-            resp = client.get(f"/api/runs/{run_id}/logs")
-            assert resp.status_code == 200
-            body = resp.json()
-            items = body["items"]
-            if items:
+    assert items, "expected persisted run logs"
+    assert any("sync.run.complete" in item["message"] for item in items)
+
+    filtered = client.get(f"/api/runs/{run_id}/logs?search=complete")
+    assert filtered.status_code == 200
+    assert len(filtered.json()["items"]) >= 1
+
+
+@respx.mock
+def test_run_logs_stream_completed_run(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    _create_user_and_login(client)
+    _configure_connections(client)
+    _mock_live_fetch(monkeypatch)
+    run_id = _run_job_and_get_id(client)
+
+    with client.stream("GET", f"/api/runs/{run_id}/logs/stream") as response:
+        assert response.status_code == 200
+        events: list[dict] = []
+        for line in response.iter_lines():
+            if not line.startswith("data:"):
+                continue
+            payload = json.loads(line.removeprefix("data:").strip())
+            events.append(payload)
+            if payload.get("type") == "end":
                 break
-            time.sleep(0.05)
 
-        assert items, "expected persisted run logs"
-        assert any("sync.run.complete" in item["message"] for item in items)
-
-        filtered = client.get(f"/api/runs/{run_id}/logs?search=complete")
-        assert filtered.status_code == 200
-        assert len(filtered.json()["items"]) >= 1
-
-    _run()
-
-
-def test_run_logs_stream_completed_run(client: TestClient) -> None:
-    import respx
-
-    @respx.mock
-    def _run() -> None:
-        _create_user_and_login(client)
-        _configure_connections(client)
-        run_id = _run_job_and_get_id(client)
-
-        with client.stream("GET", f"/api/runs/{run_id}/logs/stream") as response:
-            assert response.status_code == 200
-            events: list[dict] = []
-            for line in response.iter_lines():
-                if not line.startswith("data:"):
-                    continue
-                payload = json.loads(line.removeprefix("data:").strip())
-                events.append(payload)
-                if payload.get("type") == "end":
-                    break
-
-        assert any(event.get("type") == "log" for event in events)
-        assert events[-1]["type"] == "end"
-        assert events[-1]["status"] in {"success", "partial", "failed"}
-
-    _run()
+    assert any(event.get("type") == "log" for event in events)
+    assert events[-1]["type"] == "end"
+    assert events[-1]["status"] in {"success", "partial", "failed"}
 
 
 def test_run_logs_not_found(client: TestClient) -> None:

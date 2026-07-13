@@ -51,6 +51,11 @@ def _load_secrets(connection: Connection) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+def load_secrets(connection: Connection) -> dict[str, Any]:
+    """Return decrypted connection secrets (tokens/passwords)."""
+    return _load_secrets(connection)
+
+
 def _save_connection(
     session: Session,
     *,
@@ -256,6 +261,79 @@ def mark_trakt_needs_reauth(session: Session) -> None:
     connection.status = ConnectionStatus.NEEDS_REAUTH
     session.add(connection)
     session.commit()
+
+
+def ensure_trakt_access_token(session: Session, connection: Connection) -> str:
+    """Return a valid Trakt access token, refreshing and persisting when expired."""
+    if connection.status != ConnectionStatus.OK:
+        raise ValueError("Trakt connection needs re-authorization")
+
+    secrets = _load_secrets(connection)
+    access_token = str(secrets.get("access_token", ""))
+    refresh_token = str(secrets.get("refresh_token", ""))
+    if not access_token or not refresh_token:
+        raise ValueError("Trakt connection not configured")
+
+    client_id, client_secret = get_settings().require_trakt_credentials()
+    result, refreshed = trakt_client.test_connection(
+        client_id,
+        client_secret,
+        access_token,
+        refresh_token,
+        token_expires_at=connection.token_expires_at,
+    )
+    if not result.ok:
+        if "re-authorize" in result.message.lower():
+            mark_trakt_needs_reauth(session)
+        raise ValueError(result.message)
+
+    if refreshed is not None:
+        save_trakt_tokens(
+            session,
+            access_token=refreshed.access_token,
+            refresh_token=refreshed.refresh_token,
+            expires_at=refreshed.expires_at,
+            test=False,
+        )
+        return refreshed.access_token
+    return access_token
+
+
+def list_plex_libraries(session: Session) -> list[dict[str, str]]:
+    connection = get_connection(session, Service.PLEX)
+    if connection is None or connection.status != ConnectionStatus.OK:
+        raise ValueError("Plex connection not configured")
+    config = connection.public_config()
+    secrets = _load_secrets(connection)
+    libraries = plex_client.list_libraries(
+        str(config.get("url", "")),
+        str(secrets.get("token", "")),
+    )
+    return [{"id": lib.id, "title": lib.title, "type": lib.library_type} for lib in libraries]
+
+
+def update_plex_libraries(session: Session, library_ids: list[str]) -> Connection:
+    connection = get_connection(session, Service.PLEX)
+    if connection is None:
+        raise ValueError("Plex connection not configured")
+
+    config = connection.public_config()
+    all_libraries = list_plex_libraries(session)
+    selected_ids = {str(value) for value in library_ids}
+    selected = [entry for entry in all_libraries if entry["id"] in selected_ids]
+    if library_ids and not selected:
+        raise ValueError("No matching Plex libraries for selection")
+
+    config["libraries"] = selected
+    secrets = _load_secrets(connection)
+    return _save_connection(
+        session,
+        service=Service.PLEX,
+        config=config,
+        secrets=secrets,
+        status=connection.status,
+        token_expires_at=connection.token_expires_at,
+    )
 
 
 def test_saved_connection(session: Session, service: Service) -> ConnectionTestResult:

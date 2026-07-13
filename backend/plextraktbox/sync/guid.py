@@ -56,9 +56,12 @@ def identifiers_from_guids(guids: list[str]) -> dict[str, str]:
 def letterboxd_slug(url: str) -> str | None:
     parsed = urlparse(url)
     parts = [part for part in parsed.path.split("/") if part]
-    if len(parts) >= 2 and parts[0] == "film":
-        return parts[1].rstrip("/")
-    return None
+    if "film" not in parts:
+        return None
+    film_index = parts.index("film")
+    if film_index + 1 >= len(parts):
+        return None
+    return parts[film_index + 1].rstrip("/")
 
 
 def media_type_from_plex_type(plex_type: str) -> MediaType:

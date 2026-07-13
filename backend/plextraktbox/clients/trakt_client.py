@@ -1,13 +1,16 @@
-"""Trakt OAuth device flow and connection test."""
+"""Trakt OAuth device flow, connection test, and sync fetch."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import httpx
 
 from plextraktbox.clients.base import ConnectionTestResult
+from plextraktbox.clients.media_mappers import media_item_from_trakt_movie
+from plextraktbox.sync.media_item import MediaItem
 
 TRAKT_BASE = "https://api.trakt.tv"
 TRAKT_HEADERS = {
@@ -220,3 +223,67 @@ def test_connection(
         ),
         tokens,
     )
+
+
+def _auth_headers(client_id: str, access_token: str) -> dict[str, str]:
+    return {**_headers(client_id), "Authorization": f"Bearer {access_token}"}
+
+
+def _trakt_get(
+    client_id: str,
+    access_token: str,
+    path: str,
+    *,
+    params: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
+    resp = httpx.get(
+        f"{TRAKT_BASE}{path}",
+        headers=_auth_headers(client_id, access_token),
+        params=params,
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    if not isinstance(data, list):
+        raise ValueError(f"Unexpected Trakt response for {path}")
+    return data
+
+
+def fetch_watchlist_movies(client_id: str, access_token: str) -> list[MediaItem]:
+    rows = _trakt_get(
+        client_id,
+        access_token,
+        "/sync/watchlist",
+        params={"type": "movies"},
+    )
+    items: list[MediaItem] = []
+    for row in rows:
+        item = media_item_from_trakt_movie(row, watchlisted=True)
+        if item is not None:
+            items.append(item)
+    return items
+
+
+def fetch_ratings_movies(client_id: str, access_token: str) -> list[MediaItem]:
+    rows = _trakt_get(client_id, access_token, "/sync/ratings/movies")
+    items: list[MediaItem] = []
+    for row in rows:
+        item = media_item_from_trakt_movie(row)
+        if item is not None and item.rating is not None:
+            items.append(item)
+    return items
+
+
+def fetch_watched_movies(client_id: str, access_token: str) -> list[MediaItem]:
+    rows = _trakt_get(
+        client_id,
+        access_token,
+        "/sync/watched/movies",
+        params={"extended": "full"},
+    )
+    items: list[MediaItem] = []
+    for row in rows:
+        item = media_item_from_trakt_movie(row, watched=True)
+        if item is not None:
+            items.append(item)
+    return items

@@ -27,7 +27,6 @@ dependencies = [
     "plexapi>=4.16",
     "trakt.py>=4.4",
     "requests-cache>=1.2",
-    "beautifulsoup4>=4.12",
     "pluggy>=1.5",
 ]
 

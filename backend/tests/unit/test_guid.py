@@ -17,3 +17,4 @@ def test_identifiers_from_guids() -> None:
 
 def test_letterboxd_slug() -> None:
     assert letterboxd_slug("https://letterboxd.com/film/the-matrix/") == "the-matrix"
+    assert letterboxd_slug("https://letterboxd.com/campasachamp/film/heat-1995/") == "heat-1995"
