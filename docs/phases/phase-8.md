@@ -1,6 +1,6 @@
 # Phase 8 — Client-backed apply (movies)
 
-**Status:** Planned
+**Status:** Next
 
 ## Goal
 

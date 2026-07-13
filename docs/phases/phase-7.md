@@ -1,6 +1,6 @@
 # Phase 7 — Client-backed fetch (movies)
 
-**Status:** Next
+**Status:** Done
 
 ## Goal
 

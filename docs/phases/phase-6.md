@@ -37,4 +37,4 @@ per-job overrides.
 
 [phase-6-test-plan.md](test-plans/phase-6-test-plan.md)
 
-**Next:** [Phase 7 — Client-backed fetch (movies)](phase-7.md) ← **current focus**
+**Next:** [Phase 7 — Client-backed fetch (movies)](phase-7.md) (done) → [Phase 8 — Client-backed apply (movies)](phase-8.md)

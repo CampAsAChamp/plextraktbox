@@ -10,7 +10,7 @@
 
 ## Quick links
 
-- **Current focus:** Phase 7 — [client-backed fetch (movies)](phases/phase-7.md)
+- **Current focus:** Phase 8 — [client-backed apply (movies)](phases/phase-8.md)
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)

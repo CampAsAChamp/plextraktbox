@@ -39,11 +39,11 @@ mise run test-backend    # unit tests on fakes + respx client mapping tests
 mise run check           # CI parity before marking phase done
 ```
 
-- [ ] Unit reconciler/engine tests still pass with fakes (no network)
-- [ ] Respx tests cover Plex/Trakt/Letterboxd client responses → `MediaItem` fields (fetch)
-- [ ] Dry-run runs assert zero apply/write HTTP calls
-- [ ] Pre-flight rejects run when a required connection is not `ok`
-- [ ] Unmatched items appear in `RunSummary` when identifiers do not overlap
+- [x] Unit reconciler/engine tests still pass with fakes (no network)
+- [x] Respx tests cover Plex/Trakt/Letterboxd client responses → `MediaItem` fields (fetch)
+- [x] Dry-run runs assert zero apply/write HTTP calls
+- [x] Pre-flight rejects run when a required connection is not `ok`
+- [x] Unmatched items appear in `RunSummary` when identifiers do not overlap
 
 ## 2. Container / browser (manual, real creds)
 
@@ -51,13 +51,13 @@ mise run check           # CI parity before marking phase done
 mise run up-dev          # or up + dev-bootstrap
 ```
 
-- [ ] Plex Connections step: select which libraries to sync; selection persists after reload
-- [ ] Create a **dry-run** Plex ↔ Trakt job (watchlist + watched)
-- [ ] **Run now** — logs show fetched items (not empty fetches)
-- [ ] Summary counts reflect matched/planned items (not all zeros)
-- [ ] Run detail shows unmatched items when deliberately mismatched content exists
-- [ ] Letterboxd → Plex ratings job (dry-run) shows LB ratings in plan logs
-- [ ] Run with a broken connection — pre-flight error before run starts (no orphan `running` run)
+- [x] Plex Connections step: select which libraries to sync; selection persists after reload
+- [x] Create a **dry-run** Plex ↔ Trakt job (watchlist + watched)
+- [x] **Run now** — logs show fetched items (not empty fetches)
+- [x] Summary counts reflect matched/planned items (not all zeros)
+- [x] Run detail shows unmatched items when deliberately mismatched content exists
+- [x] Letterboxd → Plex ratings job (dry-run) shows LB ratings in plan logs
+- [x] Run with a broken connection — pre-flight error before run starts (no orphan `running` run)
 
 ## 3. API smoke (optional)
 

@@ -139,7 +139,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 7 — real Plex/Trakt/Letterboxd **fetch** for movies; apply in Phase 8.
+**Current focus:** Phase 8 — real Plex/Trakt **apply** for movies; fetch landed in Phase 7.
 
 
 

@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–6 and **18 (version/build info)** are done; **Phase 7 (client-backed fetch, movies)** is next, then apply (8), UI (9–10), TV (11), CI (12), settings/ops (13), dashboard (14), Doppler (15), TrueNAS deploy (16–17), and automated releases (19).
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–7 and **18 (version/build info)** are done; **Phase 8 (client-backed apply, movies)** is next, then UI (9–10), TV (11), CI (12), settings/ops (13), dashboard (14), Doppler (15), TrueNAS deploy (16–17), and automated releases (19).
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.
