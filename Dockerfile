@@ -12,10 +12,14 @@ RUN npm run build -- --outDir dist --emptyOutDir
 
 # ---- Stage 2: python runtime ----
 FROM python:3.14-slim AS runtime
+ARG GIT_SHA=
+ARG BUILD_TIME=
 COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
 ENV SSL_CERT_FILE=/etc/ssl/certs/zscaler-root-ca.pem \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/zscaler-root-ca.pem \
-    PIP_CERT=/etc/ssl/certs/zscaler-root-ca.pem
+    PIP_CERT=/etc/ssl/certs/zscaler-root-ca.pem \
+    PLEXTRAKTBOX_GIT_SHA=${GIT_SHA} \
+    PLEXTRAKTBOX_BUILD_TIME=${BUILD_TIME}
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ENV=prod \

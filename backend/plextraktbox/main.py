@@ -26,6 +26,7 @@ from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
 from plextraktbox.logstream import get_log_hub, get_log_writer
 from plextraktbox.scheduler import get_scheduler_manager
+from plextraktbox.version_info import __version__
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -51,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="plextraktbox", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="plextraktbox", version=__version__, lifespan=lifespan)
 
     app.add_middleware(
         SessionMiddleware,

@@ -12,6 +12,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
+import { formatVersionLabel, useHealthQuery } from "../../api/health";
 import { ApiHealthBadge } from "./ApiHealthBadge";
 import { NotificationBell } from "../notifications/NotificationBell";
 
@@ -111,6 +112,8 @@ export function AppLayout({
   const isSettings = location.pathname.startsWith("/settings");
   const showHome = showLogout;
   const queryClient = useQueryClient();
+  const { data: health } = useHealthQuery();
+  const versionLabel = health ? formatVersionLabel(health) : null;
   const logout = useMutation({
     mutationFn: () => api.post<void>("/auth/logout"),
     onSuccess: () => {
@@ -221,6 +224,12 @@ export function AppLayout({
                   >
                     Settings
                   </Menu.Item>
+                  {versionLabel ? (
+                    <>
+                      <Menu.Divider />
+                      <Menu.Label>plextraktbox {versionLabel}</Menu.Label>
+                    </>
+                  ) : null}
                   <Menu.Divider />
                   <Menu.Item
                     color="red"

@@ -1,23 +1,23 @@
-import { Badge } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "../../api/client";
-
-interface Health {
-  status: string;
-  version: string;
-}
+import { Badge, Tooltip } from "@mantine/core";
+import { formatVersionLabel, useHealthQuery } from "../../api/health";
 
 export function ApiHealthBadge() {
-  const { data, isError } = useQuery({
-    queryKey: ["health"],
-    queryFn: () => api.get<Health>("/health"),
-  });
+  const { data, isError } = useHealthQuery();
 
   if (data) {
+    const label = formatVersionLabel(data);
+    const tooltipParts = [`plextraktbox ${label}`];
+    if (data.built_at) {
+      tooltipParts.push(`built ${data.built_at}`);
+    }
+    const tooltip = tooltipParts.join(" · ");
+
     return (
-      <Badge color="green" variant="light">
-        ✓ API · v{data.version}
-      </Badge>
+      <Tooltip label={tooltip} withArrow>
+        <Badge color="green" variant="light">
+          ✓ API · {label}
+        </Badge>
+      </Tooltip>
     );
   }
 

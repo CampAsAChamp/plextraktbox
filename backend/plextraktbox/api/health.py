@@ -4,11 +4,16 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from plextraktbox import __version__
+from plextraktbox.schemas.health import HealthResponse
+from plextraktbox.version_info import __version__, built_at, git_sha
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "version": __version__}
+def health() -> HealthResponse:
+    return HealthResponse(
+        version=__version__,
+        git_sha=git_sha(),
+        built_at=built_at(),
+    )
