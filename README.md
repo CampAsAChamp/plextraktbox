@@ -134,7 +134,7 @@ mise run up-dev   # Doppler + backend :8000 + Vite :5173 with bind mounts and re
 mise run down-dev
 ```
 
-`up-dev` runs `doppler run -- compose up --build` (use `up-dev-env` if secrets are only in `.env`). After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev` for a no-cache image rebuild (also recreates the frontend `node_modules` volume). Source edits under `backend/` and `frontend/` reload live via bind mounts — no rebuild needed for those.
+`up-dev` wraps `doppler run -- compose up --build` and waits for a clean `compose down` on Ctrl+C (use `up-dev-env` if secrets are only in `.env`). After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev` for a no-cache image rebuild (also recreates the frontend `node_modules` volume). Source edits under `backend/` and `frontend/` reload live via bind mounts — no rebuild needed for those.
 
 **Native dev (two terminals, no Docker):**
 

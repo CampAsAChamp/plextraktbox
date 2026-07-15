@@ -1,6 +1,7 @@
 # Dev stack: hot-reload backend + Vite frontend. Use `mise run up-dev` (Doppler).
 # Open http://localhost:5173 (UI) — API on http://localhost:8000.
 # Without Doppler: `mise run up-dev-env` with secrets in `.env`.
+# `up-dev` goes through scripts/compose-up-dev.sh so Ctrl+C waits for teardown.
 services:
   backend:
     build:

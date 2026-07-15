@@ -67,9 +67,10 @@ mise run rebuild-dev # no-cache image rebuild after dependency changes (also use
 mise run down-dev
 ```
 
-`up-dev` runs `doppler run -- compose up --build`, which rebuilds when Dockerfiles or dependency
-files change. After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev`. Source
-edits under `backend/` and `frontend/` reload live via bind mounts.
+`up-dev` runs a wrapper around `doppler run -- compose up --build` that rebuilds when Dockerfiles or
+dependency files change, and on Ctrl+C waits for `compose down` to finish so shutdown logs do not
+spill into the next prompt. After changing `pyproject.toml` or `package.json`, use
+`mise run rebuild-dev`. Source edits under `backend/` and `frontend/` reload live via bind mounts.
 
 **Two terminals (native, no Docker):**
 
