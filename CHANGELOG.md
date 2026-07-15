@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.2.1...v0.3.0) (2026-07-15)
+
+
+### Features
+
+* add mobile layout ([436b128](https://github.com/CampAsAChamp/plextraktbox/commit/436b128e8506213e029fa151b79b81b4544e4e7d))
+
 # Changelog
 
 All notable changes to this project are documented in this file.
