@@ -66,11 +66,14 @@ export function SortableTh<TColumn extends string>({
   label,
   sort,
   onSort,
+  hiddenFrom,
 }: {
   column: TColumn;
   label: string;
   sort: SortState<TColumn> | null;
   onSort: (column: TColumn) => void;
+  /** Hide this column below the given Mantine breakpoint. */
+  hiddenFrom?: "xs" | "sm" | "md" | "lg" | "xl";
 }) {
   const active = sort?.column === column;
   const direction = active ? sort.direction : undefined;
@@ -80,6 +83,7 @@ export function SortableTh<TColumn extends string>({
     <Table.Th
       aria-sort={ariaSort}
       className={active ? `${classes.th} ${classes.thSorted}` : classes.th}
+      hiddenFrom={hiddenFrom}
     >
       <UnstyledButton
         onClick={() => onSort(column)}

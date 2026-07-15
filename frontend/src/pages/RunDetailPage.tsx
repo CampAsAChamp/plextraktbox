@@ -123,9 +123,9 @@ export function RunDetailPage() {
         <Button component={Link} to={backTo} variant="subtle" w="fit-content">
           Back to run history
         </Button>
-        <Group justify="space-between">
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
           <Title order={3}>Run #{run.id}</Title>
-          <Group gap="sm">
+          <Group gap="sm" wrap="wrap">
             {run.status === "running" ? (
               <Button
                 color="red"

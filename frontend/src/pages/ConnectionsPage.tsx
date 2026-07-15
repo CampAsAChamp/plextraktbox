@@ -12,6 +12,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -335,7 +336,7 @@ function PlexStep({
           </Text>
         </Alert>
       ) : null}
-      <Group>
+      <Group wrap="wrap">
         <Button
           onClick={() => start.mutate()}
           loading={start.isPending}
@@ -487,7 +488,7 @@ function TraktStep({
           <Text size="sm">Your Trakt account is authorized for sync.</Text>
         </Alert>
       ) : null}
-      <Group>
+      <Group wrap="wrap">
         <Button
           onClick={() => start.mutate()}
           loading={start.isPending}
@@ -666,7 +667,7 @@ function LetterboxdStep({
             "Saved on the server — enter a new password to replace it.",
           )}
         />
-        <Group>
+        <Group wrap="wrap">
           <Button type="submit" loading={save.isPending} disabled={!isDirty} leftSection={<SaveIcon />}>
             Save Letterboxd connection
           </Button>
@@ -894,7 +895,7 @@ function TmdbStep({
             "Saved on the server — enter a new API key to replace it.",
           )}
         />
-        <Group>
+        <Group wrap="wrap">
           <Button type="submit" loading={save.isPending} disabled={!isDirty} leftSection={<SaveIcon />}>
             Save TMDB connection
           </Button>
@@ -964,6 +965,7 @@ function FinishedStep({
 export function ConnectionsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isNarrow = useMediaQuery("(max-width: 47.997em)");
   const statusQuery = useQuery({
     queryKey: ["connections", "status"],
     queryFn: () => api.get<ConnectionsStatus>("/connections/status"),
@@ -1034,7 +1036,7 @@ export function ConnectionsPage() {
   }
 
   return (
-    <Stack gap="md" maw="85%" mx="auto">
+    <Stack gap="md" maw={{ base: "100%", lg: "85%" }} mx="auto">
       <Title order={3}>{needsConnections ? "Connect your services" : "Connections"}</Title>
       <Text c="dimmed" size="sm">
         {needsConnections
@@ -1043,7 +1045,7 @@ export function ConnectionsPage() {
       </Text>
 
       {!needsConnections && hasConfiguredConnections ? (
-        <Group justify="flex-end">
+        <Group justify="flex-end" wrap="wrap">
           <Button
             variant="outline"
             color="red"
@@ -1059,6 +1061,7 @@ export function ConnectionsPage() {
       <Stepper
         active={active}
         onStepClick={setActive}
+        orientation={isNarrow ? "vertical" : "horizontal"}
         classNames={{
           stepIcon: classes.stepIcon,
           stepCompletedIcon: classes.stepCompletedIcon,

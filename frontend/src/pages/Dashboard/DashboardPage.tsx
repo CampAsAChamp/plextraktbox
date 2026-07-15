@@ -1,15 +1,14 @@
 import {
-  ActionIcon,
   Alert,
   Badge,
   Button,
   Group,
   Loader,
+  Menu,
   Stack,
   Table,
   Text,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -24,6 +23,7 @@ import { DryRunBadge, JobStatusBadge } from "../../components/JobForm/JobForm";
 import { RunStatusBadge } from "../../components/runs/RunBadges";
 import { SourcePairLabel } from "../../components/services/SourcePairLabel";
 import { RoundedTable } from "../../components/table/RoundedTable";
+import { RowActionsMenu } from "../../components/table/RowActionsMenu";
 import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
 import { showToast } from "../../toast";
 import { formatDateTime, formatScheduleDateTime } from "../../utils/dateTimeFormat";
@@ -138,8 +138,8 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
   }
 
   return (
-    <Stack gap="md" maw="85%" mx="auto">
-      <Group justify="space-between" align="flex-start">
+    <Stack gap="md" maw={{ base: "100%", lg: "85%" }} mx="auto">
+      <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
         <Stack gap={4}>
           <Title order={3}>Dashboard</Title>
           <Text size="sm" c="dimmed">
@@ -199,7 +199,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
 
       <Stack gap="xs">
         <Text fw={500}>Connections</Text>
-        <Group gap="xs">
+        <Group gap="xs" wrap="wrap">
           {connections.map((item) => (
             <ConnectionStatusBadge key={item.service} connection={item} />
           ))}
@@ -244,9 +244,9 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
-                <Table.Th>Job Type</Table.Th>
+                <Table.Th hiddenFrom="sm">Job Type</Table.Th>
                 <Table.Th>Schedule</Table.Th>
-                <Table.Th>Dry run</Table.Th>
+                <Table.Th hiddenFrom="sm">Dry run</Table.Th>
                 <Table.Th>Status</Table.Th>
                 <Table.Th>Last run</Table.Th>
                 <Table.Th>Actions</Table.Th>
@@ -261,13 +261,13 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                   <Table.Td>
                     <Text fw={500}>{job.name}</Text>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td hiddenFrom="sm">
                     <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
                   </Table.Td>
                   <Table.Td>
                     <ScheduleCell job={job} />
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td hiddenFrom="sm">
                     <DryRunBadge dryRun={job.dry_run} compact />
                   </Table.Td>
                   <Table.Td>
@@ -277,39 +277,23 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                     <LastRunCell job={job} />
                   </Table.Td>
                   <Table.Td>
-                    <Group gap="xs">
-                      <Tooltip label="Run now">
-                        <ActionIcon
-                          variant="light"
-                          aria-label={`Run ${job.name}`}
-                          loading={isRunning(job, "run")}
-                          onClick={() => runMutation.mutate({ job, mode: "run" })}
-                        >
-                          ▶
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label="Dry-run">
-                        <ActionIcon
-                          variant="light"
-                          color="blue"
-                          aria-label={`Dry-run ${job.name}`}
-                          loading={isRunning(job, "dry-run")}
-                          onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
-                        >
-                          ▷
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label="Edit">
-                        <ActionIcon
-                          component={Link}
-                          to={`/jobs/${job.id}/edit`}
-                          variant="subtle"
-                          aria-label={`Edit ${job.name}`}
-                        >
-                          ✎
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
+                    <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
+                      <Menu.Item
+                        disabled={isRunning(job, "run")}
+                        onClick={() => runMutation.mutate({ job, mode: "run" })}
+                      >
+                        {isRunning(job, "run") ? "Running…" : "Run now"}
+                      </Menu.Item>
+                      <Menu.Item
+                        disabled={isRunning(job, "dry-run")}
+                        onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
+                      >
+                        {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
+                      </Menu.Item>
+                      <Menu.Item component={Link} to={`/jobs/${job.id}/edit`}>
+                        Edit
+                      </Menu.Item>
+                    </RowActionsMenu>
                   </Table.Td>
                 </Table.Tr>
               ))}

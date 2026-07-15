@@ -26,13 +26,13 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 15 | [Doppler secrets](phase-15.md) | Done | Maintainer dev/CI workflow | [phase-15](test-plans/phase-15-test-plan.md) |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Done | semantic-release, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
-| 20 | [Mobile & responsive layout](phase-20.md) | Planned | Phone/tablet layouts, touch UX | TBD |
+| 20 | [Mobile & responsive layout](phase-20.md) | Done | Phone/tablet layouts, touch UX | [phase-20](test-plans/phase-20-test-plan.md) |
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
 
-**Current focus:** Phase 20 (mobile layout); Phases 0–8, 11–15, and 18–19 are complete.
+**Current focus:** Phase 21 (sync caches) or TrueNAS (22); Phases 0–8, 11–15, and 18–20 are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is last on the roadmap;
@@ -44,7 +44,7 @@ Phase numbers follow implementation order where possible. [Phase 18](phase-18.md
 use the tracks below when parallel work makes sense.
 
 ```
-Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 ✓ → 14 ✓ → 20
+Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 ✓ → 14 ✓ → 20 ✓
 Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
 Release                18 ✓ → 12 ✓ → 19 ✓
@@ -58,9 +58,9 @@ Maintainer (optional)  15 ✓ — Doppler
 
 | Track | Order | Notes |
 | ----- | ----- | ----- |
-| **Product** | 14 ✓ → **20** | Dashboard done; mobile next |
+| **Product** | 14 ✓ → 20 ✓ | Dashboard + mobile done |
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
-| **Ops** | 13 ✓ → 14 ✓ → **20** | Settings + dashboard done; mobile next |
+| **Ops** | 13 ✓ → 14 ✓ → 20 ✓ | Settings + dashboard + mobile done |
 | **Release** | 12 ✓ → 19 ✓ | CI + automated releases / GHCR done |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 ✓ |
 | **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |

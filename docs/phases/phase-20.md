@@ -1,6 +1,6 @@
 # Phase 20 — Mobile & responsive layout
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
@@ -82,9 +82,8 @@ Nothing — last planned **product UI** phase.
 
 ## Verification
 
-Test plan TBD when phase lands — manual smoke on real devices or DevTools device emulation
-(iPhone SE, iPhone 14, iPad portrait, ~390px and ~768px widths) across login, setup, connections,
-jobs, runs, run detail + live logs, dashboard, settings. Vitest/RTL viewport tests where cheap;
-no requirement for full visual regression tooling.
+See [test-plans/phase-20-test-plan.md](test-plans/phase-20-test-plan.md) — manual smoke at ~390px /
+~768px across login, setup, connections, jobs, runs, run detail + live logs, dashboard, settings;
+AppLayout drawer vitest coverage.
 
-**Next:** [Phase index](README.md)
+**Next:** [Phase index](README.md) · [Phase 21](phase-21.md) (sync caches)

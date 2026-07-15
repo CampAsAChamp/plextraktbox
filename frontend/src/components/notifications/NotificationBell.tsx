@@ -135,7 +135,7 @@ export function NotificationBell() {
   return (
     <Menu
       position="bottom-end"
-      width={360}
+      width="min(360px, calc(100vw - 2rem))"
       withinPortal
       onOpen={() => {
         void listQuery.refetch();
@@ -153,6 +153,8 @@ export function NotificationBell() {
             variant="subtle"
             color={unreadCount > 0 ? "blue" : "gray"}
             size="lg"
+            miw={44}
+            h={44}
             aria-label="Notifications"
           >
             <BellIcon />

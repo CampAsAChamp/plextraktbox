@@ -68,16 +68,20 @@ export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
             <RoundedTable striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th w={130}>Service</Table.Th>
+                  <Table.Th w={130} hiddenFrom="sm">
+                    Service
+                  </Table.Th>
                   <Table.Th>Title</Table.Th>
-                  <Table.Th w={140}>Type</Table.Th>
+                  <Table.Th w={140} hiddenFrom="sm">
+                    Type
+                  </Table.Th>
                   <Table.Th>Reason</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {parsedItems.map((item, index) => (
                   <Table.Tr key={`${item.source}-${item.source_key}-${item.reason}-${index}`}>
-                    <Table.Td>
+                    <Table.Td hiddenFrom="sm">
                       <Group gap="xs" wrap="nowrap">
                         {isService(item.source) ? (
                           <>
@@ -92,7 +96,7 @@ export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
                     <Table.Td>
                       <Text size="sm">{item.title}</Text>
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td hiddenFrom="sm">
                       {isDataType(item.data_type) ? (
                         <DataTypeBadge dataType={item.data_type} size="xs" />
                       ) : (

@@ -1,4 +1,4 @@
-import { Paper, Table, type TableProps } from "@mantine/core";
+import { Paper, ScrollArea, Table, type TableProps } from "@mantine/core";
 import type { ReactNode } from "react";
 
 type RoundedTableProps = TableProps & {
@@ -10,17 +10,33 @@ type RoundedTableProps = TableProps & {
 /**
  * Round bordered shell around a Mantine table.
  * Softens tables into the cinema-night baseline without pill-shaping every row.
+ * Non-fitContent tables scroll horizontally on narrow viewports.
  */
-export function RoundedTable({ children, fitContent = false, style, ...props }: RoundedTableProps) {
+export function RoundedTable({
+  children,
+  fitContent = false,
+  style,
+  ...props
+}: RoundedTableProps) {
+  const table = (
+    <Table horizontalSpacing="md" verticalSpacing="sm" style={style} {...props}>
+      {children}
+    </Table>
+  );
+
   return (
     <Paper
       withBorder
       radius="lg"
       style={{ overflow: "hidden", width: fitContent ? "fit-content" : undefined }}
     >
-      <Table horizontalSpacing="md" verticalSpacing="sm" style={style} {...props}>
-        {children}
-      </Table>
+      {fitContent ? (
+        table
+      ) : (
+        <ScrollArea type="scroll" offsetScrollbars scrollbarSize={8}>
+          {table}
+        </ScrollArea>
+      )}
     </Paper>
   );
 }

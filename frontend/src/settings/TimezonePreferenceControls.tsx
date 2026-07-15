@@ -83,22 +83,23 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
       data={timezoneOptions}
       value={manualTimezone}
       onChange={(value) => value && setTimezone(value)}
-      w={compact ? 220 : undefined}
+      w={compact ? { base: "100%", sm: 220 } : undefined}
       styles={TIMEZONE_SELECT_STYLES}
     />
   );
 
   if (compact) {
     return (
-      <Stack gap={4}>
+      <Stack gap={4} style={{ flex: "1 1 200px", minWidth: 0 }}>
         <Text component="label" size="sm" fw={500}>
           Timezone
         </Text>
-        <Group align="flex-end" gap="xs" wrap="nowrap">
+        <Group align="flex-end" gap="xs" wrap="wrap">
           <SegmentedControl
             value={timezoneMode}
             onChange={handleModeChange}
             data={[...TIMEZONE_MODE_OPTIONS]}
+            style={{ flex: "1 1 auto", minWidth: 0 }}
           />
           {timezoneMode === "manual" ? manualTimezoneSelect : null}
         </Group>
@@ -114,6 +115,7 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
         timestamps. Job cron schedules use the separate Cron timezone under Sync defaults.
       </Text>
       <SegmentedControl
+        fullWidth
         value={timezoneMode}
         onChange={handleModeChange}
         data={[...TIMEZONE_MODE_OPTIONS]}

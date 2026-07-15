@@ -1,14 +1,13 @@
 import {
-  ActionIcon,
   Button,
   Group,
   Loader,
+  Menu,
   Modal,
   Stack,
   Table,
   Text,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,6 +18,7 @@ import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "../api/jobs";
 import { DataTypeBadge } from "../components/services/DataTypeBadge";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { RoundedTable } from "../components/table/RoundedTable";
+import { RowActionsMenu } from "../components/table/RowActionsMenu";
 import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { ApiError } from "../api/client";
 import { cloneJob, deleteJob, listJobs, runJob } from "../api/jobApi";
@@ -202,7 +202,7 @@ export function JobsPage() {
 
   return (
     <Stack gap="md">
-      <Group justify="space-between">
+      <Group justify="space-between" wrap="wrap" gap="sm">
         <Title order={3}>Sync jobs</Title>
         <Button component={Link} to="/jobs/new" leftSection={<PlusIcon />}>
           New job
@@ -216,10 +216,28 @@ export function JobsPage() {
           <Table.Thead>
             <Table.Tr>
               <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
-              <SortableTh column="source_pair" label="Job Type" sort={sort} onSort={handleSort} />
-              <SortableTh column="data_types" label="Data" sort={sort} onSort={handleSort} />
+              <SortableTh
+                column="source_pair"
+                label="Job Type"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
+              <SortableTh
+                column="data_types"
+                label="Data"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
               <SortableTh column="cron" label="Schedule" sort={sort} onSort={handleSort} />
-              <SortableTh column="dry_run" label="Dry run" sort={sort} onSort={handleSort} />
+              <SortableTh
+                column="dry_run"
+                label="Dry run"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
               <SortableTh column="enabled" label="Status" sort={sort} onSort={handleSort} />
               <Table.Th>Actions</Table.Th>
             </Table.Tr>
@@ -233,10 +251,16 @@ export function JobsPage() {
                 <Table.Td className={sortedColumnCellClass(sort, "name")}>
                   <Text fw={500}>{job.name}</Text>
                 </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
+                <Table.Td
+                  className={sortedColumnCellClass(sort, "source_pair")}
+                  hiddenFrom="sm"
+                >
                   <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
                 </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "data_types")}>
+                <Table.Td
+                  className={sortedColumnCellClass(sort, "data_types")}
+                  hiddenFrom="sm"
+                >
                   <Group gap={4}>
                     {job.data_types.map((dt) => (
                       <DataTypeBadge key={dt} dataType={dt} />
@@ -246,76 +270,52 @@ export function JobsPage() {
                 <Table.Td className={sortedColumnCellClass(sort, "cron")}>
                   <ScheduleCell job={job} />
                 </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
+                <Table.Td className={sortedColumnCellClass(sort, "dry_run")} hiddenFrom="sm">
                   <DryRunBadge dryRun={job.dry_run} compact />
                 </Table.Td>
                 <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
                   <JobStatusBadge enabled={job.enabled} />
                 </Table.Td>
                 <Table.Td>
-                  <Group gap={4}>
-                    <Tooltip label="Run now">
-                      <ActionIcon
-                        variant="light"
-                        aria-label="Run now"
-                        loading={isRunning(job, "run")}
-                        onClick={() => runMutation.mutate({ job, mode: "run" })}
-                      >
-                        ▶
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Dry-run">
-                      <ActionIcon
-                        variant="light"
-                        color="blue"
-                        aria-label="Dry-run"
-                        loading={isRunning(job, "dry-run")}
-                        onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
-                      >
-                        ▷
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Edit">
-                      <ActionIcon
-                        component={Link}
-                        to={`/jobs/${job.id}/edit`}
-                        variant="subtle"
-                        aria-label="Edit"
-                      >
-                        <PencilIcon />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Clone">
-                      <ActionIcon
-                        variant="subtle"
-                        aria-label="Clone"
-                        loading={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
-                        onClick={() => cloneMutation.mutate(job)}
-                      >
-                        <CloneIcon />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="History">
-                      <ActionIcon
-                        component={Link}
-                        to={`/runs?job_id=${job.id}`}
-                        variant="subtle"
-                        aria-label="History"
-                      >
-                        <HistoryIcon />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Delete">
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        aria-label="Delete"
-                        onClick={() => setJobPendingDelete(job)}
-                      >
-                        <TrashIcon />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
+                  <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
+                    <Menu.Item
+                      disabled={isRunning(job, "run")}
+                      onClick={() => runMutation.mutate({ job, mode: "run" })}
+                    >
+                      {isRunning(job, "run") ? "Running…" : "Run now"}
+                    </Menu.Item>
+                    <Menu.Item
+                      disabled={isRunning(job, "dry-run")}
+                      onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
+                    >
+                      {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
+                    </Menu.Item>
+                    <Menu.Item component={Link} to={`/jobs/${job.id}/edit`} leftSection={<PencilIcon />}>
+                      Edit
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<CloneIcon />}
+                      disabled={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+                      onClick={() => cloneMutation.mutate(job)}
+                    >
+                      Clone
+                    </Menu.Item>
+                    <Menu.Item
+                      component={Link}
+                      to={`/runs?job_id=${job.id}`}
+                      leftSection={<HistoryIcon />}
+                    >
+                      History
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item
+                      color="red"
+                      leftSection={<TrashIcon />}
+                      onClick={() => setJobPendingDelete(job)}
+                    >
+                      Delete
+                    </Menu.Item>
+                  </RowActionsMenu>
                 </Table.Td>
               </Table.Tr>
             ))}

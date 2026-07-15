@@ -2,11 +2,17 @@ import {
   ActionIcon,
   AppShell,
   Avatar,
+  Box,
+  Burger,
   Button,
+  Drawer,
   Group,
   Menu,
+  NavLink,
+  Stack,
   Title,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
@@ -72,6 +78,16 @@ function LogoutIcon({ size = 14 }: { size?: number }) {
   );
 }
 
+const NAV_LINKS = [
+  { to: "/jobs", label: "Jobs", match: (path: string) => path.startsWith("/jobs") },
+  { to: "/runs", label: "Runs", match: (path: string) => path.startsWith("/runs") },
+  {
+    to: "/connections",
+    label: "Connections",
+    match: (path: string) => path.startsWith("/connections"),
+  },
+] as const;
+
 interface AppLayoutProps {
   username?: string;
   avatarUrl?: string;
@@ -85,10 +101,8 @@ export function AppLayout({
 }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure(false);
   const isHome = location.pathname === "/";
-  const isJobs = location.pathname.startsWith("/jobs");
-  const isRuns = location.pathname.startsWith("/runs");
-  const isConnections = location.pathname.startsWith("/connections");
   const isSettings = location.pathname.startsWith("/settings");
   const showHome = showLogout;
   const queryClient = useQueryClient();
@@ -105,8 +119,17 @@ export function AppLayout({
   return (
     <AppShell header={{ height: 64 }} padding="md">
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="md">
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+            {showLogout ? (
+              <Burger
+                opened={navOpened}
+                onClick={toggleNav}
+                hiddenFrom="sm"
+                size="sm"
+                aria-label="Open navigation"
+              />
+            ) : null}
             {showHome ? (
               <Link
                 to="/"
@@ -116,10 +139,16 @@ export function AppLayout({
                   color: "inherit",
                   textDecoration: "none",
                   cursor: "pointer",
+                  minWidth: 0,
                 }}
               >
                 <Group gap="sm" wrap="nowrap">
-                  <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
+                  <Title
+                    order={3}
+                    fw={700}
+                    style={{ letterSpacing: "-0.02em" }}
+                    lineClamp={1}
+                  >
                     plextraktbox
                   </Title>
                   <ActionIcon
@@ -129,6 +158,7 @@ export function AppLayout({
                     size="lg"
                     aria-hidden
                     tabIndex={-1}
+                    visibleFrom="sm"
                   >
                     <HomeIcon size={18} />
                   </ActionIcon>
@@ -140,52 +170,31 @@ export function AppLayout({
               </Title>
             )}
             {showLogout ? (
-              <Group gap={4}>
-                <Button
-                  component={Link}
-                  to="/jobs"
-                  variant={isJobs ? "light" : "subtle"}
-                  color={isJobs ? "amber" : "gray"}
-                  size="compact-sm"
-                  aria-current={isJobs ? "page" : undefined}
-                >
-                  Jobs
-                </Button>
-                <Button
-                  component={Link}
-                  to="/runs"
-                  variant={isRuns ? "light" : "subtle"}
-                  color={isRuns ? "amber" : "gray"}
-                  size="compact-sm"
-                  aria-current={isRuns ? "page" : undefined}
-                >
-                  Runs
-                </Button>
-                <Button
-                  component={Link}
-                  to="/connections"
-                  variant={isConnections ? "light" : "subtle"}
-                  color={isConnections ? "amber" : "gray"}
-                  size="compact-sm"
-                  aria-current={isConnections ? "page" : undefined}
-                >
-                  Connections
-                </Button>
+              <Group gap={4} visibleFrom="sm">
+                {NAV_LINKS.map((link) => {
+                  const active = link.match(location.pathname);
+                  return (
+                    <Button
+                      key={link.to}
+                      component={Link}
+                      to={link.to}
+                      variant={active ? "light" : "subtle"}
+                      color={active ? "amber" : "gray"}
+                      size="compact-sm"
+                      aria-current={active ? "page" : undefined}
+                    >
+                      {link.label}
+                    </Button>
+                  );
+                })}
               </Group>
             ) : null}
           </Group>
-          <Group gap="sm">
+          <Group gap="xs" wrap="nowrap">
             <ApiHealthBadge />
             {showLogout ? <NotificationBell /> : null}
             {showLogout && username ? (
-              <Menu
-                position="bottom-end"
-                width={200}
-                withinPortal
-                trigger="click-hover"
-                openDelay={100}
-                closeDelay={400}
-              >
+              <Menu position="bottom-end" width={200} withinPortal trigger="click">
                 <Menu.Target>
                   <Button
                     variant="subtle"
@@ -193,7 +202,8 @@ export function AppLayout({
                     size="compact-sm"
                     px="sm"
                     py="xs"
-                    h="auto"
+                    h={44}
+                    miw={44}
                     styles={{ label: { lineHeight: 1 } }}
                     aria-label="Account menu"
                   >
@@ -201,7 +211,9 @@ export function AppLayout({
                       {avatarUrl ? (
                         <Avatar src={avatarUrl} alt="" size={24} radius="xl" />
                       ) : null}
-                      <span>{username}</span>
+                      <Box component="span" visibleFrom="sm">
+                        {username}
+                      </Box>
                       <ChevronDownIcon />
                     </Group>
                   </Button>
@@ -237,6 +249,48 @@ export function AppLayout({
           </Group>
         </Group>
       </AppShell.Header>
+
+      {showLogout ? (
+        <Drawer
+          opened={navOpened}
+          onClose={closeNav}
+          title="Navigation"
+          padding="md"
+          size="xs"
+          hiddenFrom="sm"
+          zIndex={300}
+        >
+          <Stack gap="xs">
+            <NavLink
+              component={Link}
+              to="/"
+              label="Dashboard"
+              leftSection={<HomeIcon size={18} />}
+              active={isHome}
+              onClick={closeNav}
+            />
+            {NAV_LINKS.map((link) => (
+              <NavLink
+                key={link.to}
+                component={Link}
+                to={link.to}
+                label={link.label}
+                active={link.match(location.pathname)}
+                onClick={closeNav}
+              />
+            ))}
+            <NavLink
+              component={Link}
+              to="/settings"
+              label="Settings"
+              leftSection={<SettingsIcon size={18} />}
+              active={isSettings}
+              onClick={closeNav}
+            />
+          </Stack>
+        </Drawer>
+      ) : null}
+
       <AppShell.Main>
         <Outlet />
       </AppShell.Main>

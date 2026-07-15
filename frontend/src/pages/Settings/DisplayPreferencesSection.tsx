@@ -41,6 +41,7 @@ export function DisplayPreferencesSection() {
             Choose month-first (US) or day-first date ordering.
           </Text>
           <SegmentedControl
+            fullWidth
             value={preferences.dateFormat}
             onChange={(value) => setDateFormat(value as typeof preferences.dateFormat)}
             data={[...DATE_FORMAT_OPTIONS]}
@@ -53,6 +54,7 @@ export function DisplayPreferencesSection() {
             Choose between 24-hour time and 12-hour time with AM/PM.
           </Text>
           <SegmentedControl
+            fullWidth
             value={preferences.timeFormat}
             onChange={(value) => setTimeFormat(value as typeof preferences.timeFormat)}
             data={[...TIME_FORMAT_OPTIONS]}

@@ -26,7 +26,7 @@ export function JobCreatePage() {
 
   return (
     <Stack gap="md">
-      <Group justify="space-between">
+      <Group justify="space-between" wrap="wrap" gap="sm">
         <Title order={3}>New sync job</Title>
         <Button component={Link} to="/jobs" variant="subtle">
           Back to jobs

@@ -4,6 +4,7 @@ import {
   Checkbox,
   Group,
   Radio,
+  SimpleGrid,
   Stack,
   Switch,
   Table,
@@ -212,7 +213,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
           <Text size="sm" fw={500}>
             Schedule
           </Text>
-          <Group gap="xs">
+          <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="xs">
             {CRON_PRESETS.map((preset) => (
               <Button
                 key={preset.id}
@@ -224,7 +225,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
                 {preset.label}
               </Button>
             ))}
-          </Group>
+          </SimpleGrid>
           {activePreset ? (
             <Text size="xs" c="dimmed">
               {CRON_PRESETS.find((preset) => preset.id === activePreset)?.description} (
@@ -298,7 +299,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
           ) : null}
         </Stack>
 
-        <Group align="center">
+        <Stack gap="sm">
           <Switch label="Enabled" checked={enabled} onChange={(event) => setEnabled(event.currentTarget.checked)} />
           <Switch
             label={
@@ -344,7 +345,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
             checked={requireDryRunFirst}
             onChange={(event) => setRequireDryRunFirst(event.currentTarget.checked)}
           />
-        </Group>
+        </Stack>
 
         <Stack gap="xs">
           <Text size="sm" fw={500}>

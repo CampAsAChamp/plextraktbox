@@ -235,6 +235,7 @@ export function SyncSettingsSection() {
               preferences (how timestamps are shown).
             </Text>
             <SegmentedControl
+              fullWidth
               value={timezoneMode}
               onChange={handleTimezoneModeChange}
               data={[...CRON_TIMEZONE_MODE_OPTIONS]}

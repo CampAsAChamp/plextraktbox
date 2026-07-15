@@ -10,7 +10,6 @@ import {
   Table,
   Text,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -215,16 +214,17 @@ export function RunHistoryPage() {
                 ? `Runs for job #${jobId}`
                 : "Run history"}
         </Title>
-        <Tooltip label="Refresh runs">
-          <ActionIcon
-            variant="light"
-            aria-label="Refresh runs"
-            disabled={isRefreshing}
-            onClick={refreshRuns}
-          >
-            <RefreshIcon spinning={isRefreshing} />
-          </ActionIcon>
-        </Tooltip>
+        <ActionIcon
+          variant="light"
+          size="lg"
+          miw={44}
+          h={44}
+          aria-label="Refresh runs"
+          disabled={isRefreshing}
+          onClick={refreshRuns}
+        >
+          <RefreshIcon spinning={isRefreshing} />
+        </ActionIcon>
       </Group>
 
       {deletedJob ? (
@@ -295,12 +295,36 @@ export function RunHistoryPage() {
             <Table.Tr>
               <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
               <SortableTh column="job_name" label="Job" sort={sort} onSort={handleSort} />
-              <SortableTh column="source_pair" label="Job Type" sort={sort} onSort={handleSort} />
-              <SortableTh column="trigger" label="Trigger" sort={sort} onSort={handleSort} />
-              <SortableTh column="dry_run" label="Dry run" sort={sort} onSort={handleSort} />
+              <SortableTh
+                column="source_pair"
+                label="Job Type"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
+              <SortableTh
+                column="trigger"
+                label="Trigger"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
+              <SortableTh
+                column="dry_run"
+                label="Dry run"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
               <SortableTh column="status" label="Status" sort={sort} onSort={handleSort} />
               <SortableTh column="started_at" label="Started" sort={sort} onSort={handleSort} />
-              <SortableTh column="duration" label="Duration" sort={sort} onSort={handleSort} />
+              <SortableTh
+                column="duration"
+                label="Duration"
+                sort={sort}
+                onSort={handleSort}
+                hiddenFrom="sm"
+              />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -331,17 +355,20 @@ export function RunHistoryPage() {
                   <Table.Td className={sortedColumnCellClass(sort, "job_name")}>
                     {run.job_name ?? `Job #${run.job_id}`}
                   </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
+                  <Table.Td
+                    className={sortedColumnCellClass(sort, "source_pair")}
+                    hiddenFrom="sm"
+                  >
                     {run.source_pair ? (
                       <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
                     ) : (
                       <Text c="dimmed">—</Text>
                     )}
                   </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "trigger")}>
+                  <Table.Td className={sortedColumnCellClass(sort, "trigger")} hiddenFrom="sm">
                     <RunTriggerBadge trigger={run.trigger} />
                   </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
+                  <Table.Td className={sortedColumnCellClass(sort, "dry_run")} hiddenFrom="sm">
                     <DryRunBadge dryRun={run.dry_run} compact />
                   </Table.Td>
                   <Table.Td className={sortedColumnCellClass(sort, "status")}>
@@ -350,7 +377,9 @@ export function RunHistoryPage() {
                   <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
                     {formatDateTime(run.started_at, preferences)}
                   </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "duration")}>{duration}</Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "duration")} hiddenFrom="sm">
+                    {duration}
+                  </Table.Td>
                 </Table.Tr>
               );
             })}

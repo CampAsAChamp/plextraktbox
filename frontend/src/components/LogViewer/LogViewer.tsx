@@ -7,7 +7,6 @@ import {
   Stack,
   Text,
   TextInput,
-  Tooltip,
 } from "@mantine/core";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +42,7 @@ type LogViewerProps = {
 
 function LogLoggerLabel({ logger }: { logger: string }) {
   return (
-    <Box component="span" style={{ minWidth: 120, flexShrink: 0 }}>
+    <Box component="span" visibleFrom="sm" style={{ minWidth: 120, flexShrink: 0 }}>
       <Box component="span" style={{ color: LOG_LOGGER_BRACKET_COLOR }}>
         [
       </Box>
@@ -170,6 +169,7 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
     <Box
       px="sm"
       py={4}
+      className="log-line"
       style={{
         fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
         fontSize: 13,
@@ -178,7 +178,7 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
       }}
     >
       <Group gap="xs" wrap="nowrap" align={expanded ? "flex-start" : "center"}>
-        <Text span c="dimmed" style={{ minWidth: 92, flexShrink: 0 }}>
+        <Text span c="dimmed" style={{ minWidth: 72, flexShrink: 0 }}>
           {formatTimestamp(line.ts, displayPreferences)}
         </Text>
         <LogLevelBadge level={level} fixedWidth />
@@ -203,18 +203,18 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
           )}
         </Box>
         {expandable ? (
-          <Tooltip label={expanded ? "Collapse details" : "Expand details"}>
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              aria-label={expanded ? "Collapse log details" : "Expand log details"}
-              aria-expanded={expanded}
-              onClick={onToggle}
-              style={{ flexShrink: 0 }}
-            >
-              {expanded ? "▼" : "▶"}
-            </ActionIcon>
-          </Tooltip>
+          <ActionIcon
+            size="lg"
+            miw={44}
+            h={44}
+            variant="subtle"
+            aria-label={expanded ? "Collapse log details" : "Expand log details"}
+            aria-expanded={expanded}
+            onClick={onToggle}
+            style={{ flexShrink: 0 }}
+          >
+            {expanded ? "▼" : "▶"}
+          </ActionIcon>
         ) : null}
       </Group>
     </Box>
@@ -299,8 +299,18 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
 
   return (
     <Stack gap="sm">
-      <Group justify="space-between" align="flex-end">
-        <Group align="flex-end">
+      <Stack gap="sm">
+        <Group justify="space-between" align="center" wrap="wrap" gap="xs">
+          <Group gap="xs">
+            {isLive ? (
+              <LiveStreamIndicator connected={stream.connected} ended={stream.ended} />
+            ) : null}
+            <Text size="sm" c="dimmed">
+              {filteredLines.length} line{filteredLines.length === 1 ? "" : "s"}
+            </Text>
+          </Group>
+        </Group>
+        <Group align="flex-end" wrap="wrap" gap="sm">
           <LogLevelMultiSelect
             label="Level"
             value={levelFilters}
@@ -312,19 +322,12 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
             placeholder="Filter log text"
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
-            w={260}
+            w={{ base: "100%", sm: 260 }}
+            style={{ flex: "1 1 200px" }}
           />
           <TimezonePreferenceControls compact />
         </Group>
-        <Group gap="xs">
-          {isLive ? (
-            <LiveStreamIndicator connected={stream.connected} ended={stream.ended} />
-          ) : null}
-          <Text size="sm" c="dimmed">
-            {filteredLines.length} line{filteredLines.length === 1 ? "" : "s"}
-          </Text>
-        </Group>
-      </Group>
+      </Stack>
 
       <Box pos="relative">
         {isLive ? (

@@ -8,6 +8,9 @@ body,
 
 body {
   margin: 0;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
   background-color: var(--mantine-color-dark-8);
   background-image: linear-gradient(
     165deg,
@@ -17,6 +20,22 @@ body {
   );
   background-attachment: fixed;
   color: var(--mantine-color-dark-0);
+}
+
+/* Avoid iOS zoom-on-focus for form controls on narrow viewports. */
+@media (max-width: 47.997em) {
+  .mantine-TextInput-input,
+  .mantine-PasswordInput-input,
+  .mantine-Select-input,
+  .mantine-NumberInput-input,
+  .mantine-Textarea-input,
+  .mantine-PillsInput-inputField {
+    font-size: 16px !important;
+  }
+
+  .log-line {
+    font-size: 14px !important;
+  }
 }
 
 /* Soft lift on filled primary buttons without glow stacks. */

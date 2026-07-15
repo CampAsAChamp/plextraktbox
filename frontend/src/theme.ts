@@ -158,6 +158,19 @@ export const theme = createTheme({
           backgroundColor: "color-mix(in srgb, var(--mantine-color-dark-8) 88%, transparent)",
           borderBottomColor: "var(--mantine-color-dark-5)",
           backdropFilter: "blur(8px)",
+          paddingTop: "env(safe-area-inset-top)",
+        },
+        main: {
+          paddingBottom: "calc(var(--mantine-spacing-md) + env(safe-area-inset-bottom))",
+        },
+      },
+    },
+    Drawer: {
+      defaultProps: { radius: 0 },
+      styles: {
+        content: {
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         },
       },
     },

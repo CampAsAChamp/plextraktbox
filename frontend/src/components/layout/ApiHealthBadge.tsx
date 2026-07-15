@@ -1,4 +1,4 @@
-import { Badge, Tooltip } from "@mantine/core";
+import { Badge, Box, Tooltip } from "@mantine/core";
 import { formatVersionLabel, useHealthQuery } from "../../api/health";
 
 export function ApiHealthBadge() {
@@ -17,11 +17,17 @@ export function ApiHealthBadge() {
       tooltipParts.push(`built ${data.built_at}`);
     }
     const tooltip = tooltipParts.join(" · ");
+    const icon = degraded ? "⚠" : "✓";
 
     return (
       <Tooltip label={tooltip} withArrow>
         <Badge color={degraded ? "yellow" : "green"} variant="light">
-          {degraded ? "⚠" : "✓"} API · {label}
+          <Box component="span" hiddenFrom="sm">
+            {icon}
+          </Box>
+          <Box component="span" visibleFrom="sm">
+            {icon} API · {label}
+          </Box>
         </Badge>
       </Tooltip>
     );
@@ -30,14 +36,24 @@ export function ApiHealthBadge() {
   if (isError) {
     return (
       <Badge color="red" variant="light">
-        API unreachable
+        <Box component="span" hiddenFrom="sm">
+          ✕
+        </Box>
+        <Box component="span" visibleFrom="sm">
+          API unreachable
+        </Box>
       </Badge>
     );
   }
 
   return (
     <Badge color="gray" variant="light">
-      connecting…
+      <Box component="span" hiddenFrom="sm">
+        …
+      </Box>
+      <Box component="span" visibleFrom="sm">
+        connecting…
+      </Box>
     </Badge>
   );
 }

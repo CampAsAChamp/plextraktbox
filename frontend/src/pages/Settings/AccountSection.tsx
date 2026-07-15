@@ -88,7 +88,7 @@ export function AccountSection({ user }: AccountSectionProps) {
     >
       <Stack gap="md">
         <SettingsSectionTitle icon={<UserIcon size={18} />}>Account</SettingsSectionTitle>
-        <Group gap="md" align="flex-start" wrap="nowrap">
+        <Group gap="md" align="flex-start" wrap="wrap">
           <Avatar src={user.avatar_url} alt="" size={64} radius="xl" />
           <Stack gap={4}>
             <Text fw={600}>{user.username}</Text>

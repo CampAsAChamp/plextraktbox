@@ -129,7 +129,7 @@ function ChannelSettings({
 
   const body = (
     <Stack gap="sm">
-      <Group justify="space-between">
+      <Group justify="space-between" wrap="wrap" gap="sm">
         <Group gap="sm">
           {channel === "discord" ? <DiscordIcon size={22} /> : null}
           <Text fw={600} c={channel === "discord" ? DISCORD_BLURPLE : undefined}>
@@ -143,7 +143,7 @@ function ChannelSettings({
         />
       </Group>
 
-      <Group>
+      <Group wrap="wrap">
         <Checkbox
           label="On success"
           checked={form.onSuccess}
@@ -178,7 +178,7 @@ function ChannelSettings({
         </Text>
       ) : null}
 
-      <Group>
+      <Group wrap="wrap">
         <Button loading={save.isPending} onClick={() => save.mutate()} leftSection={<SaveIcon />}>
           Save
         </Button>

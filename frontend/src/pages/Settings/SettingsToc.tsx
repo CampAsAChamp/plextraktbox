@@ -1,4 +1,4 @@
-import { Box, Group, TableOfContents, Text } from "@mantine/core";
+import { Box, Group, Select, TableOfContents, Text } from "@mantine/core";
 import type { ComponentType } from "react";
 import { BellIcon } from "../../components/icons/BellIcon";
 import { ClockIcon } from "../../components/icons/ClockIcon";
@@ -21,6 +21,33 @@ const SECTION_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   "settings-display": ClockIcon,
   "settings-notifications": BellIcon,
 };
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Compact section jump for narrow viewports (desktop TOC is sticky aside). */
+export function SettingsMobileNav() {
+  return (
+    <Select
+      hiddenFrom="sm"
+      aria-label="Jump to settings section"
+      placeholder="Jump to section"
+      data={INITIAL_SECTIONS.map((section) => ({
+        value: section.id,
+        label: section.value,
+      }))}
+      onChange={(value) => {
+        if (value) scrollToSection(value);
+      }}
+      clearable
+      styles={{
+        input: { cursor: "pointer" },
+        section: { cursor: "pointer" },
+      }}
+    />
+  );
+}
 
 export function SettingsToc() {
   return (

@@ -72,9 +72,14 @@ plextraktbox/
 └── frontend/src/
     ├── App.tsx (router + auth-gate + setup-gate)
     ├── api/ client, jobs, runs, logs(SSE hook), auth
-    ├── components/ LogViewer/, JobForm/, layout/(account menu w/ Gravatar avatar)
+    ├── components/ LogViewer/, JobForm/, layout/(responsive AppShell: header nav + mobile drawer)
     └── pages/ SetupWizard/, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer), Settings
 ```
+
+**Responsive layout (Phase 20):** First-class UI concern — Mantine breakpoints (`sm` ≈ 768px),
+hamburger `Drawer` nav below `sm`, horizontal `ScrollArea` tables with priority columns + labeled
+row action menus, stacked LogViewer/settings/forms on narrow viewports, `viewport-fit=cover` +
+`env(safe-area-inset-*)`. No separate mobile app or PWA.
 
 
 
@@ -161,7 +166,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 20 (mobile) or 19 (releases); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler maintainer secrets (15), and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
+**Current focus:** Phase 21 (sync caches) or TrueNAS (22); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), and mobile layout (20) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
 
 
 

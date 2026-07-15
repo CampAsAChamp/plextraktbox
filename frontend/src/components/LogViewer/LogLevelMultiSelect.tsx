@@ -48,7 +48,7 @@ export function LogLevelMultiSelect({
           __clearSection={<Combobox.ClearButton onClear={() => onChange([])} />}
           __clearable={showClear}
           rightSectionPointerEvents={showClear ? "all" : "none"}
-          w={220}
+          w={{ base: "100%", sm: 220 }}
           styles={{
             input: { cursor: "pointer" },
             section: { cursor: "pointer" },
