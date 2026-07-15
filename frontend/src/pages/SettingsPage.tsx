@@ -10,6 +10,11 @@ const TIME_FORMAT_OPTIONS = [
   { value: "12h", label: "12-hour (AM/PM)" },
 ] as const;
 
+const DATE_FORMAT_OPTIONS = [
+  { value: "mdy", label: "MM/DD/YYYY" },
+  { value: "dmy", label: "DD/MM/YYYY" },
+] as const;
+
 const PREVIEW_TIMESTAMP = "2026-07-11T18:30:45.123Z";
 
 interface SettingsPageProps {
@@ -17,7 +22,7 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ user }: SettingsPageProps) {
-  const { preferences, setTimeFormat } = useDisplayPreferences();
+  const { preferences, setTimeFormat, setDateFormat } = useDisplayPreferences();
 
   return (
     <Stack gap="md" maw={560}>
@@ -49,6 +54,18 @@ export function SettingsPage({ user }: SettingsPageProps) {
       <Paper withBorder p="md" radius="md">
         <Stack gap="lg">
           <TimezonePreferenceControls />
+
+          <Stack gap="xs">
+            <Text fw={500}>Date format</Text>
+            <Text size="sm" c="dimmed">
+              Choose month-first (US) or day-first date ordering.
+            </Text>
+            <SegmentedControl
+              value={preferences.dateFormat}
+              onChange={(value) => setDateFormat(value as typeof preferences.dateFormat)}
+              data={[...DATE_FORMAT_OPTIONS]}
+            />
+          </Stack>
 
           <Stack gap="xs">
             <Text fw={500}>Time format</Text>

@@ -1,15 +1,18 @@
 export type TimezonePreference = "local" | "utc" | (string & {});
 export type TimeFormatPreference = "12h" | "24h";
+export type DateFormatPreference = "mdy" | "dmy";
 export type TimezoneMode = "local" | "utc" | "fixed";
 
 export type DisplayPreferences = {
   timezone: TimezonePreference;
   timeFormat: TimeFormatPreference;
+  dateFormat: DateFormatPreference;
 };
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
   timezone: "local",
   timeFormat: "24h",
+  dateFormat: "mdy",
 };
 
 const STORAGE_KEY = "plextraktbox.displayPreferences";
@@ -34,6 +37,10 @@ const FALLBACK_TIMEZONES = [
 
 function isTimeFormatPreference(value: unknown): value is TimeFormatPreference {
   return value === "12h" || value === "24h";
+}
+
+function isDateFormatPreference(value: unknown): value is DateFormatPreference {
+  return value === "mdy" || value === "dmy";
 }
 
 export function isValidIanaTimezone(value: string): boolean {
@@ -101,6 +108,9 @@ export function normalizeDisplayPreferences(value: unknown): DisplayPreferences 
     timeFormat: isTimeFormatPreference(record.timeFormat)
       ? record.timeFormat
       : DEFAULT_DISPLAY_PREFERENCES.timeFormat,
+    dateFormat: isDateFormatPreference(record.dateFormat)
+      ? record.dateFormat
+      : DEFAULT_DISPLAY_PREFERENCES.dateFormat,
   };
 }
 

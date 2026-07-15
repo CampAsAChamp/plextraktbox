@@ -13,12 +13,37 @@ const STORAGE_KEY = "plextraktbox.displayPreferences";
 describe("normalizeDisplayPreferences", () => {
   it("falls back to defaults for invalid values", () => {
     expect(normalizeDisplayPreferences(null)).toEqual(DEFAULT_DISPLAY_PREFERENCES);
-    expect(normalizeDisplayPreferences({ timezone: "pst", timeFormat: "military" })).toEqual(
-      DEFAULT_DISPLAY_PREFERENCES,
-    );
+    expect(
+      normalizeDisplayPreferences({ timezone: "pst", timeFormat: "military", dateFormat: "ymd" }),
+    ).toEqual(DEFAULT_DISPLAY_PREFERENCES);
   });
 
   it("keeps valid values", () => {
+    expect(
+      normalizeDisplayPreferences({
+        timezone: "utc",
+        timeFormat: "12h",
+        dateFormat: "dmy",
+      }),
+    ).toEqual({
+      timezone: "utc",
+      timeFormat: "12h",
+      dateFormat: "dmy",
+    });
+    expect(
+      normalizeDisplayPreferences({
+        timezone: "America/Chicago",
+        timeFormat: "24h",
+        dateFormat: "mdy",
+      }),
+    ).toEqual({
+      timezone: "America/Chicago",
+      timeFormat: "24h",
+      dateFormat: "mdy",
+    });
+  });
+
+  it("defaults dateFormat when missing from older stored prefs", () => {
     expect(
       normalizeDisplayPreferences({
         timezone: "utc",
@@ -27,15 +52,7 @@ describe("normalizeDisplayPreferences", () => {
     ).toEqual({
       timezone: "utc",
       timeFormat: "12h",
-    });
-    expect(
-      normalizeDisplayPreferences({
-        timezone: "America/Chicago",
-        timeFormat: "24h",
-      }),
-    ).toEqual({
-      timezone: "America/Chicago",
-      timeFormat: "24h",
+      dateFormat: "mdy",
     });
   });
 });
@@ -61,7 +78,11 @@ describe("display preference storage", () => {
   });
 
   it("persists and reloads preferences", () => {
-    saveDisplayPreferences({ timezone: "utc", timeFormat: "12h" });
-    expect(loadDisplayPreferences()).toEqual({ timezone: "utc", timeFormat: "12h" });
+    saveDisplayPreferences({ timezone: "utc", timeFormat: "12h", dateFormat: "dmy" });
+    expect(loadDisplayPreferences()).toEqual({
+      timezone: "utc",
+      timeFormat: "12h",
+      dateFormat: "dmy",
+    });
   });
 });

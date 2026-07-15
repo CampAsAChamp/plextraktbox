@@ -1,4 +1,4 @@
-import { resolveTimeZone, type DisplayPreferences } from "../settings/displayPreferences";
+import { resolveTimeZone, type DateFormatPreference, type DisplayPreferences } from "../settings/displayPreferences";
 
 const NAIVE_ISO_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/;
 
@@ -17,6 +17,31 @@ function dateTimeOptions(preferences: DisplayPreferences): Intl.DateTimeFormatOp
   };
 }
 
+function formatDateOrder(
+  month: string,
+  day: string,
+  year: string,
+  dateFormat: DateFormatPreference,
+): string {
+  return dateFormat === "dmy" ? `${day}/${month}/${year}` : `${month}/${day}/${year}`;
+}
+
+function lookupPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
+  return parts.find((part) => part.type === type)?.value ?? "";
+}
+
+function formatTimeFromParts(
+  parts: Intl.DateTimeFormatPart[],
+  options: { includeSeconds: boolean },
+): string {
+  const hour = lookupPart(parts, "hour");
+  const minute = lookupPart(parts, "minute");
+  const second = lookupPart(parts, "second");
+  const dayPeriod = lookupPart(parts, "dayPeriod");
+  const base = options.includeSeconds ? `${hour}:${minute}:${second}` : `${hour}:${minute}`;
+  return dayPeriod ? `${base} ${dayPeriod}` : base;
+}
+
 export function formatTimestamp(value: string, preferences: DisplayPreferences): string {
   const date = parseUtcTimestamp(value);
   return date.toLocaleTimeString(undefined, {
@@ -31,7 +56,7 @@ export function formatTimestamp(value: string, preferences: DisplayPreferences):
 export function formatDateTime(value: string | null, preferences: DisplayPreferences): string {
   if (!value) return "—";
   const date = parseUtcTimestamp(value);
-  return date.toLocaleString(undefined, {
+  const parts = new Intl.DateTimeFormat(undefined, {
     ...dateTimeOptions(preferences),
     year: "numeric",
     month: "numeric",
@@ -39,5 +64,54 @@ export function formatDateTime(value: string | null, preferences: DisplayPrefere
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  });
+  }).formatToParts(date);
+
+  const dateText = formatDateOrder(
+    lookupPart(parts, "month"),
+    lookupPart(parts, "day"),
+    lookupPart(parts, "year"),
+    preferences.dateFormat,
+  );
+  return `${dateText}, ${formatTimeFromParts(parts, { includeSeconds: true })}`;
+}
+
+/** Schedule fire times: weekday + date + time (no seconds). */
+export function formatScheduleDateTime(value: string | null, preferences: DisplayPreferences): string {
+  if (!value) return "—";
+  const parts = formatScheduleDateTimeParts(value, preferences);
+  return `${parts.weekday}, ${parts.date}, ${parts.time}`;
+}
+
+export interface ScheduleDateTimeParts {
+  weekday: string;
+  date: string;
+  time: string;
+}
+
+/** Split a schedule fire time into weekday / date / time for columnar display. */
+export function formatScheduleDateTimeParts(
+  value: string,
+  preferences: DisplayPreferences,
+): ScheduleDateTimeParts {
+  const date = parseUtcTimestamp(value);
+  const parts = new Intl.DateTimeFormat(undefined, {
+    ...dateTimeOptions(preferences),
+    weekday: "short",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+
+  return {
+    weekday: lookupPart(parts, "weekday"),
+    date: formatDateOrder(
+      lookupPart(parts, "month"),
+      lookupPart(parts, "day"),
+      lookupPart(parts, "year"),
+      preferences.dateFormat,
+    ),
+    time: formatTimeFromParts(parts, { includeSeconds: false }),
+  };
 }

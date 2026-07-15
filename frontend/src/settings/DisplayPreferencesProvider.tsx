@@ -3,6 +3,7 @@ import {
   DEFAULT_DISPLAY_PREFERENCES,
   loadDisplayPreferences,
   saveDisplayPreferences,
+  type DateFormatPreference,
   type DisplayPreferences,
   type TimeFormatPreference,
   type TimezonePreference,
@@ -12,6 +13,7 @@ type DisplayPreferencesContextValue = {
   preferences: DisplayPreferences;
   setTimezone: (timezone: TimezonePreference) => void;
   setTimeFormat: (timeFormat: TimeFormatPreference) => void;
+  setDateFormat: (dateFormat: DateFormatPreference) => void;
 };
 
 const DisplayPreferencesContext = createContext<DisplayPreferencesContextValue | null>(null);
@@ -32,6 +34,7 @@ export function DisplayPreferencesProvider({ children }: { children: ReactNode }
       preferences,
       setTimezone: (timezone: TimezonePreference) => updatePreferences({ timezone }),
       setTimeFormat: (timeFormat: TimeFormatPreference) => updatePreferences({ timeFormat }),
+      setDateFormat: (dateFormat: DateFormatPreference) => updatePreferences({ dateFormat }),
     }),
     [preferences, updatePreferences],
   );
@@ -48,6 +51,7 @@ export function useDisplayPreferences() {
       preferences: DEFAULT_DISPLAY_PREFERENCES,
       setTimezone: () => {},
       setTimeFormat: () => {},
+      setDateFormat: () => {},
     };
   }
   return context;
