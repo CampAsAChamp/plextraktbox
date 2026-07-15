@@ -114,7 +114,7 @@ class _HttpMethodValueFormatter:
 
 def _http_method_styles(*, colors: bool) -> dict[str, str]:
     if not colors:
-        return {method: "" for method in _HTTP_METHOD_COLORS}
+        return dict.fromkeys(_HTTP_METHOD_COLORS, "")
     return dict(_HTTP_METHOD_COLORS)
 
 
