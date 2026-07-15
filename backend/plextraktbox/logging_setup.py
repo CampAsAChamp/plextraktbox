@@ -182,6 +182,8 @@ def configure_logging() -> None:
     # httpx logs raw outbound requests at INFO; oauth poll handlers emit structured events.
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
+    # requests_cache stale-if-error recovery is handled by _QuietCachedSession.
+    logging.getLogger("requests_cache").setLevel(logging.ERROR)
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:

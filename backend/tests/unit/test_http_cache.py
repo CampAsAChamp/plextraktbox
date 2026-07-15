@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import ssl
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -62,3 +63,48 @@ def test_cached_session_keeps_default_adapter_without_custom_ca() -> None:
 
     adapter = session.get_adapter("https://example.com")
     assert type(adapter).__name__ == "HTTPAdapter"
+
+
+def test_plex_server_noverify_session_disables_tls_verify() -> None:
+    session = http_cache.get_plex_server_requests_session(False)
+    assert session.verify is False
+    ctx = _adapter_ssl_context(session)
+    assert ctx.verify_mode == ssl.CERT_NONE
+    assert ctx.check_hostname is False
+
+
+def test_plex_server_noverify_session_suppresses_insecure_warning() -> None:
+    import urllib3
+
+    with patch.object(urllib3, "disable_warnings") as disable_warnings:
+        http_cache.get_plex_server_requests_session(False)
+
+    disable_warnings.assert_called_once_with(urllib3.exceptions.InsecureRequestWarning)
+
+
+def test_wrap_request_verify_pins_tls_setting() -> None:
+    session = http_cache._QuietCachedSession()
+    captured: dict[str, object] = {}
+
+    def original(method: str, url: str, **kwargs: object) -> None:
+        captured.update(kwargs)
+
+    session.request = original  # type: ignore[method-assign]
+    http_cache._wrap_request_verify(session, False)
+    session.request("GET", "https://example.com")  # type: ignore[operator]
+
+    assert captured["verify"] is False
+
+
+def test_quiet_cached_session_logs_without_traceback(caplog: pytest.LogCaptureFixture) -> None:
+    import logging
+
+    session = http_cache._QuietCachedSession()
+    cached_response = SimpleNamespace(request=SimpleNamespace(url="https://example.com"))
+    actions = SimpleNamespace(is_usable=lambda *_args, **_kwargs: True)
+
+    with caplog.at_level(logging.WARNING, logger="requests_cache.session"):
+        session._handle_error(cached_response, actions)
+
+    assert "using cached response" in caplog.text
+    assert "Traceback" not in caplog.text

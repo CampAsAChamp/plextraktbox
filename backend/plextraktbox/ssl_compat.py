@@ -50,7 +50,7 @@ def configure_ssl_compat() -> None:
 
     ssl.create_default_context = _relaxed_create_default_context  # type: ignore[assignment]
     _PATCHED = True
-    log.info(
+    log.debug(
         "ssl_compat.relaxed_strict_checks",
         reason="Python 3.13+ VERIFY_X509_STRICT rejects some corporate root CAs",
     )

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Awaitable, Callable
+from typing import Literal
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -21,11 +23,24 @@ _SKIP_LOG_PATHS = frozenset(
         "/api/notifications/inapp/unread-count",
     }
 )
+# Run detail is polled every ~2s while a sync is running — keep out of INFO.
+_DEBUG_LOG_PATH_RE = re.compile(r"^/api/runs/\d+$")
+
+AccessLogLevel = Literal["info", "debug"]
 
 
 def should_log_access(path: str) -> bool:
     """Return False for high-frequency polling routes that add log noise."""
     return path not in _SKIP_LOG_PATHS
+
+
+def access_log_level(method: str, path: str) -> AccessLogLevel | None:
+    """Return the level for an access log line, or None to skip."""
+    if not should_log_access(path):
+        return None
+    if method == "GET" and _DEBUG_LOG_PATH_RE.match(path):
+        return "debug"
+    return "info"
 
 
 def service_from_path(path: str) -> str | None:
@@ -66,9 +81,10 @@ class AccessLogMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         response = await call_next(request)
         path = request.url.path
-        if should_log_access(path):
+        level = access_log_level(request.method, path)
+        if level is not None:
             service = service_from_path(path)
-            log.info(
+            getattr(log, level)(
                 format_access_log_line(
                     request.method,
                     path,

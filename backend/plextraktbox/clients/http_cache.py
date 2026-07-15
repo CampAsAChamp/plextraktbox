@@ -2,17 +2,36 @@
 
 from __future__ import annotations
 
+import logging
 import ssl
 from functools import lru_cache
+from typing import Any
 
 import requests_cache
+import urllib3
 from requests.adapters import HTTPAdapter
+from requests_cache.session import CacheActions
 
 from plextraktbox.config import get_settings
 from plextraktbox.ssl_compat import create_default_context_is_relaxed
 
+logger = logging.getLogger("requests_cache.session")
+
 # One hour — enough to dedupe repeated fetches within a run and across back-to-back jobs.
 DEFAULT_CACHE_SECONDS = 3600
+
+
+class _QuietCachedSession(requests_cache.CachedSession):
+    """Cached session that logs stale-if-error recovery without a traceback."""
+
+    def _handle_error(self, cached_response: Any, actions: CacheActions) -> Any:
+        if actions.is_usable(cached_response, error=True):
+            logger.warning(
+                "Request for URL %s failed; using cached response",
+                cached_response.request.url,
+            )
+            return cached_response
+        raise
 
 
 class _RelaxedHTTPSAdapter(HTTPAdapter):
@@ -48,8 +67,19 @@ def _mount_https_adapter(session: requests_cache.CachedSession, adapter: HTTPAda
     session.mount("https://", adapter)
 
 
-def _cached_session(cache_name: str) -> requests_cache.CachedSession:
-    return requests_cache.CachedSession(
+def _wrap_request_verify(session: requests_cache.CachedSession, verify: bool) -> None:
+    """Pin TLS verification for every outbound request on this session."""
+    original_request = session.request
+
+    def request(method: str, url: str, **kwargs: Any) -> Any:
+        kwargs["verify"] = verify
+        return original_request(method, url, **kwargs)
+
+    session.request = request  # type: ignore[assignment]
+
+
+def _cached_session(cache_name: str) -> _QuietCachedSession:
+    return _QuietCachedSession(
         cache_name=cache_name,
         backend="sqlite",
         expire_after=DEFAULT_CACHE_SECONDS,
@@ -59,7 +89,7 @@ def _cached_session(cache_name: str) -> requests_cache.CachedSession:
 
 
 @lru_cache
-def get_cached_requests_session() -> requests_cache.CachedSession:
+def get_cached_requests_session() -> _QuietCachedSession:
     """Return a process-wide requests session backed by SQLite in ``data_dir``."""
     settings = get_settings()
     session = _cached_session(str(settings.data_dir / "http_cache"))
@@ -69,7 +99,7 @@ def get_cached_requests_session() -> requests_cache.CachedSession:
 
 
 @lru_cache
-def get_plex_server_requests_session(verify_ssl: bool) -> requests_cache.CachedSession:
+def get_plex_server_requests_session(verify_ssl: bool) -> _QuietCachedSession:
     """Cached requests session for Plex Media Server API calls.
 
     Separate from the global session so insecure TLS for ``*.plex.direct`` URLs
@@ -80,12 +110,17 @@ def get_plex_server_requests_session(verify_ssl: bool) -> requests_cache.CachedS
     session = _cached_session(str(settings.data_dir / f"http_cache_{suffix}"))
     if verify_ssl:
         session.verify = True
+        _wrap_request_verify(session, True)
         if create_default_context_is_relaxed():
             _mount_https_adapter(session, _RelaxedHTTPSAdapter())
         return session
 
+    # *.plex.direct uses a Plex CA that fails Python 3.13+ strict checks; we
+    # intentionally skip verify. Suppress urllib3's per-request noise.
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     session.verify = False
     adapter = _PlexInsecureHTTPSAdapter()
     _mount_https_adapter(session, adapter)
     session.mount("http://", adapter)
+    _wrap_request_verify(session, False)
     return session

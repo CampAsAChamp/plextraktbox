@@ -129,8 +129,11 @@ function LogContextExpanded({ context }: { context: Record<string, unknown> }) {
 
         if (!shouldPrettyPrintContextValue(value)) {
           return (
-            <Text key={key} size="xs" c="dimmed">
-              {key}={formatted}
+            <Text key={key} size="xs">
+              <Text span size="xs" c="dimmed">
+                {key}=
+              </Text>
+              <InlineContextValue value={value} />
             </Text>
           );
         }
