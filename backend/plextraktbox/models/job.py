@@ -29,8 +29,10 @@ class Job(SQLModel, table=True):
     enabled: bool = Field(default=True)
     cron: str = Field(default="0 3 * * *")
     dry_run: bool = Field(default=False)
+    require_dry_run_first: bool = Field(default=True)
     data_types_json: str = Field(default='["watchlist"]')
     notify_override_json: str = Field(default='{"mode":"inherit"}')
+    exclude_ids_json: str = Field(default="{}")
 
     def notify_mode(self) -> NotifyMode:
         try:
@@ -88,3 +90,18 @@ class Job(SQLModel, table=True):
     @staticmethod
     def dump_data_types(data_types: set[DataType]) -> str:
         return json.dumps(sorted(dt.value for dt in data_types))
+
+    def exclude_ids(self) -> dict[str, set[str]]:
+        from plextraktbox.sync.excludes import normalize_exclude_ids
+
+        try:
+            raw = json.loads(self.exclude_ids_json)
+        except json.JSONDecodeError:
+            return normalize_exclude_ids({})
+        return normalize_exclude_ids(raw)
+
+    @staticmethod
+    def dump_exclude_ids(exclude_ids: dict[str, list[str]] | dict[str, set[str]]) -> str:
+        from plextraktbox.sync.excludes import dump_exclude_ids, normalize_exclude_ids
+
+        return json.dumps(dump_exclude_ids(normalize_exclude_ids(exclude_ids)))

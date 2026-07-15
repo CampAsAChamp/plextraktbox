@@ -19,13 +19,21 @@ from plextraktbox.schemas.job import (
     JobUpdateRequest,
     SchedulePreviewRequest,
     SchedulePreviewResponse,
+    exclude_ids_from_request,
 )
 from plextraktbox.services import jobs as job_svc
+from plextraktbox.services import settings as settings_svc
+from plextraktbox.services.dry_run import resolve_dry_run
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 
-def _next_run_at(job: Job) -> datetime | None:
+def _next_run_at(
+    job: Job,
+    *,
+    cron_timezone: str,
+    cron_local_zone: str | None,
+) -> datetime | None:
     """Next fire time for an enabled job (scheduler first, cron fallback)."""
     if not job.enabled or job.id is None:
         return None
@@ -34,26 +42,60 @@ def _next_run_at(job: Job) -> datetime | None:
         return scheduled
     # Fallback when the job is not registered in APScheduler yet (or was
     # dropped). Matches the schedule-preview endpoint so list tooltips still work.
-    times = compute_next_run_times(job.cron, count=1)
+    times = compute_next_run_times(
+        job.cron,
+        count=1,
+        timezone=cron_timezone,
+        local_zone=cron_local_zone,
+    )
     return times[0] if times else None
 
 
-def _job_response(job: Job) -> JobResponse:
-    return JobResponse.from_model(job, next_run_at=_next_run_at(job))
+def _job_response(
+    job: Job,
+    *,
+    cron_timezone: str,
+    cron_local_zone: str | None,
+) -> JobResponse:
+    return JobResponse.from_model(
+        job,
+        next_run_at=_next_run_at(
+            job,
+            cron_timezone=cron_timezone,
+            cron_local_zone=cron_local_zone,
+        ),
+    )
 
 
 @router.get("", response_model=list[JobResponse])
 def list_jobs(_user: CurrentUserDep, session: SessionDep) -> list[JobResponse]:
-    return [_job_response(job) for job in job_svc.list_jobs(session)]
+    app_settings = settings_svc.get_app_settings(session)
+    return [
+        _job_response(
+            job,
+            cron_timezone=app_settings.cron_timezone,
+            cron_local_zone=app_settings.cron_local_zone,
+        )
+        for job in job_svc.list_jobs(session)
+    ]
 
 
 @router.post("/schedule-preview", response_model=SchedulePreviewResponse)
 def preview_schedule(
     body: SchedulePreviewRequest,
     _user: CurrentUserDep,
+    session: SessionDep,
 ) -> SchedulePreviewResponse:
-    """Return the next N fire times for a draft cron expression (UTC)."""
-    return SchedulePreviewResponse(times=compute_next_run_times(body.cron, count=body.count))
+    """Return the next N fire times for a draft cron (in configured cron timezone)."""
+    app_settings = settings_svc.get_app_settings(session)
+    return SchedulePreviewResponse(
+        times=compute_next_run_times(
+            body.cron,
+            count=body.count,
+            timezone=app_settings.cron_timezone,
+            local_zone=app_settings.cron_local_zone,
+        )
+    )
 
 
 @router.get("/{job_id}", response_model=JobResponse)
@@ -61,7 +103,12 @@ def get_job(job_id: int, _user: CurrentUserDep, session: SessionDep) -> JobRespo
     job = job_svc.get_job(session, job_id)
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
-    return _job_response(job)
+    app_settings = settings_svc.get_app_settings(session)
+    return _job_response(
+        job,
+        cron_timezone=app_settings.cron_timezone,
+        cron_local_zone=app_settings.cron_local_zone,
+    )
 
 
 @router.post("", response_model=JobResponse, dependencies=[Depends(require_csrf)])
@@ -80,10 +127,17 @@ def create_job(
             dry_run=body.dry_run,
             data_types=set(body.data_types),
             notify_mode=body.notify_mode,
+            require_dry_run_first=body.require_dry_run_first,
+            exclude_ids=exclude_ids_from_request(body.exclude_ids),
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-    return _job_response(job)
+    app_settings = settings_svc.get_app_settings(session)
+    return _job_response(
+        job,
+        cron_timezone=app_settings.cron_timezone,
+        cron_local_zone=app_settings.cron_local_zone,
+    )
 
 
 @router.put("/{job_id}", response_model=JobResponse, dependencies=[Depends(require_csrf)])
@@ -107,10 +161,17 @@ def update_job(
             dry_run=body.dry_run,
             data_types=set(body.data_types),
             notify_mode=body.notify_mode,
+            require_dry_run_first=body.require_dry_run_first,
+            exclude_ids=exclude_ids_from_request(body.exclude_ids),
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-    return _job_response(job)
+    app_settings = settings_svc.get_app_settings(session)
+    return _job_response(
+        job,
+        cron_timezone=app_settings.cron_timezone,
+        cron_local_zone=app_settings.cron_local_zone,
+    )
 
 
 @router.delete(
@@ -148,7 +209,7 @@ def run_job(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     dry_run_override = body.dry_run if body is not None else None
-    dry_run = job.dry_run if dry_run_override is None else dry_run_override
+    dry_run, _coerced = resolve_dry_run(session, job, dry_run_override=dry_run_override)
 
     run = JobRun(job_id=job_id, job_name=job.name, trigger=RunTrigger.MANUAL, dry_run=dry_run)
     session.add(run)

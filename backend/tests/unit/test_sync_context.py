@@ -39,4 +39,5 @@ async def test_fetch_logs_start_and_done() -> None:
         data_type="ratings",
         count=1,
         with_ids=1,
+        excluded=0,
     )

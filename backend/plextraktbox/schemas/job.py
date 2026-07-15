@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field, field_validator
 from plextraktbox.cron import validate_cron_expression
 from plextraktbox.models.job import Job, NotifyMode, SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
+from plextraktbox.schemas.settings import ExcludeIds
+from plextraktbox.sync.excludes import EXCLUDE_ID_KEYS, dump_exclude_ids, normalize_exclude_ids
 from plextraktbox.sync.plans import DataType
 from plextraktbox.utils.datetime import UtcDatetime
 
@@ -15,14 +17,18 @@ class JobCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     source_pair: SourcePair
     enabled: bool = True
-    cron: str = "0 3 * * *"
-    dry_run: bool = False
+    cron: str | None = None
+    dry_run: bool | None = None
+    require_dry_run_first: bool = True
     data_types: list[DataType] = Field(default_factory=lambda: [DataType.WATCHLIST])
     notify_mode: NotifyMode = NotifyMode.INHERIT
+    exclude_ids: ExcludeIds = Field(default_factory=ExcludeIds)
 
     @field_validator("cron")
     @classmethod
-    def validate_cron(cls, value: str) -> str:
+    def validate_cron(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         return validate_cron_expression(value)
 
 
@@ -32,8 +38,10 @@ class JobUpdateRequest(BaseModel):
     enabled: bool = True
     cron: str = "0 3 * * *"
     dry_run: bool = False
+    require_dry_run_first: bool = True
     data_types: list[DataType] = Field(default_factory=lambda: [DataType.WATCHLIST])
     notify_mode: NotifyMode = NotifyMode.INHERIT
+    exclude_ids: ExcludeIds = Field(default_factory=ExcludeIds)
 
     @field_validator("cron")
     @classmethod
@@ -62,12 +70,15 @@ class JobResponse(BaseModel):
     enabled: bool
     cron: str
     dry_run: bool
+    require_dry_run_first: bool
     data_types: list[DataType]
     notify_mode: NotifyMode
+    exclude_ids: ExcludeIds
     next_run_at: UtcDatetime | None = None
 
     @classmethod
     def from_model(cls, job: Job, *, next_run_at: UtcDatetime | None = None) -> JobResponse:
+        normalized = dump_exclude_ids(job.exclude_ids())
         return cls(
             id=job.id or 0,
             name=job.name,
@@ -75,8 +86,14 @@ class JobResponse(BaseModel):
             enabled=job.enabled,
             cron=job.cron,
             dry_run=job.dry_run,
+            require_dry_run_first=job.require_dry_run_first,
             data_types=sorted(job.data_types(), key=lambda dt: dt.value),
             notify_mode=job.notify_mode(),
+            exclude_ids=ExcludeIds(
+                tmdb=normalized.get("tmdb", []),
+                imdb=normalized.get("imdb", []),
+                tvdb=normalized.get("tvdb", []),
+            ),
             next_run_at=next_run_at,
         )
 
@@ -109,3 +126,8 @@ class JobRunResponse(BaseModel):
 
 class JobRunRequest(BaseModel):
     dry_run: bool | None = None
+
+
+def exclude_ids_from_request(exclude_ids: ExcludeIds) -> dict[str, list[str]]:
+    raw = {key: getattr(exclude_ids, key) for key in EXCLUDE_ID_KEYS}
+    return dump_exclude_ids(normalize_exclude_ids(raw))

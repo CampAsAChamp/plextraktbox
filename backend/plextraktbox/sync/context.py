@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import structlog
 
+from plextraktbox.sync.excludes import EXCLUDE_ID_KEYS, filter_excluded_items
 from plextraktbox.sync.plans import DataType
 
 if TYPE_CHECKING:
@@ -19,6 +20,7 @@ class SyncContext:
     data_types: set[DataType]
     dry_run: bool
     log: structlog.stdlib.BoundLogger = field(default_factory=lambda: structlog.get_logger("sync"))
+    exclude_ids: dict[str, set[str]] = field(default_factory=lambda: {key: set() for key in EXCLUDE_ID_KEYS})
     _cache: dict[tuple[str, DataType], list] = field(default_factory=dict, repr=False)
 
     async def fetch(self, source_name: str, data_type: DataType) -> list:
@@ -54,16 +56,19 @@ class SyncContext:
             if not isinstance(item, MediaItem):
                 raise TypeError(f"{source_name}.{data_type} returned non-MediaItem")
 
+        items, excluded = filter_excluded_items(items, self.exclude_ids)
         with_ids = sum(1 for item in items if item.identifiers)
         self.log.info(
             "sync.fetch.done",
             message=(
-                f"Fetched {len(items)} {data_type.value} item(s) from {source_name} ({with_ids} with IDs)"
+                f"Fetched {len(items)} {data_type.value} item(s) from {source_name} "
+                f"({with_ids} with IDs" + (f", {excluded} excluded" if excluded else "") + ")"
             ),
             source=source_name,
             data_type=data_type.value,
             count=len(items),
             with_ids=with_ids,
+            excluded=excluded,
         )
 
         self._cache[cache_key] = items

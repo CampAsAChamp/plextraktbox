@@ -17,9 +17,12 @@ from plextraktbox.logstream import get_log_hub
 from plextraktbox.models.job import Job
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.notifications import dispatch_notifications
+from plextraktbox.services import settings as settings_svc
+from plextraktbox.services.dry_run import resolve_dry_run
 from plextraktbox.services.source_factory import build_sources
 from plextraktbox.sync.context import SyncContext
 from plextraktbox.sync.engine import run_sync
+from plextraktbox.sync.excludes import merge_exclude_ids, normalize_exclude_ids
 from plextraktbox.sync.plans import RunSummary
 
 log = get_logger(__name__)
@@ -91,7 +94,7 @@ def _execute_run_in_session(
     if job is None:
         raise ValueError(f"Job {job_id} not found")
 
-    dry_run = job.dry_run if dry_run_override is None else dry_run_override
+    dry_run, coerced = resolve_dry_run(session, job, dry_run_override=dry_run_override)
 
     if run_id is not None:
         run = session.get(JobRun, run_id)
@@ -122,6 +125,19 @@ def _execute_run_in_session(
     final_status = JobRunStatus.FAILED.value
     try:
         _apply_dev_run_delay(run_logger)
+        if coerced:
+            run_logger.warning(
+                "sync.run.dry_run_coerced",
+                message=(
+                    "require_dry_run_first: forcing dry-run until a successful dry-run exists for this job"
+                ),
+                job_name=job.name,
+            )
+        app_settings = settings_svc.ensure_defaults(session)
+        exclude_ids = merge_exclude_ids(
+            normalize_exclude_ids(app_settings.exclude_ids),
+            job.exclude_ids(),
+        )
         run_logger.info(
             "sync.run.start",
             message=f"Starting sync job: {job.name}",
@@ -136,6 +152,7 @@ def _execute_run_in_session(
             data_types=job.data_types(),
             dry_run=dry_run,
             log=run_logger,
+            exclude_ids=exclude_ids,
         )
         summary = asyncio.run(run_sync(ctx))
         if not _finalize_if_still_running(

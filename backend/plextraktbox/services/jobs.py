@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 
 from plextraktbox.models.job import Job, NotifyMode, SourcePair
 from plextraktbox.scheduler import get_scheduler_manager
+from plextraktbox.services import settings as settings_svc
 from plextraktbox.sync.plans import DataType
 
 
@@ -23,19 +24,26 @@ def create_job(
     name: str,
     source_pair: SourcePair,
     enabled: bool,
-    cron: str,
-    dry_run: bool,
+    cron: str | None,
+    dry_run: bool | None,
     data_types: set[DataType],
     notify_mode: NotifyMode = NotifyMode.INHERIT,
+    require_dry_run_first: bool = True,
+    exclude_ids: dict[str, list[str]] | None = None,
 ) -> Job:
+    app_settings = settings_svc.ensure_defaults(session)
+    resolved_cron = cron if cron is not None else app_settings.default_cron
+    resolved_dry_run = dry_run if dry_run is not None else app_settings.global_dry_run
     job = Job(
         name=name,
         source_pair=source_pair,
         enabled=enabled,
-        cron=cron,
-        dry_run=dry_run,
+        cron=resolved_cron,
+        dry_run=resolved_dry_run,
+        require_dry_run_first=require_dry_run_first,
         data_types_json=Job.dump_data_types(data_types),
         notify_override_json=Job.dump_notify_mode(notify_mode),
+        exclude_ids_json=Job.dump_exclude_ids(exclude_ids or {}),
     )
     errors = job.validate_data_types()
     if errors:
@@ -58,14 +66,18 @@ def update_job(
     dry_run: bool,
     data_types: set[DataType],
     notify_mode: NotifyMode = NotifyMode.INHERIT,
+    require_dry_run_first: bool = True,
+    exclude_ids: dict[str, list[str]] | None = None,
 ) -> Job:
     job.name = name
     job.source_pair = source_pair
     job.enabled = enabled
     job.cron = cron
     job.dry_run = dry_run
+    job.require_dry_run_first = require_dry_run_first
     job.data_types_json = Job.dump_data_types(data_types)
     job.notify_override_json = Job.dump_notify_mode(notify_mode)
+    job.exclude_ids_json = Job.dump_exclude_ids(exclude_ids or {})
     errors = job.validate_data_types()
     if errors:
         raise ValueError("; ".join(errors))
