@@ -115,12 +115,12 @@ Reference: [plexapi Discover rating discussion](https://github.com/pkkid/python-
 
 - **user** — username, email, password_hash(bcrypt); single row enforced in app. Profile image derived from email via [Gravatar](https://gravatar.com) (`avatar_url` on auth responses).
 - **connection** — service(plex|trakt|letterboxd|tmdb), status, `config_json`(non-secret: urls/usernames/libraries), `secret_enc`(tokens/password/api key), `token_expires_at`.
-- **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `require_dry_run_first?`, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json?`, `exclude_ids_json?`(optional per-job TMDB/IMDb ignore list).
+- **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `require_dry_run_first`, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json`, `exclude_ids_json`(optional per-job TMDB/IMDb/TVDB ignore list; unioned with global).
 - **job_run** — job_id, trigger(scheduled|manual), dry_run, status(running|success|failed|partial), started/finished_at, `summary_json`, error.
 - **log_entry** — run_id(indexed), ts, level, logger, message, `context_json`; index `(run_id,id)` for paging + stream cursor.
 - **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
-- **setting** — key/value_json (default cron, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention job prunes old logs/runs.
+- **setting** — key/value_json (default cron, `cron_timezone` as UTC/local/IANA for interpreting job crons, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention + connection-health system jobs prune old logs/runs and probe connections (always UTC).
 - **Sync caches ([Phase 21](phases/phase-21.md), planned)** — Letterboxd export + `letterboxd_slug` → ids; Trakt list TTL snapshots; Plex Discover key map. (Plex once-per-run library share is in-process via sync context, not a DB table.)
 
 
@@ -133,11 +133,11 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 ## Scheduler + run-now + dry-run
 
-`scheduler/manager.py`: AsyncIOScheduler + SQLAlchemyJobStore, started in FastAPI lifespan; on startup register a CronTrigger per enabled job; job CRUD calls `sync_job()` to add/reschedule/remove live; `max_instances=1`+`coalesce=True` (no self-overlap).
+`scheduler/manager.py`: AsyncIOScheduler + SQLAlchemyJobStore, started in FastAPI lifespan; on startup register a CronTrigger per enabled job using Settings `cron_timezone` (default UTC); job CRUD calls `sync_job()` to add/reschedule/remove live; changing `cron_timezone` reloads all job triggers; `max_instances=1`+`coalesce=True` (no self-overlap).
 `scheduler/runner.py` is the single entry for **all** executions: create JobRun(running) → bind per-run logger → `engine.run` → finalize (status/summary/error) → close log channel → dispatch notifications.
 
 - **Run now:** `POST /api/jobs/{id}/run` → `scheduler.add_job(next_run_time=now)` so manual + scheduled serialize under `max_instances=1`.
-- **Dry-run resolved** per run: `override ?? job.dry_run ?? global`; flows identically through engine (plans + "would…" logs, no `apply_`*).
+- **Dry-run resolved** per run: `override ?? job.dry_run` (global dry-run seeds new jobs at create time). If `require_dry_run_first` and no successful dry-run exists yet, live runs are coerced to dry-run. Exclude ids (global ∪ job) filter items in `SyncContext.fetch`.
 
 
 
@@ -161,7 +161,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 13 (settings/ops); movie + TV sync (Phases 7–8, 11), CI (12), and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
+**Current focus:** Phase 14 (dashboard UX); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
 
 
 

@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, and **18 (version/build info)** are done; **Phase 13 (settings/ops)** is next, then dashboard (14), Doppler (15), automated releases (19), mobile layout (20), sync fetch/resolve caches (21), TrueNAS deploy (22–23), and **UI themes (24)** last. Frontend redesign (former 9–10) was retired — stay on Mantine.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, and **18 (version/build info)** are done; **Phase 14 (dashboard UX)** is next, then Doppler (15), automated releases (19), mobile layout (20), sync fetch/resolve caches (21), TrueNAS deploy (22–23), and **UI themes (24)** last. Frontend redesign (former 9–10) was retired — stay on Mantine.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

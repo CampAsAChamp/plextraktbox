@@ -179,9 +179,9 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Built incrementally — **Phases 0–8 and 11** (movie + TV sync) are done; see [docs/phases/README.md](docs/phases/README.md).
-
-See [docs/phases/README.md](docs/phases/README.md) for the full phase index (status, scope, test plans).
+Built incrementally — Phases 0–8, 11–13, and 18 are done; see [docs/phases/README.md](docs/phases/README.md)
+for the full phase index (status, scope, test plans). Settings includes an ad-hoc SQLite backup download;
+on TrueNAS prefer ZFS snapshots of the `/data` dataset.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

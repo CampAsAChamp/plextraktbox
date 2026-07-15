@@ -259,7 +259,7 @@ flowchart LR
 
 ## Dry-run
 
-Dry-run is resolved per run: `override ?? job.dry_run ?? global`. The same plan and log path run;
+Dry-run is resolved per run: `override ?? job.dry_run` (global dry-run seeds new jobs). The same plan and log path run;
 apply is skipped and messages use **“would …”** instead of **“will …”**. Zero third-party writes.
 
 ## Where the code lives

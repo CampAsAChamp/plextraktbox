@@ -75,5 +75,7 @@ Reference for phase test plans and automated tests:
 - **Frontend:** vitest + RTL (+ MSW where needed)
 - **Client-backed fetch (Phase 7):** unit tests on fakes; respx for HTTP mapping; optional manual dry-run with real creds
 - **Client-backed apply (Phase 8):** respx for apply payloads; cautious manual live-run verification
+- **Settings / ops (Phase 13):** settings CRUD + backup; dry-run first coerce; exclude filter; retention;
+  connection health transition notify; health `ok`/`degraded`
 - **Doppler (Phase 15):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
 - **TrueNAS (Phases 22–23):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans

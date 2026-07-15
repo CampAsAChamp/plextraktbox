@@ -11,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** Phase 13 (settings) — see [phases/README.md](phases/README.md); CI ([Phase 12](phases/phase-12.md)) is done
+- **Current focus:** Phase 14 (dashboard UX) — see [phases/README.md](phases/README.md); settings/ops ([Phase 13](phases/phase-13.md)) is done
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)

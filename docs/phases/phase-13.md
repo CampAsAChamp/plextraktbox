@@ -1,6 +1,6 @@
 # Phase 13 — Settings, safety & operations
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
@@ -13,35 +13,36 @@ is safe to run unattended on a home server.
 
 - **`setting` table** + Settings page (Mantine)
 - Default cron expression
+- **Cron timezone** — Local / UTC / Manual (IANA), same modes as display prefs, for interpreting job cron hour/minute fields
 - `log_retention_days`
-- **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
+- **Global dry-run default** — seeds new jobs; runner resolves `override ?? job.dry_run`
 - **Password change** in Settings
 - Gravatar/settings profile polish
 
 ### Safety guards
 
-- **First run must be dry-run** — per-job `require_dry_run_first` blocks live apply until ≥1
-  successful dry-run exists for that job
-- **Exclude/ignore list** — global TMDB/IMDb ids in settings; optional per-job override via
-  `exclude_ids_json`
+- **First run must be dry-run** — per-job `require_dry_run_first` coerces live runs to dry-run until
+  ≥1 successful dry-run exists for that job
+- **Exclude/ignore list** — global TMDB/IMDb/TVDB ids in settings; optional per-job override via
+  `exclude_ids_json` (union with global)
 
 ### Connection health
 
-- Scheduled `test_connection()` job
+- Scheduled `test_connection()` job (every 6h)
 - Update connection `status` on failure/expiry
-- Optional notification when status becomes `needs_reauth`
+- Notification when status becomes `needs_reauth`
 
 ### Operations
 
 - **Log retention** — scheduled job prunes old `log_entry` / `job_run` rows per `log_retention_days`
 - **Richer `/api/health`** — scheduler alive, DB writable, connection status summary (version/build
   identity is [Phase 18](phase-18.md))
-- **SQLite backup** — Settings download button + README note for ZFS snapshots
+- **SQLite backup** — Settings download button + note for ZFS snapshots of `/data`
 
-## Key files (expected)
+## Key files
 
 - `backend/plextraktbox/models/setting.py`, `api/settings.py`, `api/health.py`
-- `backend/plextraktbox/scheduler/` — retention + health jobs
+- `backend/plextraktbox/scheduler/system_jobs.py` — retention + connection health
 - `frontend/src/pages/Settings/`
 
 ## Prerequisites
@@ -61,6 +62,6 @@ is safe to run unattended on a home server.
 
 ## Verification
 
-Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+[phase-13-test-plan.md](test-plans/phase-13-test-plan.md)
 
 **Next:** [Phase 14 — Dashboard & scheduling UX](phase-14.md)
