@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/CampAsAChamp/plextraktbox/compare/v0.3.0...v0.3.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* mobile layout ([010edc0](https://github.com/CampAsAChamp/plextraktbox/commit/010edc0b7414722f2731fc84ed79f87fa1e0e48d))
+
 # [0.3.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.2.1...v0.3.0) (2026-07-15)
 
 
