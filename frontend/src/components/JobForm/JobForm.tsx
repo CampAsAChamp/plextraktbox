@@ -307,7 +307,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
 
 export function JobStatusBadge({ enabled }: { enabled: boolean }) {
   return (
-    <Badge color={enabled ? "green" : "gray"} variant="light">
+    <Badge color={enabled ? "green" : "red"} variant="light">
       {enabled ? "Enabled" : "Disabled"}
     </Badge>
   );
