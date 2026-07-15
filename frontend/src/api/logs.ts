@@ -39,3 +39,27 @@ export function runLogsStreamUrl(runId: number, afterId = 0) {
   const query = search.toString();
   return `/api/runs/${runId}/logs/stream${query ? `?${query}` : ""}`;
 }
+
+export type LogExportFormat = "txt" | "jsonl";
+
+export async function downloadRunLogs(runId: number, format: LogExportFormat): Promise<void> {
+  const resp = await fetch(`/api/runs/${runId}/logs/export?format=${format}`, {
+    method: "GET",
+    credentials: "same-origin",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+  if (!resp.ok) {
+    throw new Error(`Log export failed (${resp.status})`);
+  }
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `run-${runId}-logs.${format}`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}

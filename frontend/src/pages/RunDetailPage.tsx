@@ -1,9 +1,22 @@
-import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Group,
+  Loader,
+  Menu,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
+import { downloadRunLogs, type LogExportFormat } from "../api/logs";
 import { getRun, markRunFailed } from "../api/runs";
+import { DownloadIcon } from "../components/icons/DownloadIcon";
 import { HelpCircleIcon } from "../components/icons/HelpCircleIcon";
 import { LogViewer } from "../components/LogViewer/LogViewer";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
@@ -70,6 +83,17 @@ export function RunDetailPage() {
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed";
+      showToast({ color: "red", message });
+    },
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: (format: LogExportFormat) => downloadRunLogs(id, format),
+    onSuccess: (_data, format) => {
+      showToast({ color: "green", message: `Downloaded run logs (.${format})` });
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Log export failed";
       showToast({ color: "red", message });
     },
   });
@@ -195,7 +219,25 @@ export function RunDetailPage() {
       <UnmatchedItemsSection items={run.summary.unmatched} />
 
       <Stack gap="xs">
-        <Text fw={500}>Logs</Text>
+        <Group justify="space-between">
+          <Text fw={500}>Logs</Text>
+          <Menu withinPortal position="bottom-end">
+            <Menu.Target>
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<DownloadIcon />}
+                loading={exportMutation.isPending}
+              >
+                Export
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => exportMutation.mutate("txt")}>.txt</Menu.Item>
+              <Menu.Item onClick={() => exportMutation.mutate("jsonl")}>.jsonl</Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
         <LogViewer runId={run.id} isLive={run.status === "running"} />
       </Stack>
     </Stack>
