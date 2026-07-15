@@ -139,49 +139,49 @@ depends = ["clean", "clean-data", "clean-deps", "down-v"]
 
 [tasks.up]
 description = "[DOCKER-PROD] Start production container (foreground, rebuilds image)"
-run = "bash scripts/compose.sh up --build"
+run = "podman compose up --build"
 
 [tasks.down]
 description = "[DOCKER-PROD] Stop container and keep the ./data directory"
-run = "bash scripts/compose.sh down"
+run = "podman compose down"
 
 [tasks."down-v"]
 description = "[DOCKER-PROD] Stop container and delete ./data (fresh DB next start)"
 run = '''
-bash scripts/compose.sh down
+podman compose down
 rm -rf data
 '''
 
 [tasks.rebuild]
 description = "[DOCKER-PROD] Wipe ./data, rebuild image, and start fresh"
 run = '''
-bash scripts/compose.sh down
+podman compose down
 rm -rf data
-bash scripts/compose.sh build
-bash scripts/compose.sh up --build
+podman compose build
+podman compose up --build
 '''
 
 [tasks."build-image"]
 description = "[DOCKER-PROD] Build the Docker image (no compose)"
 depends = ["build-frontend"]
-run = "bash scripts/compose.sh build"
+run = "podman compose build"
 
 # --- DOCKER-DEV: dev containers with hot reload ---
 
 [tasks."up-dev"]
 description = "[DOCKER-DEV] Start dev containers with hot reload (backend :8000, frontend :5173)"
-run = "bash scripts/compose.sh -f docker-compose.dev.yml up --build"
+run = "podman compose -f docker-compose.dev.yml up --build"
 
 [tasks."down-dev"]
 description = "[DOCKER-DEV] Stop dev containers"
-run = "bash scripts/compose.sh -f docker-compose.dev.yml down"
+run = "podman compose -f docker-compose.dev.yml down"
 
 [tasks."rebuild-dev"]
 description = "[DOCKER-DEV] Stop dev stack, rebuild images from scratch, and start"
 run = '''
-bash scripts/compose.sh -f docker-compose.dev.yml down -v
-bash scripts/compose.sh -f docker-compose.dev.yml build --no-cache
-bash scripts/compose.sh -f docker-compose.dev.yml up
+podman compose -f docker-compose.dev.yml down -v
+podman compose -f docker-compose.dev.yml build --no-cache
+podman compose -f docker-compose.dev.yml up
 '''
 
 # --- utilities ---

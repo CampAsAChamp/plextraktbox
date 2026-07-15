@@ -102,7 +102,7 @@ Target deployment environment is **TrueNAS SCALE** — see [docs/deploy/truenas.
 ### Prerequisites
 
 * [mise](https://mise.jdx.dev/getting-started.html) — pins Python 3.14, Node 24, and jq and defines project tasks
-* [Docker](https://docs.docker.com/get-docker/) or [Podman](https://podman.io/) — for container workflows (`mise run up`, `mise run up-dev`)
+* [Podman](https://podman.io/) — for container workflows (`mise run up`, `mise run up-dev`)
 
 ### Quick Start (Container)
 
