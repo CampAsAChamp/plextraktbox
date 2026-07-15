@@ -7,7 +7,7 @@ import asyncio
 from sqlmodel import Session, select
 
 from plextraktbox.logging_setup import get_logger
-from plextraktbox.models.inapp_notification import InAppNotification
+from plextraktbox.models.inapp_notification import InAppLevel, InAppNotification
 from plextraktbox.models.job import Job, NotifyMode
 from plextraktbox.models.job_run import JobRun, JobRunStatus
 from plextraktbox.models.notification_config import NotificationChannel, NotificationConfig, NotificationScope
@@ -134,6 +134,57 @@ def dispatch_notifications(session: Session, job: Job, run: JobRun) -> None:
         asyncio.run(dispatch_payload(session, configs, payload))
     except Exception as exc:
         log.warning("notification.dispatch.failed", error=str(exc), run_id=run.id)
+
+
+def build_connection_reauth_payload(service: str, message: str) -> NotificationPayload:
+    return NotificationPayload(
+        job_id=0,
+        job_name=f"{service.title()} connection",
+        run_id=0,
+        status="failed",
+        dry_run=False,
+        trigger="system",
+        summary={},
+        duration_seconds=None,
+        error=message,
+        run_url="/#/connections",
+    )
+
+
+def resolve_global_failure_configs(session: Session) -> list[NotificationConfig]:
+    statement = select(NotificationConfig).where(
+        NotificationConfig.scope == NotificationScope.GLOBAL,
+        NotificationConfig.enabled.is_(True),  # type: ignore[attr-defined]
+        NotificationConfig.on_failure.is_(True),  # type: ignore[attr-defined]
+    )
+    return list(session.exec(statement).all())
+
+
+def dispatch_connection_needs_reauth(session: Session, service: object, message: str) -> None:
+    """Notify global failure channels when a connection enters needs_reauth."""
+    service_name = getattr(service, "value", str(service))
+    configs = resolve_global_failure_configs(session)
+    if not configs:
+        # Always leave an in-app breadcrumb even when no channel is configured.
+        row = InAppNotification(
+            level=InAppLevel.ERROR,
+            title=f"{service_name.title()} needs re-authorization",
+            body=message or f"{service_name} connection requires re-authorization.",
+            run_id=None,
+        )
+        session.add(row)
+        session.commit()
+        return
+
+    payload = build_connection_reauth_payload(service_name, message)
+    try:
+        asyncio.run(dispatch_payload(session, configs, payload))
+    except Exception as exc:
+        log.warning(
+            "notification.connection_reauth.failed",
+            service=service_name,
+            error=str(exc),
+        )
 
 
 async def send_test_notification(session: Session, config: NotificationConfig) -> None:

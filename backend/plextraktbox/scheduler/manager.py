@@ -12,10 +12,20 @@ from apscheduler.triggers.date import DateTrigger  # type: ignore[import-untyped
 from sqlmodel import Session, select
 
 from plextraktbox import db
+from plextraktbox.cron import DEFAULT_CRON_TIMEZONE, resolve_cron_timezone
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.job import Job
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.scheduler.runner import execute_run
+from plextraktbox.scheduler.system_jobs import (
+    CONNECTION_HEALTH_CRON,
+    CONNECTION_HEALTH_JOB_ID,
+    LOG_RETENTION_CRON,
+    LOG_RETENTION_JOB_ID,
+    run_connection_health_checks,
+    run_log_retention,
+)
+from plextraktbox.services import settings as settings_svc
 
 log = get_logger(__name__)
 
@@ -35,6 +45,10 @@ class SchedulerManager:
             raise RuntimeError("Scheduler has not been started")
         return self._scheduler
 
+    @property
+    def running(self) -> bool:
+        return self._scheduler is not None and self._scheduler.running
+
     def start(self) -> None:
         if self._scheduler is not None:
             return
@@ -42,7 +56,29 @@ class SchedulerManager:
         self._scheduler = AsyncIOScheduler(jobstores=jobstores, timezone="UTC")
         self._scheduler.start()
         self.load_all_jobs()
+        self.register_system_jobs()
         log.info("scheduler.started")
+
+    def register_system_jobs(self) -> None:
+        if self._scheduler is None:
+            return
+        self._scheduler.add_job(
+            run_connection_health_checks,
+            trigger=CronTrigger.from_crontab(CONNECTION_HEALTH_CRON, timezone="UTC"),
+            id=CONNECTION_HEALTH_JOB_ID,
+            max_instances=1,
+            coalesce=True,
+            replace_existing=True,
+        )
+        self._scheduler.add_job(
+            run_log_retention,
+            trigger=CronTrigger.from_crontab(LOG_RETENTION_CRON, timezone="UTC"),
+            id=LOG_RETENTION_JOB_ID,
+            max_instances=1,
+            coalesce=True,
+            replace_existing=True,
+        )
+        log.info("scheduler.system_jobs.registered")
 
     def shutdown(self, *, wait: bool = True) -> None:
         if self._scheduler is None:
@@ -56,6 +92,12 @@ class SchedulerManager:
             jobs = list(session.exec(select(Job)).all())
         for job in jobs:
             self.sync_job(job)
+
+    def _cron_timezone(self) -> str:
+        with Session(db.engine) as session:
+            settings = settings_svc.get_app_settings(session)
+            preference = settings.cron_timezone or DEFAULT_CRON_TIMEZONE
+            return resolve_cron_timezone(preference, local_zone=settings.cron_local_zone)
 
     def sync_job(self, job: Job) -> None:
         if self._scheduler is None:
@@ -73,8 +115,9 @@ class SchedulerManager:
             log.info("scheduler.job.removed", job_id=job_id, reason="disabled")
             return
 
+        cron_timezone = self._cron_timezone()
         try:
-            trigger = CronTrigger.from_crontab(job.cron, timezone="UTC")
+            trigger = CronTrigger.from_crontab(job.cron, timezone=cron_timezone)
         except ValueError as exc:
             log.warning("scheduler.job.invalid_cron", job_id=job_id, cron=job.cron, error=str(exc))
             return
@@ -88,7 +131,12 @@ class SchedulerManager:
             coalesce=True,
             replace_existing=True,
         )
-        log.info("scheduler.job.registered", job_id=job_id, cron=job.cron)
+        log.info(
+            "scheduler.job.registered",
+            job_id=job_id,
+            cron=job.cron,
+            timezone=cron_timezone,
+        )
 
     def remove_job(self, job_id: int) -> None:
         if self._scheduler is None:
