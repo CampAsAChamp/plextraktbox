@@ -82,7 +82,7 @@ test("account menu links to the GitHub repo near version", async () => {
 
   await user.click(await screen.findByRole("button", { name: "Account menu" }));
 
-  const github = await screen.findByRole("menuitem", { name: "GitHub" });
+  const github = await screen.findByRole("menuitem", { name: "GitHub Repo" });
   expect(github).toHaveAttribute(
     "href",
     "https://github.com/CampAsAChamp/plextraktbox",
