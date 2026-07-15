@@ -6,6 +6,7 @@
 # 2. Wait until compose exits or the user hits Ctrl+C.
 # 3. On interrupt/exit, run `compose down` and wait so shutdown logs never
 #    spill into the next shell prompt (mise/doppler otherwise return too early).
+# 4. Exit 0 on intentional Ctrl+C so mise does not report "task failed".
 #
 # Env:
 #   USE_DOPPLER=1 (default) — wrap with `doppler run --`
@@ -33,6 +34,26 @@ compose() {
   podman compose -f "$COMPOSE_FILE" "$@"
 }
 
+compose_down_quiet() {
+  # Run compose down; hide benign races when Ctrl+C also interrupted `compose up`.
+  # Inputs: none. Outputs: filtered stderr/stdout on stderr. Always returns 0.
+  local out=""
+  set +e
+  out=$(compose down --remove-orphans 2>&1)
+  set -e
+  if [[ -z "$out" ]]; then
+    return 0
+  fi
+  # Keep useful lines; drop "already gone" races from concurrent SIGINT teardown.
+  printf '%s\n' "$out" | grep -Ev \
+    -e '^Error: no container with ID or name' \
+    -e '^Error: unable to find pod' \
+    -e 'no such container' \
+    -e 'no such pod' \
+    >&2 || true
+  return 0
+}
+
 # Invoked via trap (shellcheck cannot see that).
 # shellcheck disable=SC2329
 shutdown() {
@@ -45,15 +66,17 @@ shutdown() {
 
   echo >&2
   log_step "Stopping dev stack (waiting for containers)…"
-  compose down --remove-orphans || true
 
+  # Drop the attach/`up` process first so it cannot race `compose down`.
   if [[ -n "$up_pid" ]] && kill -0 "$up_pid" 2>/dev/null; then
     kill "$up_pid" 2>/dev/null || true
     wait "$up_pid" 2>/dev/null || true
   fi
 
+  compose_down_quiet
   log_step "Dev stack stopped."
-  exit 130
+  # Intentional interrupt — success so mise does not print "ERROR task failed".
+  exit 0
 }
 
 main() {
@@ -85,8 +108,15 @@ main() {
   trap - INT TERM
   if [[ "$shutting_down" -eq 0 ]]; then
     shutting_down=1
+    # Treat interrupt exit codes from `compose up` as a clean stop.
+    if [[ "$status" -eq 130 || "$status" -eq 143 ]]; then
+      log_step "Stopping dev stack (waiting for containers)…"
+      compose_down_quiet
+      log_step "Dev stack stopped."
+      exit 0
+    fi
     log_step "Compose exited; finishing teardown…"
-    compose down --remove-orphans || true
+    compose_down_quiet
     log_step "Dev stack stopped."
   fi
 
