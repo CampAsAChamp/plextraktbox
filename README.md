@@ -50,6 +50,7 @@
       </ul>
     </li>
     <li><a href="#deploying-on-truenas">Deploying on TrueNAS</a></li>
+    <li><a href="#releases">Releases</a></li>
     <li><a href="#tests--checks">Tests &amp; Checks</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -161,6 +162,38 @@ Full constraints, milestones, and install shape: **[docs/deploy/truenas.md](docs
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- RELEASES -->
+## Releases
+
+Version source of truth is `backend/pyproject.toml` (shown in the UI via `/api/health`). Container
+images publish to GHCR on each GitHub Release.
+
+**Cutting a release**
+
+1. Squash-merge PRs to `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
+   title (`feat: …`, `fix: …`, `feat!: …`). Local commit subjects can stay plain imperative.
+2. [Release Please](https://github.com/googleapis/release-please) opens or updates a Release PR
+   (bumps version + `CHANGELOG.md`).
+3. Merge the Release PR → git tag `vX.Y.Z`, GitHub Release, and
+   `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`).
+
+**Pull a release image**
+
+```bash
+docker pull ghcr.io/campasachamp/plextraktbox:vX.Y.Z
+```
+
+After the first publish, set the GitHub Packages package visibility to **public** if you need
+unauthenticated pulls (e.g. TrueNAS). Manual tags (`git push origin vX.Y.Z`) also publish via
+`.github/workflows/release.yml`.
+
+Repo settings (once): Actions → General → allow GitHub Actions to create and approve pull requests
+(so Release Please can open the Release PR). Prefer squash-merge on `main`.
+
+See [Phase 19](docs/phases/phase-19.md).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- TESTS & CHECKS -->
 ## Tests & Checks
 
@@ -180,7 +213,7 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Built incrementally — Phases 0–8, 11–13, and 18 are done; see [docs/phases/README.md](docs/phases/README.md)
+Built incrementally — Phases 0–8, 11–15, and 18–19 are done; see [docs/phases/README.md](docs/phases/README.md)
 for the full phase index (status, scope, test plans). Settings includes an ad-hoc SQLite backup download;
 on TrueNAS prefer ZFS snapshots of the `/data` dataset.
 

@@ -6,21 +6,24 @@
 
 ## 1. Release PR flow
 
-- [ ] Merge to `main` with release-worthy changes triggers (or manually run) release-please
-- [ ] Release PR updates `backend/pyproject.toml` version and `CHANGELOG.md`
-- [ ] Merging release PR creates git tag `vX.Y.Z` and GitHub Release
+- [ ] Squash-merge to `main` with a Conventional Commit title (`feat: …` / `fix: …`) that touches
+      `backend/` (release-please path filter)
+- [ ] release-please opens/updates a Release PR bumping `backend/pyproject.toml`, `CHANGELOG.md`,
+      and `frontend/package.json`
+- [ ] Merging the Release PR creates git tag `vX.Y.Z` and a GitHub Release
+- [ ] Same workflow run publishes the GHCR image (does not rely on the tag triggering another workflow)
 
 ## 2. CI gate
 
-- [ ] Release / publish workflow does **not** run if `mise run check` failed on the tagged commit
+- [ ] Publish job runs `mise run check` and does **not** push if that step fails
 - [ ] CI workflow mirrors local `mise run check` (ruff, mypy, pytest, vitest)
 
 ## 3. Container publish
 
 ```bash
-# After a release, on a machine with ghcr pull access:
-docker pull ghcr.io/<owner>/plextraktbox:vX.Y.Z
-docker run --rm -p 8000:8000 ghcr.io/<owner>/plextraktbox:vX.Y.Z
+# After a release (package must be public, or you must be authenticated to GHCR):
+docker pull ghcr.io/campasachamp/plextraktbox:vX.Y.Z
+docker run --rm -p 8000:8000 ghcr.io/campasachamp/plextraktbox:vX.Y.Z
 curl -s http://localhost:8000/api/health
 ```
 
@@ -35,11 +38,13 @@ curl -s http://localhost:8000/api/health
 
 ## 5. Docs
 
-- [ ] [deploy/truenas.md](../../deploy/truenas.md) documents which GHCR tag to pull
-- [ ] README notes how maintainers cut a release (merge release PR vs manual tag)
+- [ ] [deploy/truenas.md](../../deploy/truenas.md) documents GHCR image name and tags
+- [ ] README has a Releases section (squash titles, merge Release PR, pull image)
 
 ## 6. Notes
 
-- Personal repo uses plain commit subjects — configure release-please manifest mode accordingly
-  (not conventional-commit parser unless we adopt that style later).
-- `frontend/package.json` version sync is optional; UI never reads it.
+- Local commits stay plain imperative subjects. Only the **squash-merge PR title on `main`** needs
+  Conventional Commits so release-please can bump.
+- After the first image push: GitHub → Packages → `plextraktbox` → Package settings → change
+  visibility to **public** (required for unauthenticated TrueNAS pulls in Phase 22).
+- Manual tags: `git tag vX.Y.Z && git push origin vX.Y.Z` runs `.github/workflows/release.yml`.

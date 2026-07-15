@@ -33,7 +33,7 @@ involvement — a working container + dataset mount on one machine.
 **Near-term deliverables** (see [phase-22](../phases/phase-22.md)):
 
 - Confirm `PUID`/`PGID` against a real ZFS dataset mount
-- Publish versioned image to GHCR (pull without local build) — [Phase 19](../phases/phase-19.md)
+- Pull versioned image from GHCR (no local build) — [Phase 19](../phases/phase-19.md) done; tags below
 - Document reverse proxy / TLS (Caddy or Traefik example; `Secure` session cookies)
 - Step-by-step custom-app setup: env vars, port, dataset path
 - End-to-end proof: wizard → connections → job → scheduled run → notification
@@ -60,9 +60,23 @@ When Phase 22 lands, expect roughly:
 
 | Setting | Value |
 | ------- | ----- |
-| Image | GHCR tagged release (TBD) |
+| Image | `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (or `:latest`) |
 | Port | 8000 → app HTTP |
 | Volume | Host path → `/data` (ZFS dataset) |
 | Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PUID`/`PGID` |
 
-Detailed install steps will be added here as Phase 22 is implemented.
+### GHCR image ([Phase 19](../phases/phase-19.md))
+
+Published on each GitHub Release:
+
+| Tag | Meaning |
+| --- | ------- |
+| `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` | Immutable release matching `backend/pyproject.toml` |
+| `ghcr.io/campasachamp/plextraktbox:latest` | Most recent stable release |
+
+```bash
+docker pull ghcr.io/campasachamp/plextraktbox:v0.1.0
+```
+
+The package must be **public** on GitHub Packages for unauthenticated pulls (set after the first
+publish). Full custom-app install steps land in Phase 22.

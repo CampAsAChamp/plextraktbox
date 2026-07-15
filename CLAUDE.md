@@ -77,7 +77,11 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, and **18 (version/build info)** are done; next is mobile layout (20) or automated releases (19), then sync fetch/resolve caches (21), TrueNAS deploy (22–23), and **UI themes (24)** last. Frontend redesign (former 9–10) was retired — stay on Mantine.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, **18 (version/build info)**, and **19 (automated releases / GHCR)** are done; next is mobile layout (20), then sync fetch/resolve caches (21), TrueNAS deploy (22–23), and **UI themes (24)** last. Frontend redesign (former 9–10) was retired — stay on Mantine.
+
+**Releases:** Local commits stay plain imperative subjects. When squash-merging to `main` for
+release-worthy work, use a Conventional Commit PR title (`feat:` / `fix:` / `feat!:`) so
+release-please can open a Release PR. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.
