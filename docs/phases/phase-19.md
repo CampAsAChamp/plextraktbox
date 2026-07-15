@@ -78,4 +78,4 @@ build is running?” on TrueNAS.
 
 [phase-19-test-plan.md](test-plans/phase-19-test-plan.md)
 
-**Next:** [Phase index](README.md)
+**Next:** [Phase 20 — Mobile & responsive layout](phase-20.md) (product UI track; independent of release/deploy)

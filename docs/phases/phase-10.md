@@ -80,6 +80,7 @@ Migrate to new components — behavior unchanged:
 | Settings page (global guards, backup) | 13 |
 | GitHub Actions CI | 12 |
 | Dashboard ops view, schedule picker, log export | 14 |
+| Mobile & responsive layout | 20 |
 | Doppler maintainer workflow | 15 |
 | TrueNAS packaging, GHCR, reverse proxy | 16 |
 

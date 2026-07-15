@@ -1,6 +1,6 @@
 # Phase 8 — Client-backed apply (movies)
 
-**Status:** Next
+**Status:** Done
 
 ## Goal
 
@@ -45,6 +45,7 @@ movies — building on the fetch path proven in [Phase 7](phase-7.md). Letterbox
 | Dashboard ops view, schedule picker | 14 |
 | Doppler maintainer workflow | 15 |
 | TrueNAS packaging, GHCR, reverse proxy | 16 |
+| Sync fetch/resolve caches (LB, Trakt, Discover, Plex once-per-run) | 21 |
 
 ## Verification
 

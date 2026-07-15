@@ -3,6 +3,7 @@
 | Doc | Purpose |
 | --- | ------- |
 | [architecture.md](architecture.md) | Stack, sync engine, data model, security — the "why" |
+| [sync-flows.md](sync-flows.md) | Sync job flow charts + sequence diagrams (per data type) |
 | [phases/README.md](phases/README.md) | **Phase index** (status, scope, test plans) |
 | [testing.md](testing.md) | Smoke tests, automated checks, testing conventions |
 | [dev-workflow.md](dev-workflow.md) | Hot reload, `api-login`, dev bootstrap |
@@ -10,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** Phase 8 — [client-backed apply (movies)](phases/phase-8.md)
+- **Current focus:** Phase 9 — [frontend prototype](phases/phase-9.md)
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)
@@ -21,6 +22,7 @@
 docs/
 ├── README.md           ← you are here
 ├── architecture.md     ← design doc (stable architecture)
+├── sync-flows.md       ← sync job Mermaid diagrams
 ├── testing.md          ← verification how-to
 ├── dev-workflow.md     ← day-to-day dev ergonomics
 ├── deploy/

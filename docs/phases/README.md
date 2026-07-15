@@ -18,8 +18,8 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 5 | [Logging + live viewer](phase-5.md) | Done | structlog, SSE, LogViewer | [phase-5](test-plans/phase-5-test-plan.md) |
 | 6 | [Notifications](phase-6.md) | Done | Discord, in-app bell | [phase-6](test-plans/phase-6-test-plan.md) |
 | 7 | [Client-backed fetch (movies)](phase-7.md) | Done | Real Plex/Trakt/LB fetch | [phase-7](test-plans/phase-7-test-plan.md) |
-| 8 | [Client-backed apply (movies)](phase-8.md) | **Next** | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
-| 9 | [Frontend prototype](phase-9.md) | Planned | Run detail + log viewer spike | TBD |
+| 8 | [Client-backed apply (movies)](phase-8.md) | Done | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
+| 9 | [Frontend prototype](phase-9.md) | **Next** | Run detail + log viewer spike | TBD |
 | 10 | [Frontend redesign](phase-10.md) | Planned | Full Radix + Tailwind migration | TBD |
 | 11 | [TV sync](phase-11.md) | Planned | Shows and episodes | TBD |
 | 12 | [CI & quality](phase-12.md) | Planned | GitHub Actions, e2e, API types | TBD |
@@ -30,8 +30,10 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 17 | [TrueNAS catalog](phase-17.md) | Planned | App catalog publication | TBD |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Planned | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
+| 20 | [Mobile & responsive layout](phase-20.md) | Planned | Phone/tablet layouts, touch UX | TBD |
+| 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
 
-**Current focus:** Phase 8 — wire source **apply** to real APIs for movies; Phases 0–7 and 18 are complete.
+**Current focus:** Phase 9 — frontend prototype (run detail + logs); Phases 0–8 and 18 are complete.
 
 ## Delivery order
 
@@ -39,7 +41,8 @@ Phase numbers follow implementation order where possible. [Phase 18](phase-18.md
 use the tracks below when parallel work makes sense.
 
 ```
-Product (primary)     7 ✓ → 8 → 9–11 (as needed) → 13 → 14
+Product (primary)     7 ✓ → 8 ✓ → 9–11 (as needed) → 13 → 14 → 20
+Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
 Release / deploy      18 ✓ → 12 → 19 → 16 → 17
 
@@ -48,9 +51,9 @@ Maintainer (optional) 15 — Doppler; anytime for dev/CI secrets
 
 | Track | Order | Notes |
 | ----- | ----- | ----- |
-| **Product** | 8 | Real movie apply completes the sync milestone |
 | **Product** | 9 → 10, 11 | UI spike/redesign and TV can overlap 7–8 or follow |
-| **Ops** | 13 → 14 | Settings/safety, then dashboard UX — after core sync works |
+| **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
+| **Ops** | 13 → 14 → **20** | Settings/safety, dashboard UX, then mobile — after core sync + final UI stack |
 | **Release** | 12 → **19** → **16** → 17 | CI before automated releases; GHCR before TrueNAS install |
 | **Maintainer** | 15 | Independent of deploy |
 

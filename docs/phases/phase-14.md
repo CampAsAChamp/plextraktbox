@@ -40,7 +40,9 @@ by hand, and export run logs for debugging.
 
 ## Defers to later phases
 
-Nothing critical — last major product UX phase before deploy tooling.
+| Item | Phase |
+| ---- | ----- |
+| Mobile & responsive layout (sidebar drawer, tables, split panes) | 20 |
 
 ## Verification
 

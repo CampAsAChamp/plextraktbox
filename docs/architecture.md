@@ -35,8 +35,8 @@ drops in without rework.
 
 ### Source-of-truth per data type (drives conflict resolution)
 
-- **Watchlist → Plex is truth.** Reconcile Trakt watchlist to match Plex; LB watchlist read as input only.
-- **Ratings → Letterboxd is truth.** Push LB ratings → Plex and Trakt (normalize LB 0.5–5 ↔ Plex/Trakt 0–10).
+- **Watchlist → Plex is truth.** Reconcile Trakt watchlist to match Plex. Letterboxd watchlist is **ignored** (not fetched, not written).
+- **Ratings → Letterboxd is truth.** Push LB ratings → Plex and Trakt (normalize LB 0.5–5 ↔ Plex/Trakt 0–10). Plex writes use **library** items when present, else **Discover** (see below).
 - **Watched/history → Trakt is truth.** Mark matched items watched in Plex; LB diary read as input only.
 
 
@@ -82,13 +82,32 @@ plextraktbox/
 
 Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy** engine into **Sources** (per-service read/write adapters) + **Reconcilers** (per-data-type source-of-truth logic).
 
+**Flow charts and sequence diagrams** (run lifecycle, watchlist / ratings / watched, matching):
+[sync-flows.md](sync-flows.md).
+
 - `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (movies first, TV-ready).
 - `guid.py` — port of PlexTraktSync `PlexGuid`/`MediaFactory`: parse Plex guids → structured `Guid`; LB path resolves URL → TMDB id → `tmdb://<id>`.
-- `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted mapping).
+- `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted Plex↔Trakt mapping).
+- **Fetch / resolve caches ([Phase 21](phases/phase-21.md), planned):** Letterboxd CSV export TTL; persisted `letterboxd_slug` → external ids; Trakt list TTL (watchlist/ratings/watched — currently bypass `requests-cache`); Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
 - **Sources** (`sources/base.py` ABC): `fetch_watchlist/ratings/watched`, `apply_watchlist/ratings/watched(..., dry_run)`, `capabilities`. `PlexSource`/`TraktSource` full read/write; `LetterboxdSource` **read-only** — `apply_`* raise `NotSupported`, capabilities mark writes false (enforces no-write-back at type level).
 - **Reconcilers** compute a **plan** then **apply** (skipped on dry_run), each hard-coding its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
 - `plugins.py` — pluggy hookspecs (`provide_sources`, `provide_reconcilers`, `before_run`, `after_item`, `after_run`); leaves a seam for future services.
 - `engine.run(job, ctx)` — before_run → fetch (cached) → per-data-type reconcile → log every planned change ("would X" on dry-run) → apply with per-item try/except (one failure ≠ abort) → RunSummary (counts: matched/added/removed/rated/watched/skipped/errors).
+
+### Plex ratings: Discover vs library
+
+Plex stores user ratings in two places that **do not sync with each other in the UI**:
+
+| Target | Plex object | When we use it |
+| ------ | ----------- | -------------- |
+| **Library** | A movie in a scoped library on your server (`ratingKey` on `com.plexapp.plugins.library`) | Item exists in Connections-scoped libraries → `video.rate()` via plexapi |
+| **Discover** | Account-level metadata on `discover.provider.plex.tv` (`plex://movie/<id>`) | No library match (common for LB-rated films you never added) → Discover rate API |
+
+**Important:** A film visible in Plex because a **friend shared their library** is still *their* library item, not yours. Your rating on Discover appears on the Discover detail page (`tv.plex.provider.discover`), not on the shared server’s library page. That is expected Plex behavior — not a sync bug.
+
+Letterboxd → Plex ratings reconcile against scoped library fetch first; items with TMDB/IMDb IDs still plan a Plex update when there is no library match, and apply falls back to Discover. Trakt ratings apply only when the item already exists in your Trakt ratings (unchanged).
+
+Reference: [plexapi Discover rating discussion](https://github.com/pkkid/python-plexapi/issues/1137).
 
 
 
@@ -102,6 +121,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 - **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
 - **setting** — key/value_json (default cron, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention job prunes old logs/runs.
+- **Sync caches ([Phase 21](phases/phase-21.md), planned)** — Letterboxd export + `letterboxd_slug` → ids; Trakt list TTL snapshots; Plex Discover key map. (Plex once-per-run library share is in-process via sync context, not a DB table.)
 
 
 
@@ -139,7 +159,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 8 — real Plex/Trakt **apply** for movies; fetch landed in Phase 7.
+**Current focus:** Phase 9 — frontend prototype; movie fetch + apply (Phases 7–8) are complete.
 
 
 

@@ -6,16 +6,19 @@ paths:
 # Sync engine
 
 Ported from PlexTraktSync patterns: GUID matching, stateless diffing, dry-run, pluggy plugins.
+Sync fetch/resolve caches (LB export + slug→ids, Trakt lists, Discover keys, Plex once-per-run
+library) are planned in Phase 21 — not a cross-service match table.
 
 ## Source of truth
 
 | Data type | Truth | Direction |
 | --------- | ----- | --------- |
-| Watchlist | Plex | Reconcile Trakt → Plex |
+| Watchlist | Plex | Reconcile Trakt to match Plex (LB watchlist ignored) |
 | Ratings | Letterboxd | Push → Plex + Trakt |
 | Watched | Trakt | Mark watched in Plex |
 
-Letterboxd is **read-only** — never add write-back to Letterboxd.
+Letterboxd is **read-only** — never add write-back to Letterboxd. Watchlist sync does not
+fetch or use the Letterboxd watchlist.
 
 ## Architecture
 

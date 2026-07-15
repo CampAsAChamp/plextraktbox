@@ -67,6 +67,7 @@ plans against live data. `apply_*` stays stubbed until [Phase 8](phase-8.md).
 | Connection health monitoring job | 13 |
 | Dashboard ops view, schedule picker | 14 |
 | TrueNAS packaging, GHCR, reverse proxy | 16 |
+| Sync fetch/resolve caches (LB, Trakt, Discover, Plex once-per-run) | 21 |
 
 ## Verification
 

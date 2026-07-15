@@ -179,7 +179,7 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Built incrementally — **Phase 8** (real movie apply) is next; Phases 0–7 are done.
+Built incrementally — **Phase 9** (frontend prototype) is next; Phases 0–8 are done.
 
 See [docs/phases/README.md](docs/phases/README.md) for the full phase index (status, scope, test plans).
 

@@ -10,7 +10,7 @@ Self-hosted app that keeps **Plex**, **Letterboxd**, and **Trakt** in sync — w
 
 | Data type | Source of truth | Notes |
 | --------- | --------------- | ----- |
-| Watchlist | **Plex** | Reconcile Trakt to Plex; Letterboxd read-only |
+| Watchlist | **Plex** | Reconcile Trakt to Plex; Letterboxd watchlist ignored |
 | Ratings | **Letterboxd** | Push LB → Plex and Trakt (0.5–5 ↔ 0–10) |
 | Watched | **Trakt** | Mark matched items watched in Plex; LB read-only |
 
@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–7 and **18 (version/build info)** are done; **Phase 8 (client-backed apply, movies)** is next, then UI (9–10), TV (11), CI (12), settings/ops (13), dashboard (14), Doppler (15), TrueNAS deploy (16–17), and automated releases (19).
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–8 and **18 (version/build info)** are done; **Phase 9 (frontend prototype)** is next, then UI redesign (10), TV (11), CI (12), settings/ops (13), dashboard (14), Doppler (15), TrueNAS deploy (16–17), automated releases (19), mobile layout (20), and sync fetch/resolve caches (21).
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

@@ -57,6 +57,7 @@ if TV is in scope
 | Log export download | 14 |
 | Doppler maintainer workflow | 15 |
 | TrueNAS deploy docs | 16 |
+| Sync cache TTL / clear-cache UI (LB, Trakt, Discover — caches themselves) | 21 |
 
 ## Verification
 
