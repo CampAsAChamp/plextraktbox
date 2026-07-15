@@ -41,15 +41,20 @@ class RatingsReconciler(Reconciler):
             matcher.add_many(target_items)
 
             for truth_item in truth_items:
-                target_item = matcher.find(truth_item)
-                if target_item is None:
-                    continue
                 desired = truth_item.rating
                 if desired is None:
                     continue
-                current = target_item.rating
-                if current is not None and abs(current - desired) < RATING_TOLERANCE:
-                    continue
+
+                target_item = matcher.find(truth_item)
+                if target_item is None:
+                    if target_name != "plex" or not truth_item.identifiers:
+                        continue
+                    current = None
+                else:
+                    current = target_item.rating
+                    if current is not None and abs(current - desired) < RATING_TOLERANCE:
+                        continue
+
                 changes.append(
                     PlannedChange(
                         action=ChangeAction.UPDATE,
@@ -59,7 +64,9 @@ class RatingsReconciler(Reconciler):
                         field="rating",
                         old_value=current,
                         new_value=desired,
-                        message=(f"Rate {truth_item.title} on {target_name}: {current} → {desired}"),
+                        message=(
+                            f'rate "{truth_item.title}" on {target_name}: {current} → {desired}'
+                        ),
                     )
                 )
 

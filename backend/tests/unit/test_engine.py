@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from structlog.testing import capture_logs
 
 from plextraktbox.sync.engine import run_sync
 from plextraktbox.sync.plans import DataType
@@ -48,3 +49,25 @@ async def test_ratings_use_normalized_letterboxd_values() -> None:
     assert summary.rated == 2
     assert (await plex.fetch_ratings())[0].rating == 9.0
     assert (await trakt.fetch_ratings())[0].rating == 9.0
+
+
+@pytest.mark.asyncio
+async def test_engine_logs_apply_start_and_done() -> None:
+    lb, plex = FakeLetterboxd(), FakePlex()
+    lb.seed_ratings([movie(title="Film", tmdb="42", rating=9.0, source="letterboxd")])
+    plex.seed_ratings([movie(title="Film", tmdb="42", rating=0.0, source="plex")])
+
+    ctx = make_context(
+        sources={"letterboxd": lb, "plex": plex},
+        data_types={DataType.RATINGS},
+        dry_run=True,
+    )
+    with capture_logs() as logs:
+        await run_sync(ctx)
+
+    events = [entry["event"] for entry in logs]
+    assert "sync.apply.start" in events
+    assert "sync.apply.done" in events
+    start = next(entry for entry in logs if entry["event"] == "sync.apply.start")
+    assert start["message"] == "Dry-run: would apply 1 ratings change(s) (update) to plex"
+    assert start["count"] == 1

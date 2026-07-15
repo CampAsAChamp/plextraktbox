@@ -7,6 +7,7 @@ import threading
 import time
 from datetime import UTC, datetime
 
+import structlog
 from sqlmodel import Session
 
 from plextraktbox import db
@@ -114,6 +115,9 @@ def _execute_run_in_session(
 
     run_logger = log.bind(job_id=job.id, run_id=run.id)
     get_log_hub().open(run.id or 0)
+    # So client/helper loggers (e.g. plex_client apply progress) attach to this run
+    # and show up in the UI log stream — not only in the process console.
+    structlog.contextvars.bind_contextvars(job_id=job.id, run_id=run.id)
 
     final_status = JobRunStatus.FAILED.value
     try:
@@ -160,6 +164,7 @@ def _execute_run_in_session(
         dispatch_notifications(session, job, run)
         raise
     finally:
+        structlog.contextvars.unbind_contextvars("job_id", "run_id")
         if run.id is not None:
             get_log_hub().close(run.id, status=final_status)
 

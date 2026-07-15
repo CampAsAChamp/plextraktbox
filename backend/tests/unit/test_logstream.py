@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+from unittest.mock import MagicMock, patch
+
+import structlog
 
 from plextraktbox.logstream.handler import LogRecord, _redact_context, run_log_processor
 from plextraktbox.logstream.pubsub import StreamLogEvent, get_log_hub
@@ -28,6 +31,29 @@ def test_run_log_processor_ignores_events_without_run_id() -> None:
     result = run_log_processor(None, "info", event_dict)
 
     assert result == event_dict
+
+
+def test_run_log_processor_persists_when_run_id_comes_from_contextvars() -> None:
+    """Client loggers (e.g. plex apply progress) bind via contextvars, not logger.bind()."""
+    structlog.contextvars.bind_contextvars(job_id=7, run_id=42)
+    try:
+        event_dict = structlog.contextvars.merge_contextvars(
+            None,
+            "info",
+            {"event": "sync.apply.plex.rate", "level": "info", "message": 'rated "Film"'},
+        )
+        assert event_dict["run_id"] == 42
+
+        writer = MagicMock()
+        with patch("plextraktbox.logstream.handler.get_log_writer", return_value=writer):
+            run_log_processor(None, "info", event_dict)
+
+        writer.emit.assert_called_once()
+        record = writer.emit.call_args.args[0]
+        assert record.run_id == 42
+        assert record.message == "sync.apply.plex.rate"
+    finally:
+        structlog.contextvars.unbind_contextvars("job_id", "run_id")
 
 
 def test_run_channel_backlog_and_close() -> None:

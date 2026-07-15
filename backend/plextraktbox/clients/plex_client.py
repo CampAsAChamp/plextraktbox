@@ -15,11 +15,16 @@ from plexapi.server import PlexServer
 from plextraktbox.clients.base import ConnectionTestResult
 from plextraktbox.clients.http_cache import get_cached_requests_session, get_plex_server_requests_session
 from plextraktbox.clients.media_mappers import media_item_from_plex_video
+from plextraktbox.logging_setup import get_logger
 from plextraktbox.sync.media_item import MediaItem
+
+log = get_logger(__name__)
 
 PLEX_PINS_URL = "https://plex.tv/api/v2/pins"
 PLEX_RESOURCES_URL = "https://plex.tv/api/v2/resources"
 PLEX_LINK_URL = "https://plex.tv/link"
+PLEX_DISCOVER_BASE = "https://discover.provider.plex.tv"
+PLEX_DISCOVER_IDENTIFIER = "tv.plex.provider.discover"
 PLEX_PRODUCT = "plextraktbox"
 PLEX_VERSION = "0.1.0"
 PIN_EXPIRES_IN = 1800
@@ -390,3 +395,250 @@ def fetch_watched_movies(
         if item is not None and item.watched:
             items.append(item)
     return items
+
+
+def _library_videos_by_match_key(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    """Index scoped library movies by TMDB/IMDb/TVDB match key."""
+    index: dict[str, Any] = {}
+    for video in fetch_library_movies(url, token, library_ids=library_ids):
+        item = media_item_from_plex_video(video)
+        if item is None:
+            continue
+        match_key = item.match_key()
+        if match_key:
+            index[match_key] = video
+    return index
+
+
+def _find_library_video(
+    index: dict[str, Any],
+    item: MediaItem,
+) -> Any:
+    match_key = item.match_key()
+    if match_key and match_key in index:
+        return index[match_key]
+    raise ValueError(f"Movie {item.title!r} not found in scoped Plex libraries")
+
+
+def rate_library_movies(
+    url: str,
+    token: str,
+    ratings: list[tuple[MediaItem, float]],
+    *,
+    library_ids: list[str] | None = None,
+) -> None:
+    """Apply user ratings to movies in scoped Plex libraries."""
+    if not ratings:
+        return
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    for item, rating in ratings:
+        video = _find_library_video(index, item)
+        video.rate(rating)
+
+
+def _discover_metadata_key(video: Any) -> str:
+    """Extract the Plex Discover metadata key from a discover ``Movie`` object."""
+    guid = str(getattr(video, "guid", "") or "")
+    if guid.startswith("plex://movie/"):
+        return guid.rsplit("/", 1)[-1]
+
+    rating_key = getattr(video, "ratingKey", None)
+    if rating_key is not None and str(rating_key).lower() not in {"", "nan", "none"}:
+        return str(rating_key)
+
+    key = str(getattr(video, "key", "") or "")
+    if "/library/metadata/" in key:
+        return key.rsplit("/", 1)[-1]
+
+    raise ValueError(f"Could not resolve Plex Discover key for {getattr(video, 'title', 'movie')!r}")
+
+
+def rate_discover_movie(token: str, item: MediaItem, rating: float) -> None:
+    """Rate a movie via Plex Discover (no local library copy required)."""
+    account = _plex_account(token)
+    movie = _resolve_discover_movie(account, item)
+    discover_key = _discover_metadata_key(movie)
+    rate_discover_movie_by_key(token, discover_key, rating)
+
+
+def rate_discover_movie_by_key(token: str, discover_key: str, rating: float) -> None:
+    """Rate a Plex Discover movie by metadata key (0–10 scale; -1 clears)."""
+    if not (-1 <= rating <= 10):
+        raise ValueError("Plex Discover rating must be between 0 and 10, or -1 to clear")
+    resp = httpx.put(
+        f"{PLEX_DISCOVER_BASE}/actions/rate",
+        headers={"X-Plex-Token": token, "Accept": "application/json"},
+        params={
+            "identifier": PLEX_DISCOVER_IDENTIFIER,
+            "key": discover_key,
+            "rating": rating,
+        },
+        timeout=15.0,
+    )
+    resp.raise_for_status()
+
+
+def rate_movies_with_discover_fallback(
+    url: str,
+    token: str,
+    ratings: list[tuple[MediaItem, float]],
+    *,
+    library_ids: list[str] | None = None,
+) -> tuple[int, int, int]:
+    """Rate movies in-library when possible; otherwise fall back to Plex Discover.
+
+    Returns ``(library_applied, discover_applied, errors)``. One failed movie does
+    not abort the rest of the batch.
+    """
+    if not ratings:
+        return 0, 0, 0
+
+    log.info(
+        "sync.apply.plex.index.start",
+        message=(
+            f"Indexing scoped Plex library before applying {len(ratings)} rating(s)"
+        ),
+        count=len(ratings),
+    )
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    log.info(
+        "sync.apply.plex.index.done",
+        message=(
+            f"Indexed {len(index)} library movie(s); applying {len(ratings)} rating(s)"
+        ),
+        library_count=len(index),
+        count=len(ratings),
+    )
+
+    library_applied = 0
+    discover_applied = 0
+    errors = 0
+
+    for item, rating in ratings:
+        try:
+            match_key = item.match_key()
+            if match_key and match_key in index:
+                index[match_key].rate(rating)
+                library_applied += 1
+                log.info(
+                    "sync.apply.plex.rate",
+                    message=f'rated "{item.title}" on plex via library',
+                    title=item.title,
+                    rating=rating,
+                    via="library",
+                )
+                continue
+            log.info(
+                "sync.apply.plex.discover",
+                message=f'resolving "{item.title}" on Plex Discover',
+                title=item.title,
+                rating=rating,
+            )
+            rate_discover_movie(token, item, rating)
+            discover_applied += 1
+            log.info(
+                "sync.apply.plex.rate",
+                message=f'rated "{item.title}" on plex via Discover',
+                title=item.title,
+                rating=rating,
+                via="discover",
+            )
+        except Exception as exc:
+            errors += 1
+            log.warning(
+                "sync.apply.plex.rate.failed",
+                message=f'Failed to rate "{item.title}" on plex: {exc}',
+                title=item.title,
+                rating=rating,
+                error=str(exc),
+            )
+
+    error_suffix = f", {errors} failed" if errors else ""
+    log.info(
+        "sync.apply.plex.rate.done",
+        message=(
+            f"Plex ratings complete: {library_applied} via library, "
+            f"{discover_applied} via Discover{error_suffix}"
+        ),
+        library_applied=library_applied,
+        discover_applied=discover_applied,
+        errors=errors,
+    )
+    return library_applied, discover_applied, errors
+
+
+def mark_library_movies_watched(
+    url: str,
+    token: str,
+    items: list[MediaItem],
+    *,
+    library_ids: list[str] | None = None,
+) -> None:
+    """Mark movies as watched in scoped Plex libraries."""
+    if not items:
+        return
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    for item in items:
+        video = _find_library_video(index, item)
+        if not video.isWatched:
+            video.markWatched()
+
+
+def _plex_account(token: str) -> MyPlexAccount:
+    session = get_cached_requests_session()
+    return MyPlexAccount(token=token, session=session)
+
+
+def _resolve_discover_movie(account: MyPlexAccount, item: MediaItem) -> Any:
+    """Resolve a Plex Discover movie object for watchlist writes."""
+    target_key = item.match_key()
+    results = account.searchDiscover(item.title, limit=25, libtype="movie")
+    for result in results:
+        mapped = media_item_from_plex_video(result)
+        if mapped is None:
+            continue
+        if target_key and mapped.match_key() == target_key:
+            return result
+    raise ValueError(f"Could not resolve {item.title!r} on Plex Discover")
+
+
+def _find_watchlist_entry(account: MyPlexAccount, item: MediaItem) -> Any:
+    target_key = item.match_key()
+    for entry in account.watchlist():
+        if str(getattr(entry, "type", "")).lower() != "movie":
+            continue
+        mapped = media_item_from_plex_video(entry)
+        if mapped is not None and target_key and mapped.match_key() == target_key:
+            return entry
+    raise ValueError(f"{item.title!r} is not on the Plex watchlist")
+
+
+def add_watchlist_movies(token: str, items: list[MediaItem]) -> None:
+    """Add movies to the Plex account watchlist via Discover."""
+    if not items:
+        return
+    account = _plex_account(token)
+    for item in items:
+        movie = _resolve_discover_movie(account, item)
+        if account.onWatchlist(movie):
+            continue
+        account.addToWatchlist(movie)
+
+
+def remove_watchlist_movies(token: str, items: list[MediaItem]) -> None:
+    """Remove movies from the Plex account watchlist."""
+    if not items:
+        return
+    account = _plex_account(token)
+    for item in items:
+        try:
+            entry = _find_watchlist_entry(account, item)
+        except ValueError:
+            continue
+        if account.onWatchlist(entry):
+            account.removeFromWatchlist(entry)

@@ -30,6 +30,7 @@ async def test_pushes_lb_rating_to_plex() -> None:
     plan = await RatingsReconciler().plan(ctx)
     assert len(plan.changes) == 1
     assert plan.changes[0].new_value == 9.0
+    assert plan.changes[0].message == 'rate "The Matrix" on plex: 6.0 → 9.0'
 
     summary = await run_sync(ctx)
     assert summary.rated == 1
@@ -60,7 +61,7 @@ async def test_pushes_lb_rating_to_unrated_plex_library_item() -> None:
 
 
 @pytest.mark.asyncio
-async def test_unmatched_when_letterboxd_rating_not_in_plex_library() -> None:
+async def test_plans_plex_discover_rating_when_not_in_library() -> None:
     lb, plex = FakeLetterboxd(), FakePlex()
     lb.seed_ratings([movie(title="Obscure Film", tmdb="999", rating=8.0, source="letterboxd")])
     plex.seed_ratings([movie(title="Other Film", tmdb="1", rating=None, source="plex")])
@@ -70,12 +71,14 @@ async def test_unmatched_when_letterboxd_rating_not_in_plex_library() -> None:
         data_types={DataType.RATINGS},
         dry_run=True,
     )
+    plan = await RatingsReconciler().plan(ctx)
+    assert len(plan.changes) == 1
+    assert plan.changes[0].target_source == "plex"
+    assert plan.changes[0].new_value == 8.0
+
     summary = await run_sync(ctx)
-    assert summary.planned == 0
-    assert any(
-        item.title == "Obscure Film" and item.reason == "no plex match"
-        for item in summary.unmatched
-    )
+    assert summary.planned == 1
+    assert not any(item.reason == "no plex match" for item in summary.unmatched)
 
 
 @pytest.mark.asyncio

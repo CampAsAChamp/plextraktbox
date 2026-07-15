@@ -60,15 +60,17 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
 
         for change in plan.changes:
             prefix = "would" if ctx.dry_run else "will"
-            log.info(
-                "sync.plan",
-                data_type=data_type.value,
-                action=change.action.value,
-                target=change.target_source,
-                title=change.item.title,
-                message=f"{prefix} {change.message}",
-                dry_run=ctx.dry_run,
-            )
+            plan_fields: dict[str, object] = {
+                "data_type": data_type.value,
+                "action": change.action.value,
+                "target": change.target_source,
+                "title": change.item.title,
+                "message": f"{prefix} {change.message}",
+                "dry_run": ctx.dry_run,
+            }
+            if change.field == "rating" and change.new_value is not None:
+                plan_fields["rating"] = change.new_value
+            log.info("sync.plan", **plan_fields)
 
         if not plan.changes:
             continue
@@ -80,11 +82,35 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                 summary.errors += len(changes)
                 continue
 
+            if ctx.dry_run:
+                start_message = (
+                    f"Dry-run: would apply {len(changes)} {data_type.value} "
+                    f"change(s) ({action.value}) to {target_name}"
+                )
+            else:
+                start_message = (
+                    f"Applying {len(changes)} {data_type.value} "
+                    f"change(s) ({action.value}) to {target_name}"
+                )
+            log.info(
+                "sync.apply.start",
+                message=start_message,
+                target=target_name,
+                data_type=data_type.value,
+                action=action.value,
+                count=len(changes),
+                dry_run=ctx.dry_run,
+            )
+
             try:
                 result = await _apply_changes(source, data_type, changes, dry_run=ctx.dry_run)
             except Exception as exc:
                 log.warning(
                     "sync.apply.failed",
+                    message=(
+                        f"Failed applying {len(changes)} {data_type.value} "
+                        f"change(s) to {target_name}: {exc}"
+                    ),
                     target=target_name,
                     data_type=data_type.value,
                     error=str(exc),
@@ -97,6 +123,28 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                     error=exc,
                 )
                 continue
+
+            error_suffix = f" ({result.errors} error(s))" if result.errors else ""
+            if ctx.dry_run:
+                done_message = (
+                    f"Dry-run: would apply {result.applied}/{len(changes)} "
+                    f"{data_type.value} change(s) to {target_name}{error_suffix}"
+                )
+            else:
+                done_message = (
+                    f"Applied {result.applied}/{len(changes)} "
+                    f"{data_type.value} change(s) to {target_name}{error_suffix}"
+                )
+            log.info(
+                "sync.apply.done",
+                message=done_message,
+                target=target_name,
+                data_type=data_type.value,
+                action=action.value,
+                applied=result.applied,
+                errors=result.errors,
+                dry_run=ctx.dry_run,
+            )
 
             _merge_summary(summary, data_type, action, result)
 
@@ -204,8 +252,11 @@ async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: Run
             matcher = MediaMatcher()
             matcher.add_many(target_items)
             for item in truth:
-                if item.identifiers and matcher.find(item) is None:
-                    add(item, source="letterboxd", reason=f"no {target_name} match")
+                if not item.identifiers or matcher.find(item) is not None:
+                    continue
+                if target_name == "plex":
+                    continue
+                add(item, source="letterboxd", reason=f"no {target_name} match")
 
     if data_type == DataType.WATCHED and "trakt" in ctx.sources and "plex" in ctx.sources:
         truth = [i for i in await ctx.fetch("trakt", data_type) if i.watched]

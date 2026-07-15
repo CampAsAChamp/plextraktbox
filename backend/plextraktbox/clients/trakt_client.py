@@ -287,3 +287,75 @@ def fetch_watched_movies(client_id: str, access_token: str) -> list[MediaItem]:
         if item is not None:
             items.append(item)
     return items
+
+
+def _trakt_movie_ids(item: MediaItem) -> dict[str, int | str]:
+    """Build Trakt ``ids`` object from a ``MediaItem`` (requires TMDB or IMDb)."""
+    ids: dict[str, int | str] = {}
+    if tmdb := item.identifiers.get("tmdb"):
+        ids["tmdb"] = int(tmdb)
+    if imdb := item.identifiers.get("imdb"):
+        ids["imdb"] = imdb
+    if not ids:
+        raise ValueError(f"No Trakt-compatible ids for {item.title!r}")
+    return ids
+
+
+def _trakt_post(
+    client_id: str,
+    access_token: str,
+    path: str,
+    body: dict[str, Any],
+) -> dict[str, Any]:
+    resp = httpx.post(
+        f"{TRAKT_BASE}{path}",
+        headers=_auth_headers(client_id, access_token),
+        json=body,
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    if not isinstance(data, dict):
+        raise ValueError(f"Unexpected Trakt response for {path}")
+    return data
+
+
+def add_watchlist_movies(client_id: str, access_token: str, items: list[MediaItem]) -> None:
+    """Add movies to the user's Trakt watchlist."""
+    if not items:
+        return
+    body = {"movies": [{"ids": _trakt_movie_ids(item)} for item in items]}
+    response = _trakt_post(client_id, access_token, "/sync/watchlist", body)
+    not_found = (response.get("not_found") or {}).get("movies") or []
+    if not_found:
+        raise ValueError(f"Trakt could not resolve {len(not_found)} watchlist movie(s)")
+
+
+def remove_watchlist_movies(client_id: str, access_token: str, items: list[MediaItem]) -> None:
+    """Remove movies from the user's Trakt watchlist."""
+    if not items:
+        return
+    body = {"movies": [{"ids": _trakt_movie_ids(item)} for item in items]}
+    _trakt_post(client_id, access_token, "/sync/watchlist/remove", body)
+
+
+def rate_movies(
+    client_id: str,
+    access_token: str,
+    ratings: list[tuple[MediaItem, float]],
+) -> None:
+    """Set movie ratings on Trakt (0–10 scale)."""
+    if not ratings:
+        return
+    movies: list[dict[str, Any]] = []
+    for item, rating in ratings:
+        movies.append({"rating": rating, "ids": _trakt_movie_ids(item)})
+    response = _trakt_post(
+        client_id,
+        access_token,
+        "/sync/ratings",
+        {"movies": movies},
+    )
+    not_found = (response.get("not_found") or {}).get("movies") or []
+    if not_found:
+        raise ValueError(f"Trakt could not resolve {len(not_found)} rated movie(s)")
