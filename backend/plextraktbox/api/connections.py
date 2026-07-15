@@ -335,8 +335,8 @@ def save_trakt_tokens_dev(
     _user: CurrentUserDep,
     session: SessionDep,
 ) -> ConnectionSummary:
-    """Import Trakt tokens from .env during local dev bootstrap (ENV=dev only)."""
-    if get_settings().env != "dev":
+    """Import Trakt tokens from .env during local bootstrap (ENV=local only)."""
+    if get_settings().env != "local":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found",

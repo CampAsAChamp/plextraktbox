@@ -114,7 +114,7 @@ def _console_renderer(*, colors: bool) -> ConsoleRenderer:
 
 def _resolve_log_format(settings: object) -> str:
     log_format = getattr(settings, "log_format", "auto")
-    env = getattr(settings, "env", "dev")
+    env = getattr(settings, "env", "local")
     if log_format == "auto":
         return "json" if env == "prod" else "console"
     return log_format

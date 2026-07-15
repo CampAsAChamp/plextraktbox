@@ -1,4 +1,4 @@
-"""HTML landing page shown at http://localhost:8000 when ENV=dev."""
+"""HTML landing page shown at http://localhost:8000 when ENV=local."""
 
 from __future__ import annotations
 

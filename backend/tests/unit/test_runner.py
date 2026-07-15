@@ -28,7 +28,7 @@ def test_dev_run_delay_skipped_in_prod() -> None:
 def test_dev_run_delay_skipped_when_zero() -> None:
     logger = MagicMock()
     with patch("plextraktbox.scheduler.runner.get_settings") as get_settings:
-        get_settings.return_value.env = "dev"
+        get_settings.return_value.env = "local"
         get_settings.return_value.sync_run_delay_seconds = 0
         with patch("plextraktbox.scheduler.runner.time.sleep") as sleep:
             _apply_dev_run_delay(logger)
@@ -40,7 +40,7 @@ def test_dev_run_delay_skipped_when_zero() -> None:
 def test_dev_run_delay_logs_and_sleeps_each_second() -> None:
     logger = MagicMock()
     with patch("plextraktbox.scheduler.runner.get_settings") as get_settings:
-        get_settings.return_value.env = "dev"
+        get_settings.return_value.env = "local"
         get_settings.return_value.sync_run_delay_seconds = 3
         with patch("plextraktbox.scheduler.runner.time.sleep") as sleep:
             _apply_dev_run_delay(logger)

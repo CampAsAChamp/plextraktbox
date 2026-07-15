@@ -17,7 +17,7 @@ services:
       - path: .env
         required: false
     environment:
-      ENV: dev
+      ENV: local
       LOG_FORMAT: console
       FORCE_COLOR: "1"
       DATA_DIR: /data

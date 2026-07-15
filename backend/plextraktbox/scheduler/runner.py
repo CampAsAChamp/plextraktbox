@@ -31,7 +31,7 @@ _job_locks_guard = threading.Lock()
 def _apply_dev_run_delay(run_logger) -> None:
     """Sleep between log ticks so dev runs stay open long enough to test live streaming."""
     settings = get_settings()
-    if settings.env != "dev" or settings.sync_run_delay_seconds <= 0:
+    if settings.env != "local" or settings.sync_run_delay_seconds <= 0:
         return
 
     total = int(settings.sync_run_delay_seconds)

@@ -9,7 +9,7 @@ from plextraktbox.main import create_app
 
 
 def test_dev_root_serves_styled_landing_page(monkeypatch) -> None:
-    monkeypatch.setenv("ENV", "dev")
+    monkeypatch.setenv("ENV", "local")
     config.get_settings.cache_clear()
     client = TestClient(create_app())
 
@@ -23,7 +23,7 @@ def test_dev_root_serves_styled_landing_page(monkeypatch) -> None:
 
 
 def test_dev_revision_endpoint(monkeypatch) -> None:
-    monkeypatch.setenv("ENV", "dev")
+    monkeypatch.setenv("ENV", "local")
     config.get_settings.cache_clear()
     with TestClient(create_app()) as client:
         response = client.get("/api/dev/revision")

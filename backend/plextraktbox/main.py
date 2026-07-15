@@ -73,7 +73,7 @@ def create_app() -> FastAPI:
     app.include_router(run_logs.router, prefix="/api")
     app.include_router(notifications.router, prefix="/api")
 
-    if settings.env == "dev":
+    if settings.env == "local":
         app.include_router(dev.router, prefix="/api/dev")
 
     # --- SPA static hosting ---
@@ -85,7 +85,7 @@ def create_app() -> FastAPI:
 def _mount_spa(app: FastAPI) -> None:
     """Serve the built SPA, falling back to index.html for client-side routes."""
     settings = get_settings()
-    if settings.env == "dev":
+    if settings.env == "local":
 
         @app.get("/{full_path:path}")
         def _dev_ui_notice(full_path: str) -> HTMLResponse:

@@ -1,7 +1,7 @@
 """Application configuration loaded from environment variables.
 
-The secret key is required in production; a dev default is provided only when
-``ENV=dev`` so local runs work without ceremony.
+The secret key is required in production; a local default is provided only when
+``ENV=local`` so local runs work without ceremony.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ import base64
 import hashlib
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,7 +23,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    env: str = Field(default="dev", description="dev | prod")
+    env: Literal["local", "prod"] = Field(default="local", description="local | prod")
     secret_key: str = Field(
         default="",
         description="Signs session cookies and derives the Fernet token-encryption key.",
@@ -32,7 +33,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = Field(
         default="auto",
-        description="Log output format: auto (json in prod, console in dev), json, or console.",
+        description="Log output format: auto (json in prod, console in local), json, or console.",
     )
     trakt_client_id: str = Field(
         default="",
@@ -45,7 +46,7 @@ class Settings(BaseSettings):
     sync_run_delay_seconds: float = Field(
         default=0,
         ge=0,
-        description="Dev-only seconds to wait at run start (ENV=dev) for live log testing.",
+        description="Local-only seconds to wait at run start (ENV=local) for live log testing.",
     )
 
     @model_validator(mode="after")
