@@ -37,6 +37,7 @@ from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
 from plextraktbox.logstream import get_log_hub, get_log_writer
 from plextraktbox.scheduler import get_scheduler_manager
+from plextraktbox.ssl_compat import create_default_context_is_relaxed
 from plextraktbox.version_info import __version__
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -47,6 +48,11 @@ log = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
+    if create_default_context_is_relaxed():
+        log.debug(
+            "ssl_compat.relaxed_strict_checks",
+            reason="Python 3.13+ VERIFY_X509_STRICT rejects some corporate root CAs",
+        )
     init_db()
     get_log_writer().start()
     get_log_hub().set_event_loop(asyncio.get_running_loop())

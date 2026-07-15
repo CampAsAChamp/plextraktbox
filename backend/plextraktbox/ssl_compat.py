@@ -3,6 +3,9 @@
 Zscaler and similar proxies ship root CAs whose Basic Constraints extension is
 not marked critical. Python 3.13 enables VERIFY_X509_STRICT by default, which
 rejects those chains even when the CA is explicitly trusted via SSL_CERT_FILE.
+
+Runs at import time (before ``configure_logging``), so this module must stay
+silent — no structlog calls here.
 """
 
 from __future__ import annotations
@@ -10,10 +13,6 @@ from __future__ import annotations
 import os
 import ssl
 from typing import Any
-
-from plextraktbox.logging_setup import get_logger
-
-log = get_logger(__name__)
 
 _STRICT = getattr(ssl, "VERIFY_X509_STRICT", 0)
 _PARTIAL = getattr(ssl, "VERIFY_X509_PARTIAL_CHAIN", 0)
@@ -50,10 +49,6 @@ def configure_ssl_compat() -> None:
 
     ssl.create_default_context = _relaxed_create_default_context  # type: ignore[assignment]
     _PATCHED = True
-    log.debug(
-        "ssl_compat.relaxed_strict_checks",
-        reason="Python 3.13+ VERIFY_X509_STRICT rejects some corporate root CAs",
-    )
 
 
 def create_default_context_is_relaxed() -> bool:
