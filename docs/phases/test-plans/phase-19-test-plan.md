@@ -6,10 +6,9 @@
 
 ## 1. Release PR flow
 
-- [ ] Squash-merge to `main` with a Conventional Commit title (`feat: …` / `fix: …`) that touches
-      `backend/` (release-please path filter)
-- [ ] release-please opens/updates a Release PR bumping `backend/pyproject.toml` and
-      `backend/CHANGELOG.md`
+- [ ] Squash-merge to `main` with a Conventional Commit title (`feat: …` / `fix: …`)
+- [ ] release-please opens/updates a Release PR that bumps root `package.json`,
+      `backend/pyproject.toml`, `frontend/package.json`, and `CHANGELOG.md` to the **same** semver
 - [ ] Merging the Release PR creates git tag `vX.Y.Z` and a GitHub Release
 - [ ] Same workflow run publishes the GHCR image (does not rely on the tag triggering another workflow)
 

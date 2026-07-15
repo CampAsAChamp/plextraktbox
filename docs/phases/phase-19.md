@@ -15,9 +15,9 @@ plextraktbox ships as a **single Docker image** (FastAPI + baked-in SPA). There 
 
 | What | Role |
 | ---- | ---- |
-| `backend/pyproject.toml` `[project].version` | **Source of truth** — read at runtime via `version_info.py` |
-| `GET /api/health` → `version` | What the navbar badge and account menu display |
-| `frontend/package.json` `version` | Cosmetic npm metadata only; not bumped by release-please |
+| `backend/pyproject.toml` `[project].version` | **Runtime source of truth** — read via `version_info.py` / `/api/health` |
+| Root `package.json` `version` | release-please home for the single app semver (private meta package) |
+| `frontend/package.json` `version` | Kept in lockstep by release-please (SPA metadata; UI still reads API) |
 
 The badge label says “API” because it confirms the backend is reachable, but the **version string is
 the whole app** (backend + bundled frontend from the same image). In dev with split Vite + uvicorn,
@@ -31,9 +31,9 @@ build is running?” on TrueNAS.
 
 ### Version bump automation
 
-- **release-please** manifest: package path `backend`, `release-type: python`
-- Release PR bumps `backend/pyproject.toml` and `backend/CHANGELOG.md`
-  (`frontend/package.json` is not synced — release-please forbids `..` paths outside the package)
+- **release-please** root package (`.`), `release-type: node` — one app semver
+- Release PR bumps root `package.json`, `backend/pyproject.toml`, `frontend/package.json`, and
+  root `CHANGELOG.md` together
 - Tag format: `vX.Y.Z` (`include-component-in-tag: false`)
 - **Squash-merge with Conventional Commit PR titles** (`feat:` / `fix:` / `feat!:`) when landing on
   `main` — local day-to-day subjects stay plain; release-please parses the squash commit
@@ -60,8 +60,9 @@ build is running?” on TrueNAS.
 - `.github/workflows/release-please.yml` — release-please + publish on release
 - `.github/workflows/release.yml` — publish on manual `v*` tags
 - `release-please-config.json` / `.release-please-manifest.json`
-- `backend/pyproject.toml` — bumped version field
-- `backend/CHANGELOG.md` — maintained by release-please
+- Root `package.json` — release-please version home
+- `backend/pyproject.toml` / `frontend/package.json` — synced extra-files
+- `CHANGELOG.md` — maintained by release-please
 
 ## Defers to later phases
 

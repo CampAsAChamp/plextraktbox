@@ -3,9 +3,21 @@
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "packages": {
-    "backend": {
-      "release-type": "python",
-      "package-name": "plextraktbox"
+    ".": {
+      "release-type": "node",
+      "package-name": "plextraktbox",
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "backend/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "json",
+          "path": "frontend/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   }
 }
