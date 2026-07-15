@@ -4,17 +4,17 @@
 
 **Prerequisites:** Phase 18 done; Phase 12 CI in place. Shared setup: [testing.md](../../testing.md).
 
-## 1. Release PR flow
+## 1. Release flow
 
 - [ ] Squash-merge to `main` with a Conventional Commit title (`feat: …` / `fix: …`)
-- [ ] release-please opens/updates a Release PR that bumps root `package.json`,
-      `backend/pyproject.toml`, `frontend/package.json`, and `CHANGELOG.md` to the **same** semver
-- [ ] Merging the Release PR creates git tag `vX.Y.Z` and a GitHub Release
-- [ ] Same workflow run publishes the GHCR image (does not rely on the tag triggering another workflow)
+- [ ] semantic-release bumps root `package.json`, `backend/pyproject.toml`,
+      `frontend/package.json`, and `CHANGELOG.md` to the **same** semver (no Release PR)
+- [ ] git tag `vX.Y.Z` and a GitHub Release are created in the same workflow run
+- [ ] Same run publishes the GHCR image (does not rely on the tag triggering another workflow)
 
 ## 2. CI gate
 
-- [ ] Publish job runs `mise run check` and does **not** push if that step fails
+- [ ] Release job runs `mise run check` and does **not** bump/publish if that step fails
 - [ ] CI workflow mirrors local `mise run check` (ruff, mypy, pytest, vitest)
 
 ## 3. Container publish
@@ -38,12 +38,13 @@ curl -s http://localhost:8000/api/health
 ## 5. Docs
 
 - [ ] [deploy/truenas.md](../../deploy/truenas.md) documents GHCR image name and tags
-- [ ] README has a Releases section (squash titles, merge Release PR, pull image)
+- [ ] README has a Releases section (squash titles, automatic release, pull image)
 
 ## 6. Notes
 
 - Local commits stay plain imperative subjects. Only the **squash-merge PR title on `main`** needs
-  Conventional Commits so release-please can bump.
+  Conventional Commits so semantic-release can bump.
 - After the first image push: GitHub → Packages → `plextraktbox` → Package settings → change
   visibility to **public** (required for unauthenticated TrueNAS pulls in Phase 22).
-- Manual tags: `git tag vX.Y.Z && git push origin vX.Y.Z` runs `.github/workflows/release.yml`.
+- Manual tags: `git tag vX.Y.Z && git push origin vX.Y.Z` runs the `publish-tag` job in
+  `.github/workflows/release.yml`.

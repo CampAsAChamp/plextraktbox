@@ -172,11 +172,10 @@ images publish to GHCR on each GitHub Release.
 
 1. Squash-merge PRs to `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
    title (`feat: …`, `fix: …`, `feat!: …`). Local commit subjects can stay plain imperative.
-2. [Release Please](https://github.com/googleapis/release-please) opens or updates a Release PR
-   (one app semver — root `package.json`, `backend/pyproject.toml`, `frontend/package.json`,
-   `CHANGELOG.md`).
-3. Merge the Release PR → git tag `vX.Y.Z`, GitHub Release, and
-   `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`).
+2. [semantic-release](https://semantic-release.gitbook.io/) bumps the one app semver (root
+   `package.json`, `backend/pyproject.toml`, `frontend/package.json`, `CHANGELOG.md`), creates tag
+   `vX.Y.Z` + a GitHub Release, and publishes `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`)
+   — no Release PR to merge.
 
 **Pull a release image**
 
@@ -186,10 +185,7 @@ docker pull ghcr.io/campasachamp/plextraktbox:vX.Y.Z
 
 After the first publish, set the GitHub Packages package visibility to **public** if you need
 unauthenticated pulls (e.g. TrueNAS). Manual tags (`git push origin vX.Y.Z`) also publish via
-`.github/workflows/release.yml`.
-
-Repo settings (once): Actions → General → allow GitHub Actions to create and approve pull requests
-(so Release Please can open the Release PR). Prefer squash-merge on `main`.
+`.github/workflows/release.yml`. Prefer squash-merge on `main`.
 
 See [Phase 19](docs/phases/phase-19.md).
 

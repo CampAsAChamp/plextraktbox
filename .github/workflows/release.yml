@@ -1,18 +1,98 @@
-name: Publish release image
+name: Release
 
-# Manual tags (e.g. git push origin vX.Y.Z). Automated releases publish from
-# release-please.yml — GITHUB_TOKEN tag creates do not trigger this workflow.
 on:
   push:
+    branches: [main]
     tags:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
+  issues: write
+  pull-requests: write
   packages: write
 
 jobs:
-  publish:
+  # Conventional commits on main → version bump, tag, GitHub Release, GHCR image.
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+
+      - name: Stub .env for mise
+        run: |
+          cp .env.example .env
+          {
+            echo "SECRET_KEY=ci-test-secret-key-not-for-production"
+            echo "TRAKT_CLIENT_ID=ci-trakt-client-id"
+            echo "TRAKT_CLIENT_SECRET=ci-trakt-client-secret"
+          } >> .env
+
+      - name: Run check
+        run: mise run check
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Semantic Release
+        id: release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 24.2.0
+          extra_plugins: |
+            @semantic-release/changelog@6.0.3
+            @semantic-release/git@10.0.1
+            @semantic-release/exec@6.0.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build metadata
+        if: steps.release.outputs.new_release_published == 'true'
+        id: meta
+        run: echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        if: steps.release.outputs.new_release_published == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: steps.release.outputs.new_release_published == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        if: steps.release.outputs.new_release_published == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/campasachamp/plextraktbox:v${{ steps.release.outputs.new_release_version }}
+            ghcr.io/campasachamp/plextraktbox:latest
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            BUILD_TIME=${{ steps.meta.outputs.built_at }}
+
+  # Manual tags (e.g. git push origin vX.Y.Z). Automated tags publish above —
+  # GITHUB_TOKEN tag creates do not re-trigger this job.
+  publish-tag:
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

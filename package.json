@@ -2,5 +2,5 @@
   "name": "plextraktbox",
   "private": true,
   "version": "0.2.1",
-  "description": "App version for release-please; runtime reads backend/pyproject.toml"
+  "description": "App version for semantic-release; runtime reads backend/pyproject.toml"
 }

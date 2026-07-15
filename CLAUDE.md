@@ -81,7 +81,7 @@ See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)
 
 **Releases:** Local commits stay plain imperative subjects. When squash-merging to `main` for
 release-worthy work, use a Conventional Commit PR title (`feat:` / `fix:` / `feat!:`) so
-release-please can open a Release PR. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
+semantic-release can bump and publish. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

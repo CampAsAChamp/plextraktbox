@@ -25,7 +25,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 14 | [Dashboard & scheduling UX](phase-14.md) | Done | Ops view, schedule picker, export | [phase-14](test-plans/phase-14-test-plan.md) |
 | 15 | [Doppler secrets](phase-15.md) | Done | Maintainer dev/CI workflow | [phase-15](test-plans/phase-15-test-plan.md) |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
-| 19 | [Automated releases](phase-19.md) | Done | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
+| 19 | [Automated releases](phase-19.md) | Done | semantic-release, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 | 20 | [Mobile & responsive layout](phase-20.md) | Planned | Phone/tablet layouts, touch UX | TBD |
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |

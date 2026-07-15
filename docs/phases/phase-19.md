@@ -16,8 +16,8 @@ plextraktbox ships as a **single Docker image** (FastAPI + baked-in SPA). There 
 | What | Role |
 | ---- | ---- |
 | `backend/pyproject.toml` `[project].version` | **Runtime source of truth** — read via `version_info.py` / `/api/health` |
-| Root `package.json` `version` | release-please home for the single app semver (private meta package) |
-| `frontend/package.json` `version` | Kept in lockstep by release-please (SPA metadata; UI still reads API) |
+| Root `package.json` `version` | semantic-release home for the single app semver (private meta package) |
+| `frontend/package.json` `version` | Kept in lockstep by the release prepare step (SPA metadata; UI still reads API) |
 
 The badge label says “API” because it confirms the backend is reachable, but the **version string is
 the whole app** (backend + bundled frontend from the same image). In dev with split Vite + uvicorn,
@@ -31,38 +31,33 @@ build is running?” on TrueNAS.
 
 ### Version bump automation
 
-- **release-please** root package (`.`), `release-type: node` — one app semver
-- Release PR bumps root `package.json`, `backend/pyproject.toml`, `frontend/package.json`, and
-  root `CHANGELOG.md` together
-- Tag format: `vX.Y.Z` (`include-component-in-tag: false`)
+- **semantic-release** on push to `main` — no Release PR
+- Bumps root `package.json`, syncs `backend/pyproject.toml` + `frontend/package.json`, updates
+  `CHANGELOG.md`, commits `chore(release): X.Y.Z [skip ci]`, tags `vX.Y.Z`, creates GitHub Release
 - **Squash-merge with Conventional Commit PR titles** (`feat:` / `fix:` / `feat!:`) when landing on
-  `main` — local day-to-day subjects stay plain; release-please parses the squash commit
+  `main` — local day-to-day subjects stay plain; semantic-release parses the squash commit
 
 ### GitHub Release + GHCR
 
-- Merging the Release Please PR creates a GitHub Release and tag
-- Publish runs in `.github/workflows/release-please.yml` when `release_created` (same workflow run —
-  tags created with `GITHUB_TOKEN` do not trigger other workflows)
-- `.github/workflows/release.yml` covers **manual** `v*` tags (`git push origin vX.Y.Z`)
-- Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` and `:latest`
+- Same workflow run publishes `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`) after a new
+  release (`GITHUB_TOKEN` tags do not re-trigger workflows)
+- Manual `v*` tags also publish via the same workflow’s `publish-tag` job
 - Build args: `GIT_SHA`, `BUILD_TIME` (Phase 18)
-- Publish job runs `mise run check` before `docker build` / push
+- Release job runs `mise run check` before bumping / publishing
 
 ### Maintainer setup (GitHub UI)
 
 - Prefer **squash-merge** on `main`
 - After the first package push: set the GHCR package visibility to **public** (needed for TrueNAS)
-- Workflow `permissions:` cover contents / PRs / packages; no separate PAT required for GHCR
+- Workflow `permissions:` cover contents / issues / PRs / packages; no separate PAT required
 
 ## Key files
 
 - `.github/workflows/ci.yml` — Phase 12 check gate
-- `.github/workflows/release-please.yml` — release-please + publish on release
-- `.github/workflows/release.yml` — publish on manual `v*` tags
-- `release-please-config.json` / `.release-please-manifest.json`
-- Root `package.json` — release-please version home
-- `backend/pyproject.toml` / `frontend/package.json` — synced extra-files
-- `CHANGELOG.md` — maintained by release-please
+- `.github/workflows/release.yml` — semantic-release + GHCR publish
+- `.releaserc.json` — semantic-release plugins (inline prepare syncs backend / frontend)
+- Root `package.json` — semantic-release version home
+- `CHANGELOG.md` — maintained by semantic-release
 
 ## Defers to later phases
 
