@@ -11,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** Phase 11 — [TV sync](phases/phase-11.md)
+- **Current focus:** Phase 12 (CI) or Phase 13 (settings) — see [phases/README.md](phases/README.md); TV sync ([Phase 11](phases/phase-11.md)) is done
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)

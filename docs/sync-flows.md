@@ -28,7 +28,7 @@ flowchart LR
 | --------- | ----- | ------ | ----- |
 | Watchlist | Plex | Trakt add/remove | Letterboxd watchlist is ignored (not fetched) |
 | Ratings | Letterboxd (0.5–5 → 0–10 at fetch) | Plex (library or Discover), Trakt | Trakt: only update items already in Trakt ratings |
-| Watched | Trakt | Plex library mark watched | Unmatched library titles are skipped; LB diary is not a write target |
+| Watched | Trakt | Plex library mark watched | Movies + episodes; unmatched library titles are skipped; LB diary is not a write target |
 
 ## Job pairs → services
 
@@ -134,7 +134,8 @@ Plex Discover key map; Plex library loaded once per run. Cross-service matching 
 ## Watchlist — Plex → Trakt
 
 **Job:** `plex_trakt` with `watchlist` enabled.  
-**Truth:** Plex. **Write target:** Trakt. Letterboxd watchlist is not loaded for `plex_trakt` jobs.
+**Truth:** Plex. **Write target:** Trakt. Includes **movies and shows**. Letterboxd watchlist is not
+loaded for `plex_trakt` jobs.
 
 ```mermaid
 sequenceDiagram
@@ -146,11 +147,11 @@ sequenceDiagram
 
   Eng->>Rec: plan(ctx)
   Rec->>Plex: fetch_watchlist
-  Plex-->>Rec: Plex watchlisted items (truth)
+  Plex-->>Rec: Plex watchlisted movies + shows (truth)
   Rec->>Trakt: fetch_watchlist
-  Trakt-->>Rec: Trakt watchlisted items
+  Trakt-->>Rec: Trakt watchlisted movies + shows
 
-  Note over Rec: Match by TMDB→IMDb→TVDB<br/>In Plex not Trakt → ADD<br/>In Trakt not Plex → REMOVE
+  Note over Rec: Match by TMDB→IMDb→TVDB (same media_type)<br/>In Plex not Trakt → ADD<br/>In Trakt not Plex → REMOVE
 
   Rec-->>Eng: plan (ADD/REMOVE on trakt)
   Eng->>Trakt: apply_watchlist(changes, dry_run)
@@ -223,7 +224,7 @@ shared server’s library page. See [architecture.md](architecture.md#plex-ratin
 
 **Job:** typically `plex_trakt` with `watched` enabled.  
 **Truth:** Trakt. **Write target:** Plex (library mark watched). Only items that already exist in
-the scoped Plex library are planned.
+the scoped Plex library are planned. Covers **movies** and **episodes** (show libraries).
 
 ```mermaid
 sequenceDiagram
@@ -235,14 +236,14 @@ sequenceDiagram
 
   Eng->>Rec: plan(ctx)
   Rec->>Trakt: fetch_watched
-  Trakt-->>Rec: Trakt watched movies (truth)
-  Rec->>Plex: fetch_watched / library items
-  Plex-->>Rec: Plex library items
+  Trakt-->>Rec: Trakt watched movies + episodes (truth)
+  Rec->>Plex: fetch_watched
+  Plex-->>Rec: Plex library movies + episodes
 
-  Note over Rec: Match by IDs<br/>Trakt watched + Plex match + not watched → UPDATE<br/>No Plex library match → skip
+  Note over Rec: Match by IDs (episodes: show id + S/E)<br/>Trakt watched + Plex match + not watched → UPDATE<br/>No Plex library match → skip / unmatched
 
   Rec-->>Eng: plan (UPDATE watched on plex)
-  Eng->>Plex: apply_watched → mark library movies watched
+  Eng->>Plex: apply_watched → mark library movies/episodes watched
   Note over Trakt: Trakt is never a watched write target
 ```
 

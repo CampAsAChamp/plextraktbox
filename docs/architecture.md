@@ -85,7 +85,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 **Flow charts and sequence diagrams** (run lifecycle, watchlist / ratings / watched, matching):
 [sync-flows.md](sync-flows.md).
 
-- `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (movies first, TV-ready).
+- `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (`movie` | `show` | `episode`), plus `season`/`episode` for episode match keys.
 - `guid.py` — port of PlexTraktSync `PlexGuid`/`MediaFactory`: parse Plex guids → structured `Guid`; LB path resolves URL → TMDB id → `tmdb://<id>`.
 - `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted Plex↔Trakt mapping).
 - **Fetch / resolve caches ([Phase 21](phases/phase-21.md), planned):** Letterboxd CSV export TTL; persisted `letterboxd_slug` → external ids; Trakt list TTL (watchlist/ratings/watched — currently bypass `requests-cache`); Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
@@ -159,7 +159,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 11 — TV sync; movie fetch + apply (Phases 7–8) are complete.
+**Current focus:** Phase 12 (CI) or Phase 13 (settings/ops); movie + TV sync (Phases 7–8, 11) and version info (18) are complete.
 
 
 

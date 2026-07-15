@@ -1,10 +1,10 @@
 # Phase 11 — TV sync
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
-Extend client-backed sources and reconcilers to **shows and episodes** — watchlist, ratings, and
+Extend client-backed sources and reconcilers to **shows and episodes** — watchlist and
 watched/history where each service supports them — building on the movie path proven in Phases 7–8.
 
 ## Deliverables
@@ -13,25 +13,28 @@ watched/history where each service supports them — building on the movie path 
 
 - Plex/Trakt fetch + apply for TV libraries and episode-level watched state
 - Episode-level **Trakt ↔ Plex** watched matching (not just show-level)
-- `media_type` handling throughout engine and reconcilers for `show` / `episode`
+- `media_type` handling throughout matcher / mappers for `show` / `episode`
 - Letterboxd remains **film-focused** — read-only; no TV write-back
+- **TV ratings out of scope** (Letterboxd is ratings SoT and film-only)
 
 ### Matching
 
-- TVDB identifier priority where relevant (already scaffolded in `guid.py` / `matcher.py`)
-- Unmatched-items report includes episode-level gaps
+- `MediaItem.season` / `episode` + composite `match_key` (`tmdb:id:sNeM`)
+- `MediaMatcher` indexes by media type + episode S/E (TVDB still in identifier priority)
+- Unmatched-items report includes episode-level gaps (`Show S01E02` titles)
 
 ### Jobs & UI
 
-- Job data-type and source-pair options reflect TV scope where applicable
-- Run summary counts break out shows/episodes as needed
-- Job form changes on the existing Mantine UI
+- Connections lists movie **and** show libraries; no new job media-type field
+- Jobs sync TV when show libraries are selected
+- Run summary: `shows_added`, `shows_removed`, `episodes_watched`
 
-## Key files (expected)
+## Key files
 
-- `backend/plextraktbox/sync/sources/`, `reconcilers/`, `clients/plex_client.py`,
-  `trakt_client.py`
-- Tests: fakes extended for TV fixtures; respx mapping tests for show/episode payloads
+- `backend/plextraktbox/sync/media_item.py`, `matcher.py`, `engine.py`, `plans.py`
+- `backend/plextraktbox/clients/media_mappers.py`, `plex_client.py`, `trakt_client.py`
+- `backend/plextraktbox/sync/sources/plex_source.py`, `trakt_source.py`
+- Frontend: Connections library picker, RunDetail summary labels, JobForm help text
 
 ## Prerequisites
 
@@ -44,10 +47,11 @@ watched/history where each service supports them — building on the movie path 
 | Global settings, dry-run guards, exclude list | 13 |
 | Dashboard ops view, schedule picker | 14 |
 | Doppler maintainer workflow | 15 |
+| Sync fetch/resolve caches | 21 |
 | TrueNAS packaging, GHCR, reverse proxy | 22 |
 
 ## Verification
 
-Test plan TBD when phase lands.
+[phase-11-test-plan.md](test-plans/phase-11-test-plan.md)
 
-**Next:** [Phase 12 — CI & quality](phase-12.md)
+**Next:** [Phase 12 — CI & quality](phase-12.md) (or product track: [Phase 13](phase-13.md))

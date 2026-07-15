@@ -19,7 +19,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 6 | [Notifications](phase-6.md) | Done | Discord, in-app bell | [phase-6](test-plans/phase-6-test-plan.md) |
 | 7 | [Client-backed fetch (movies)](phase-7.md) | Done | Real Plex/Trakt/LB fetch | [phase-7](test-plans/phase-7-test-plan.md) |
 | 8 | [Client-backed apply (movies)](phase-8.md) | Done | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
-| 11 | [TV sync](phase-11.md) | **Next** | Shows and episodes | TBD |
+| 11 | [TV sync](phase-11.md) | Done | Shows and episodes | [phase-11](test-plans/phase-11-test-plan.md) |
 | 12 | [CI & quality](phase-12.md) | Planned | GitHub Actions, e2e, API types | TBD |
 | 13 | [Settings & operations](phase-13.md) | Planned | Safety guards, health, backup | TBD |
 | 14 | [Dashboard & scheduling UX](phase-14.md) | Planned | Ops view, schedule picker, export | TBD |
@@ -31,7 +31,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 
-**Current focus:** Phase 11 — TV sync; Phases 0–8 and 18 are complete.
+**Current focus:** Phase 12 or product track Phase 13; Phases 0–8, 11, and 18 are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23** so deploy stays last).
@@ -42,7 +42,7 @@ Phase numbers follow implementation order where possible. [Phase 18](phase-18.md
 use the tracks below when parallel work makes sense.
 
 ```
-Product (primary)     7 ✓ → 8 ✓ → 11 → 13 → 14 → 20
+Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 → 14 → 20
 Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
 Release                18 ✓ → 12 → 19
@@ -54,7 +54,7 @@ Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 
 | Track | Order | Notes |
 | ----- | ----- | ----- |
-| **Product** | **11** | TV after movie fetch/apply |
+| **Product** | **13** | Settings after TV sync |
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
 | **Ops** | 13 → 14 → **20** | Settings/safety, dashboard UX, then mobile — after core sync |
 | **Release** | 12 → **19** | CI before automated releases / GHCR |

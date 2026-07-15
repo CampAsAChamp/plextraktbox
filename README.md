@@ -179,7 +179,7 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Built incrementally — **Phase 11** (TV sync) is next; Phases 0–8 are done.
+Built incrementally — **Phases 0–8 and 11** (movie + TV sync) are done; see [docs/phases/README.md](docs/phases/README.md).
 
 See [docs/phases/README.md](docs/phases/README.md) for the full phase index (status, scope, test plans).
 
