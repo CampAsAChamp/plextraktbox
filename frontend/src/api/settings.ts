@@ -14,6 +14,8 @@ export interface AppSettings {
   global_dry_run: boolean;
   exclude_ids: ExcludeIds;
   ui_theme: string;
+  letterboxd_export_cache_ttl_hours: number;
+  trakt_list_cache_ttl_minutes: number;
 }
 
 export type AppSettingsInput = {
@@ -23,7 +25,23 @@ export type AppSettingsInput = {
   log_retention_days: number;
   global_dry_run: boolean;
   exclude_ids: ExcludeIds;
+  letterboxd_export_cache_ttl_hours: number;
+  trakt_list_cache_ttl_minutes: number;
 };
+
+export interface ClearSyncCachesInput {
+  letterboxd_export?: boolean;
+  letterboxd_slug?: boolean;
+  trakt_lists?: boolean;
+  discover_keys?: boolean;
+}
+
+export interface ClearSyncCachesResult {
+  letterboxd_export: number;
+  letterboxd_slug: number;
+  trakt_lists: number;
+  discover_keys: number;
+}
 
 export function getSettings(): Promise<AppSettings> {
   return api.get<AppSettings>("/settings");
@@ -31,6 +49,15 @@ export function getSettings(): Promise<AppSettings> {
 
 export function updateSettings(input: AppSettingsInput): Promise<AppSettings> {
   return api.put<AppSettings>("/settings", input);
+}
+
+export function clearSyncCaches(input: ClearSyncCachesInput = {}): Promise<ClearSyncCachesResult> {
+  return api.post<ClearSyncCachesResult>("/settings/clear-sync-caches", {
+    letterboxd_export: input.letterboxd_export ?? true,
+    letterboxd_slug: input.letterboxd_slug ?? true,
+    trakt_lists: input.trakt_lists ?? true,
+    discover_keys: input.discover_keys ?? true,
+  });
 }
 
 export async function downloadBackup(): Promise<void> {

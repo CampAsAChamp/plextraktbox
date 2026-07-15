@@ -752,6 +752,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings/clear-sync-caches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clear Sync Caches Endpoint */
+        post: operations["clear_sync_caches_endpoint_api_settings_clear_sync_caches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/backup": {
         parameters: {
             query?: never;
@@ -871,6 +888,40 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ClearSyncCachesRequest */
+        ClearSyncCachesRequest: {
+            /**
+             * Letterboxd Export
+             * @default true
+             */
+            letterboxd_export: boolean;
+            /**
+             * Letterboxd Slug
+             * @default true
+             */
+            letterboxd_slug: boolean;
+            /**
+             * Trakt Lists
+             * @default true
+             */
+            trakt_lists: boolean;
+            /**
+             * Discover Keys
+             * @default true
+             */
+            discover_keys: boolean;
+        };
+        /** ClearSyncCachesResponse */
+        ClearSyncCachesResponse: {
+            /** Letterboxd Export */
+            letterboxd_export: number;
+            /** Letterboxd Slug */
+            letterboxd_slug: number;
+            /** Trakt Lists */
+            trakt_lists: number;
+            /** Discover Keys */
+            discover_keys: number;
         };
         /**
          * ConnectionStatus
@@ -1396,6 +1447,10 @@ export interface components {
             exclude_ids: components["schemas"]["ExcludeIds"];
             /** Ui Theme */
             ui_theme: string;
+            /** Letterboxd Export Cache Ttl Hours */
+            letterboxd_export_cache_ttl_hours: number;
+            /** Trakt List Cache Ttl Minutes */
+            trakt_list_cache_ttl_minutes: number;
         };
         /** SettingsUpdateRequest */
         SettingsUpdateRequest: {
@@ -1413,6 +1468,16 @@ export interface components {
             /** Global Dry Run */
             global_dry_run: boolean;
             exclude_ids?: components["schemas"]["ExcludeIds"];
+            /**
+             * Letterboxd Export Cache Ttl Hours
+             * @default 24
+             */
+            letterboxd_export_cache_ttl_hours: number;
+            /**
+             * Trakt List Cache Ttl Minutes
+             * @default 30
+             */
+            trakt_list_cache_ttl_minutes: number;
         };
         /** SetupStatusResponse */
         SetupStatusResponse: {
@@ -3112,6 +3177,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ThemeActiveResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_sync_caches_endpoint_api_settings_clear_sync_caches_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClearSyncCachesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClearSyncCachesResponse"];
                 };
             };
             /** @description Validation Error */

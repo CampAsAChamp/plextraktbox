@@ -10,6 +10,7 @@ import { UserIcon } from "../../components/icons/UserIcon";
 const INITIAL_SECTIONS = [
   { id: "settings-account", value: "Account", depth: 1 },
   { id: "settings-sync", value: "Sync defaults & safety", depth: 1 },
+  { id: "settings-sync-caches", value: "Sync caches", depth: 1 },
   { id: "settings-backup", value: "Backup", depth: 1 },
   { id: "settings-display", value: "Display preferences", depth: 1 },
   { id: "settings-theme", value: "Theme", depth: 1 },
@@ -19,6 +20,7 @@ const INITIAL_SECTIONS = [
 const SECTION_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   "settings-account": UserIcon,
   "settings-sync": SyncIcon,
+  "settings-sync-caches": SyncIcon,
   "settings-backup": DatabaseIcon,
   "settings-display": ClockIcon,
   "settings-theme": PaletteIcon,

@@ -5,6 +5,7 @@ import { AccountSection } from "./AccountSection";
 import { DisplayPreferencesSection } from "./DisplayPreferencesSection";
 import { BackupSection } from "./BackupSection";
 import { SettingsMobileNav, SettingsToc } from "./SettingsToc";
+import { SyncCachesSection } from "./SyncCachesSection";
 import { SyncSettingsSection } from "./SyncSettingsSection";
 import { ThemeSection } from "./ThemeSection";
 
@@ -22,6 +23,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
         <Stack gap="md" style={{ flex: 1, minWidth: 0 }}>
           <AccountSection user={user} />
           <SyncSettingsSection />
+          <SyncCachesSection />
           <BackupSection />
           <DisplayPreferencesSection />
           <ThemeSection />

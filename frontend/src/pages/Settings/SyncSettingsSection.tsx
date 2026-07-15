@@ -196,6 +196,9 @@ export function SyncSettingsSection() {
         imdb: parseExcludeLines(imdb),
         tvdb: parseExcludeLines(tvdb),
       },
+      letterboxd_export_cache_ttl_hours:
+        settingsQuery.data?.letterboxd_export_cache_ttl_hours ?? 24,
+      trakt_list_cache_ttl_minutes: settingsQuery.data?.trakt_list_cache_ttl_minutes ?? 30,
     };
     if (cronTimezone === "local") {
       input.cron_local_zone = browserTimezone;
