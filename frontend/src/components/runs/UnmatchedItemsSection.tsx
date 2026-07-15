@@ -4,6 +4,7 @@ import type { Service } from "../../api/connections";
 import { SERVICE_LABELS } from "../connections/connectionStatus";
 import { ServiceLogo } from "../connections/ServiceLogo";
 import { DataTypeBadge } from "../services/DataTypeBadge";
+import { RoundedTable } from "../table/RoundedTable";
 
 export interface UnmatchedItem {
   source: string;
@@ -64,7 +65,7 @@ export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
         </Accordion.Control>
         <Accordion.Panel>
           <ScrollArea.Autosize mah={420} type="auto">
-            <Table striped highlightOnHover withTableBorder>
+            <RoundedTable striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th w={130}>Service</Table.Th>
@@ -108,7 +109,7 @@ export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
                   </Table.Tr>
                 ))}
               </Table.Tbody>
-            </Table>
+            </RoundedTable>
           </ScrollArea.Autosize>
         </Accordion.Panel>
       </Accordion.Item>

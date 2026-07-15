@@ -33,12 +33,16 @@ import {
 } from "../components/runs/RunBadges";
 import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
+import { RoundedTable } from "../components/table/RoundedTable";
 import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatDateTime, formatDuration } from "../utils/dateTimeFormat";
 import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 import classes from "./RunHistoryPage.module.css";
+
+/** One full rotation of `.spin` — keeps the icon visible on fast local refetches. */
+const MIN_REFRESH_SPIN_MS = 800;
 
 type RunSortColumn =
   | "id"
@@ -101,6 +105,7 @@ export function RunHistoryPage() {
   const { preferences } = useDisplayPreferences();
   const [searchParams, setSearchParams] = useSearchParams();
   const [sort, setSort] = useState<SortState<RunSortColumn> | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const jobIdParam = searchParams.get("job_id");
   const jobId = jobIdParam && !Number.isNaN(Number(jobIdParam)) ? Number(jobIdParam) : undefined;
   const statusFilters = parseRunStatuses(searchParams.get("status"));
@@ -137,10 +142,21 @@ export function RunHistoryPage() {
     setSearchParams(next);
   }
 
-  const isRefreshing = runsQuery.isFetching || jobsQuery.isFetching;
-
-  function refreshRuns() {
-    void Promise.all([runsQuery.refetch(), jobsQuery.refetch()]);
+  async function refreshRuns() {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    const started = performance.now();
+    try {
+      await Promise.all([runsQuery.refetch(), jobsQuery.refetch()]);
+    } finally {
+      const remaining = Math.max(0, MIN_REFRESH_SPIN_MS - (performance.now() - started));
+      if (remaining > 0) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, remaining);
+        });
+      }
+      setIsRefreshing(false);
+    }
   }
 
   if (runsQuery.isLoading || jobsQuery.isLoading) {
@@ -274,7 +290,7 @@ export function RunHistoryPage() {
             : "No runs match the current filters."}
         </Text>
       ) : (
-        <Table striped highlightOnHover>
+        <RoundedTable striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
@@ -339,7 +355,7 @@ export function RunHistoryPage() {
               );
             })}
           </Table.Tbody>
-        </Table>
+        </RoundedTable>
       )}
     </Stack>
   );

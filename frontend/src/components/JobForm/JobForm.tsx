@@ -27,6 +27,7 @@ import { DataTypeBadge } from "../services/DataTypeBadge";
 import { SourcePairLabel } from "../services/SourcePairLabel";
 import { HelpCircleIcon } from "../icons/HelpCircleIcon";
 import { SaveIcon } from "../icons/SaveIcon";
+import { RoundedTable } from "../table/RoundedTable";
 
 const jobSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
@@ -218,12 +219,11 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
                   Could not preview schedule.
                 </Text>
               ) : (
-                <Table
-                  withTableBorder
+                <RoundedTable
+                  fitContent
                   withColumnBorders
                   horizontalSpacing="sm"
                   verticalSpacing={4}
-                  style={{ width: "fit-content" }}
                 >
                   <Table.Thead>
                     <Table.Tr>
@@ -244,7 +244,7 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
                       );
                     })}
                   </Table.Tbody>
-                </Table>
+                </RoundedTable>
               )}
               <Text size="xs" c="dimmed">
                 Times shown in your display timezone; the schedule itself runs in UTC.

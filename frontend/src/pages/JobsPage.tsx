@@ -17,6 +17,7 @@ import type { Job } from "../api/jobs";
 import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "../api/jobs";
 import { DataTypeBadge } from "../components/services/DataTypeBadge";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
+import { RoundedTable } from "../components/table/RoundedTable";
 import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { ApiError } from "../api/client";
 import { deleteJob, listJobs, runJob } from "../api/jobApi";
@@ -170,7 +171,7 @@ export function JobsPage() {
       {jobs.length === 0 ? (
         <Text c="dimmed">No jobs yet. Create one to start syncing on a schedule.</Text>
       ) : (
-        <Table striped highlightOnHover>
+        <RoundedTable striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
@@ -259,7 +260,7 @@ export function JobsPage() {
               </Table.Tr>
             ))}
           </Table.Tbody>
-        </Table>
+        </RoundedTable>
       )}
     </Stack>
   );

@@ -84,10 +84,21 @@ export function SortableTh<TColumn extends string>({
       <UnstyledButton
         onClick={() => onSort(column)}
         aria-label={`Sort by ${label}`}
-        style={{ display: "block", width: "100%", color: "inherit" }}
+        style={{
+          display: "block",
+          width: "100%",
+          color: "inherit",
+          padding: "2px 0",
+        }}
       >
         <Group gap={6} wrap="nowrap" justify="flex-start">
-          <Text span size="sm" fw={700} className={classes.label} c="inherit">
+          <Text
+            span
+            size="sm"
+            fw={700}
+            className={`${classes.label}${active ? ` ${classes.labelSorted}` : ""}`}
+            c={active ? "amber.2" : "inherit"}
+          >
             {label}
           </Text>
           <SortIndicator direction={direction} />

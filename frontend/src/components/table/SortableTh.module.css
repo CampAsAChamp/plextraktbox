@@ -3,17 +3,21 @@
 }
 
 .thSorted {
-  background-color: var(--mantine-color-blue-light);
-  color: var(--mantine-color-blue-light-color);
-  border-radius: var(--mantine-radius-sm);
+  /* Solid strip — no radius so it aligns with body column highlight. */
+  background-color: color-mix(in srgb, var(--mantine-color-amber-6) 42%, var(--mantine-color-dark-5));
+  color: var(--mantine-color-amber-1);
 }
 
 .label {
   transition: color 180ms ease;
 }
 
+.labelSorted {
+  color: var(--mantine-color-amber-2);
+}
+
 .sortedCell {
-  background-color: var(--mantine-color-blue-light) !important;
+  background-color: color-mix(in srgb, var(--mantine-color-amber-6) 22%, transparent) !important;
   transition: background-color 180ms ease;
 }
 
@@ -28,7 +32,7 @@
 }
 
 .indicatorSorted {
-  color: var(--mantine-color-blue-light-color);
+  color: var(--mantine-color-amber-2);
 }
 
 .layer {
