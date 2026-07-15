@@ -4,6 +4,7 @@ import { render } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { DisplayPreferencesProvider } from "../settings/DisplayPreferencesProvider";
+import { theme } from "../theme";
 
 // Wraps a component in the same providers as the real app so tests exercise it
 // the way it actually runs.
@@ -12,7 +13,7 @@ export function renderWithProviders(ui: ReactElement) {
     defaultOptions: { queries: { retry: false } },
   });
   return render(
-    <MantineProvider>
+    <MantineProvider theme={theme} defaultColorScheme="dark">
       <QueryClientProvider client={queryClient}>
         <DisplayPreferencesProvider>
           <MemoryRouter>{ui}</MemoryRouter>

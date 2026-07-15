@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/nunito": "^5.2.7",
     "@mantine/core": "^7.15.0",
     "@mantine/hooks": "^7.15.0",
     "@mantine/notifications": "^7.15.0",
