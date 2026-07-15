@@ -8,8 +8,8 @@ Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "La
 no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
 
 This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-Do not conflate with Phase 23 (catalog publication). TrueNAS work is intentionally last on the
-roadmap after product, ops, CI, and release pipeline phases.
+Do not conflate with Phase 23 (catalog publication). TrueNAS work stays after product, ops, CI,
+and release pipeline phases; [Phase 24](phase-24.md) (UI themes) is after catalog on the roadmap.
 
 ## Deliverables
 

@@ -48,4 +48,4 @@ implementation checklist for catalog work.
 
 Test plan TBD — catalog install on clean SCALE box.
 
-**Next:** [Phase index](README.md) — end of the planned roadmap.
+**Next:** [Phase 24 — UI themes](phase-24.md)

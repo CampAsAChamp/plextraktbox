@@ -30,11 +30,13 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
+| 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
 
 **Current focus:** Phase 12 or product track Phase 13; Phases 0–8, 11, and 18 are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
-retired (TrueNAS moved to **22–23** so deploy stays last).
+retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is last on the roadmap;
+can ship anytime after Phase 13.
 
 ## Delivery order
 
@@ -47,7 +49,9 @@ Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex on
 
 Release                18 ✓ → 12 → 19
 
-TrueNAS (last)         22 → 23 — after product + GHCR releases
+TrueNAS                22 → 23 — after product + GHCR releases
+
+Themes (last)          24 — after TrueNAS (or anytime after 13)
 
 Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 ```
@@ -58,7 +62,8 @@ Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
 | **Ops** | 13 → 14 → **20** | Settings/safety, dashboard UX, then mobile — after core sync |
 | **Release** | 12 → **19** | CI before automated releases / GHCR |
-| **TrueNAS** | **22** → **23** | Last — personal install then catalog; needs GHCR from 19 |
+| **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 |
+| **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |
 | **Maintainer** | 15 | Independent of deploy |
 
 When a phase lands: update its scope doc (mark done), copy

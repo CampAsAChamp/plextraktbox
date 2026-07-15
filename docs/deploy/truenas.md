@@ -5,8 +5,8 @@ kept dependency-free (single image, SQLite, one HTTP port) from Phase 0 so it dr
 without rework.
 
 **Status:** Not wired up yet — personal install is [Phase 22](../phases/phase-22.md); catalog
-publication is [Phase 23](../phases/phase-23.md). Both are last on the roadmap (after product, ops,
-and GHCR releases).
+publication is [Phase 23](../phases/phase-23.md). Both come after product, ops, CI, and release
+pipeline phases ([Phase 24](../phases/phase-24.md) UI themes follows).
 
 ## Design constraints (all environments)
 

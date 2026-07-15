@@ -159,7 +159,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 12 (CI) or Phase 13 (settings/ops); movie + TV sync (Phases 7–8, 11) and version info (18) are complete.
+**Current focus:** Phase 12 (CI) or Phase 13 (settings/ops); movie + TV sync (Phases 7–8, 11) and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
 
 
 
