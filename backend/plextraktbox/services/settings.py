@@ -25,11 +25,15 @@ KEY_LOG_RETENTION_DAYS = "log_retention_days"
 KEY_GLOBAL_DRY_RUN = "global_dry_run"
 KEY_EXCLUDE_IDS = "exclude_ids"
 KEY_UI_THEME = "ui_theme"
+KEY_LETTERBOXD_EXPORT_CACHE_TTL_HOURS = "letterboxd_export_cache_ttl_hours"
+KEY_TRAKT_LIST_CACHE_TTL_MINUTES = "trakt_list_cache_ttl_minutes"
 
 DEFAULT_CRON = "0 3 * * *"
 DEFAULT_LOG_RETENTION_DAYS = 30
 DEFAULT_GLOBAL_DRY_RUN = True
 DEFAULT_UI_THEME = DEFAULT_THEME_ID
+DEFAULT_LETTERBOXD_EXPORT_CACHE_TTL_HOURS = 24
+DEFAULT_TRAKT_LIST_CACHE_TTL_MINUTES = 30
 
 
 @dataclass
@@ -41,6 +45,8 @@ class AppSettings:
     global_dry_run: bool = DEFAULT_GLOBAL_DRY_RUN
     exclude_ids: dict[str, list[str]] = field(default_factory=dict)
     ui_theme: str = DEFAULT_UI_THEME
+    letterboxd_export_cache_ttl_hours: int = DEFAULT_LETTERBOXD_EXPORT_CACHE_TTL_HOURS
+    trakt_list_cache_ttl_minutes: int = DEFAULT_TRAKT_LIST_CACHE_TTL_MINUTES
 
     @property
     def cron_timezone_resolved(self) -> str:
@@ -67,6 +73,14 @@ def _write_json(session: Session, key: str, value: object) -> None:
         session.add(row)
 
 
+def _positive_int(raw: object, default: int) -> int:
+    if isinstance(raw, int) and raw >= 1:
+        return raw
+    if isinstance(raw, float) and raw >= 1:
+        return int(raw)
+    return default
+
+
 def ensure_defaults(session: Session) -> AppSettings:
     """Persist missing keys with defaults and return the current settings."""
     changed = False
@@ -87,6 +101,20 @@ def ensure_defaults(session: Session) -> AppSettings:
         changed = True
     if _read_json(session, KEY_UI_THEME) is None:
         _write_json(session, KEY_UI_THEME, DEFAULT_UI_THEME)
+        changed = True
+    if _read_json(session, KEY_LETTERBOXD_EXPORT_CACHE_TTL_HOURS) is None:
+        _write_json(
+            session,
+            KEY_LETTERBOXD_EXPORT_CACHE_TTL_HOURS,
+            DEFAULT_LETTERBOXD_EXPORT_CACHE_TTL_HOURS,
+        )
+        changed = True
+    if _read_json(session, KEY_TRAKT_LIST_CACHE_TTL_MINUTES) is None:
+        _write_json(
+            session,
+            KEY_TRAKT_LIST_CACHE_TTL_MINUTES,
+            DEFAULT_TRAKT_LIST_CACHE_TTL_MINUTES,
+        )
         changed = True
     if changed:
         session.commit()
@@ -118,12 +146,10 @@ def get_app_settings(session: Session) -> AppSettings:
         except ValueError:
             cron_local_zone = None
 
-    retention_raw = _read_json(session, KEY_LOG_RETENTION_DAYS)
-    log_retention_days = DEFAULT_LOG_RETENTION_DAYS
-    if isinstance(retention_raw, int) and retention_raw >= 1:
-        log_retention_days = retention_raw
-    elif isinstance(retention_raw, float) and retention_raw >= 1:
-        log_retention_days = int(retention_raw)
+    log_retention_days = _positive_int(
+        _read_json(session, KEY_LOG_RETENTION_DAYS),
+        DEFAULT_LOG_RETENTION_DAYS,
+    )
 
     dry_raw = _read_json(session, KEY_GLOBAL_DRY_RUN)
     global_dry_run = DEFAULT_GLOBAL_DRY_RUN if not isinstance(dry_raw, bool) else dry_raw
@@ -136,6 +162,15 @@ def get_app_settings(session: Session) -> AppSettings:
     if isinstance(theme_raw, str) and theme_raw.strip():
         ui_theme = resolve_theme_id(theme_raw.strip())
 
+    letterboxd_export_cache_ttl_hours = _positive_int(
+        _read_json(session, KEY_LETTERBOXD_EXPORT_CACHE_TTL_HOURS),
+        DEFAULT_LETTERBOXD_EXPORT_CACHE_TTL_HOURS,
+    )
+    trakt_list_cache_ttl_minutes = _positive_int(
+        _read_json(session, KEY_TRAKT_LIST_CACHE_TTL_MINUTES),
+        DEFAULT_TRAKT_LIST_CACHE_TTL_MINUTES,
+    )
+
     return AppSettings(
         default_cron=default_cron,
         cron_timezone=cron_timezone,
@@ -144,6 +179,8 @@ def get_app_settings(session: Session) -> AppSettings:
         global_dry_run=global_dry_run,
         exclude_ids=exclude_ids,
         ui_theme=ui_theme,
+        letterboxd_export_cache_ttl_hours=letterboxd_export_cache_ttl_hours,
+        trakt_list_cache_ttl_minutes=trakt_list_cache_ttl_minutes,
     )
 
 
@@ -159,6 +196,10 @@ def update_app_settings(session: Session, settings: AppSettings) -> AppSettings:
         cron_local_zone = previous
     if settings.log_retention_days < 1:
         raise ValueError("log_retention_days must be at least 1")
+    if settings.letterboxd_export_cache_ttl_hours < 1:
+        raise ValueError("letterboxd_export_cache_ttl_hours must be at least 1")
+    if settings.trakt_list_cache_ttl_minutes < 1:
+        raise ValueError("trakt_list_cache_ttl_minutes must be at least 1")
     exclude_ids = dump_exclude_ids(normalize_exclude_ids(settings.exclude_ids))
 
     _write_json(session, KEY_DEFAULT_CRON, settings.default_cron)
@@ -168,6 +209,16 @@ def update_app_settings(session: Session, settings: AppSettings) -> AppSettings:
     _write_json(session, KEY_LOG_RETENTION_DAYS, settings.log_retention_days)
     _write_json(session, KEY_GLOBAL_DRY_RUN, settings.global_dry_run)
     _write_json(session, KEY_EXCLUDE_IDS, exclude_ids)
+    _write_json(
+        session,
+        KEY_LETTERBOXD_EXPORT_CACHE_TTL_HOURS,
+        settings.letterboxd_export_cache_ttl_hours,
+    )
+    _write_json(
+        session,
+        KEY_TRAKT_LIST_CACHE_TTL_MINUTES,
+        settings.trakt_list_cache_ttl_minutes,
+    )
     # Preserve ui_theme — it is managed via update_ui_theme / PUT /settings/theme.
     session.commit()
     return get_app_settings(session)
@@ -186,4 +237,4 @@ def update_ui_theme(session: Session, theme_id: str) -> str:
 
 
 def list_all_setting_rows(session: Session) -> list[Setting]:
-    return list(session.exec(select(Setting).order_by(Setting.key)).all())  # type: ignore[arg-type]
+    return list(session.exec(select(Setting).order_by(Setting.key)).all())

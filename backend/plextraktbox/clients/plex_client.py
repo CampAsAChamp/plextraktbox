@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlencode, urlparse
 
@@ -22,6 +22,96 @@ from plextraktbox.logging_setup import get_logger
 from plextraktbox.sync.media_item import MediaItem, MediaType
 
 log = get_logger(__name__)
+
+
+@dataclass
+class PlexLibrarySnapshot:
+    """Once-per-run Plex library walk shared across fetch and apply."""
+
+    url: str
+    token: str
+    library_ids: list[str] = field(default_factory=list)
+    _movies: list[Any] | None = field(default=None, init=False, repr=False)
+    _shows: list[Any] | None = field(default=None, init=False, repr=False)
+    _movie_index: dict[str, Any] | None = field(default=None, init=False, repr=False)
+    _episode_index: dict[str, Any] | None = field(default=None, init=False, repr=False)
+
+    def movies(self) -> list[Any]:
+        if self._movies is None:
+            self._movies = _fetch_library_entries(
+                self.url,
+                self.token,
+                library_type="movie",
+                library_ids=self.library_ids,
+            )
+            log.info(
+                "sync.plex.library.loaded",
+                message=f"Loaded Plex library movies once for this run ({len(self._movies)} item(s))",
+                library_type="movie",
+                count=len(self._movies),
+            )
+        return self._movies
+
+    def shows(self) -> list[Any]:
+        if self._shows is None:
+            self._shows = _fetch_library_entries(
+                self.url,
+                self.token,
+                library_type="show",
+                library_ids=self.library_ids,
+            )
+            log.info(
+                "sync.plex.library.loaded",
+                message=f"Loaded Plex library shows once for this run ({len(self._shows)} item(s))",
+                library_type="show",
+                count=len(self._shows),
+            )
+        return self._shows
+
+    def movie_index(self) -> dict[str, Any]:
+        if self._movie_index is None:
+            self._movie_index = _index_videos_by_match_key(self.movies())
+        return self._movie_index
+
+    def episode_index(self) -> dict[str, Any]:
+        if self._episode_index is None:
+            self._episode_index = _index_episodes_by_match_key(self.shows())
+        return self._episode_index
+
+
+def _index_videos_by_match_key(videos: list[Any]) -> dict[str, Any]:
+    index: dict[str, Any] = {}
+    for video in videos:
+        item = media_item_from_plex_video(video)
+        if item is None:
+            continue
+        match_key = item.match_key()
+        if match_key:
+            index[match_key] = video
+    return index
+
+
+def _index_episodes_by_match_key(shows: list[Any]) -> dict[str, Any]:
+    index: dict[str, Any] = {}
+    for show_obj in shows:
+        show_item = media_item_from_plex_video(show_obj)
+        if show_item is None or not show_item.identifiers:
+            continue
+        show_ids = dict(show_item.identifiers)
+        show_title = show_item.title
+        for episode_obj in show_obj.episodes():
+            item = media_item_from_plex_episode(
+                episode_obj,
+                show_identifiers=show_ids,
+                show_title=show_title,
+            )
+            if item is None:
+                continue
+            match_key = item.match_key()
+            if match_key:
+                index[match_key] = episode_obj
+    return index
+
 
 PLEX_PINS_URL = "https://plex.tv/api/v2/pins"
 PLEX_RESOURCES_URL = "https://plex.tv/api/v2/resources"
@@ -358,8 +448,11 @@ def fetch_library_movies(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[Any]:
     """Return raw plexapi movie objects from selected libraries (all movie libs when unset)."""
+    if snapshot is not None:
+        return snapshot.movies()
     return _fetch_library_entries(url, token, library_type="movie", library_ids=library_ids)
 
 
@@ -368,8 +461,11 @@ def fetch_library_shows(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[Any]:
     """Return raw plexapi show objects from selected libraries (all show libs when unset)."""
+    if snapshot is not None:
+        return snapshot.shows()
     return _fetch_library_entries(url, token, library_type="show", library_ids=library_ids)
 
 
@@ -398,10 +494,11 @@ def fetch_library_episodes(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[MediaItem]:
     """Return episode ``MediaItem``s from selected show libraries."""
     items: list[MediaItem] = []
-    for show_obj in fetch_library_shows(url, token, library_ids=library_ids):
+    for show_obj in fetch_library_shows(url, token, library_ids=library_ids, snapshot=snapshot):
         show_item = media_item_from_plex_video(show_obj)
         if show_item is None or not show_item.identifiers:
             continue
@@ -423,6 +520,7 @@ def fetch_ratings_movies(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[MediaItem]:
     """Fetch scoped Plex library movies for ratings reconciliation.
 
@@ -430,7 +528,7 @@ def fetch_ratings_movies(
     rating yet, so Letterboxd ratings can match against the full catalog.
     """
     items: list[MediaItem] = []
-    for video in fetch_library_movies(url, token, library_ids=library_ids):
+    for video in fetch_library_movies(url, token, library_ids=library_ids, snapshot=snapshot):
         item = media_item_from_plex_video(video)
         if item is not None:
             items.append(item)
@@ -442,13 +540,14 @@ def fetch_watched_movies(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[MediaItem]:
     """Fetch scoped Plex library movies for watched reconciliation.
 
     Includes unwatched library movies so Trakt→Plex can plan mark-watched updates.
     """
     items: list[MediaItem] = []
-    for video in fetch_library_movies(url, token, library_ids=library_ids):
+    for video in fetch_library_movies(url, token, library_ids=library_ids, snapshot=snapshot):
         item = media_item_from_plex_video(video)
         if item is not None:
             items.append(item)
@@ -460,11 +559,12 @@ def fetch_watched(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> list[MediaItem]:
     """Fetch scoped Plex library movies and episodes for watched reconciliation."""
-    return fetch_watched_movies(url, token, library_ids=library_ids) + fetch_library_episodes(
-        url, token, library_ids=library_ids
-    )
+    return fetch_watched_movies(
+        url, token, library_ids=library_ids, snapshot=snapshot
+    ) + fetch_library_episodes(url, token, library_ids=library_ids, snapshot=snapshot)
 
 
 def _library_videos_by_match_key(
@@ -472,17 +572,12 @@ def _library_videos_by_match_key(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> dict[str, Any]:
     """Index scoped library movies by TMDB/IMDb/TVDB match key."""
-    index: dict[str, Any] = {}
-    for video in fetch_library_movies(url, token, library_ids=library_ids):
-        item = media_item_from_plex_video(video)
-        if item is None:
-            continue
-        match_key = item.match_key()
-        if match_key:
-            index[match_key] = video
-    return index
+    if snapshot is not None:
+        return snapshot.movie_index()
+    return _index_videos_by_match_key(fetch_library_movies(url, token, library_ids=library_ids))
 
 
 def _library_episodes_by_match_key(
@@ -490,27 +585,12 @@ def _library_episodes_by_match_key(
     token: str,
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> dict[str, Any]:
     """Index scoped library episodes by show-id + S/E match key."""
-    index: dict[str, Any] = {}
-    for show_obj in fetch_library_shows(url, token, library_ids=library_ids):
-        show_item = media_item_from_plex_video(show_obj)
-        if show_item is None or not show_item.identifiers:
-            continue
-        show_ids = dict(show_item.identifiers)
-        show_title = show_item.title
-        for episode_obj in show_obj.episodes():
-            item = media_item_from_plex_episode(
-                episode_obj,
-                show_identifiers=show_ids,
-                show_title=show_title,
-            )
-            if item is None:
-                continue
-            match_key = item.match_key()
-            if match_key:
-                index[match_key] = episode_obj
-    return index
+    if snapshot is not None:
+        return snapshot.episode_index()
+    return _index_episodes_by_match_key(fetch_library_shows(url, token, library_ids=library_ids))
 
 
 def _find_library_video(
@@ -530,11 +610,12 @@ def rate_library_movies(
     ratings: list[tuple[MediaItem, float]],
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> None:
     """Apply user ratings to movies in scoped Plex libraries."""
     if not ratings:
         return
-    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids, snapshot=snapshot)
     for item, rating in ratings:
         video = _find_library_video(index, item)
         video.rate(rating)
@@ -559,10 +640,25 @@ def _discover_metadata_key(video: Any) -> str:
 
 def rate_discover_movie(token: str, item: MediaItem, rating: float) -> None:
     """Rate a movie via Plex Discover (no local library copy required)."""
+    from plextraktbox.services import plex_discover_key_cache
+
+    cached_key = plex_discover_key_cache.lookup_discover_key(item)
+    if cached_key is not None:
+        try:
+            rate_discover_movie_by_key(token, cached_key, rating)
+            return
+        except Exception:
+            plex_discover_key_cache.invalidate_discover_key(item)
+
     account = _plex_account(token)
     movie = _resolve_discover_movie(account, item)
     discover_key = _discover_metadata_key(movie)
-    rate_discover_movie_by_key(token, discover_key, rating)
+    plex_discover_key_cache.store_discover_key(item, discover_key)
+    try:
+        rate_discover_movie_by_key(token, discover_key, rating)
+    except Exception:
+        plex_discover_key_cache.invalidate_discover_key(item)
+        raise
 
 
 def rate_discover_movie_by_key(token: str, discover_key: str, rating: float) -> None:
@@ -588,6 +684,7 @@ def rate_movies_with_discover_fallback(
     ratings: list[tuple[MediaItem, float]],
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> tuple[int, int, int]:
     """Rate movies in-library when possible; otherwise fall back to Plex Discover.
 
@@ -602,7 +699,7 @@ def rate_movies_with_discover_fallback(
         message=(f"Indexing scoped Plex library before applying {len(ratings)} rating(s)"),
         count=len(ratings),
     )
-    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids, snapshot=snapshot)
     log.info(
         "sync.apply.plex.index.done",
         message=(f"Indexed {len(index)} library movie(s); applying {len(ratings)} rating(s)"),
@@ -673,12 +770,13 @@ def mark_library_movies_watched(
     items: list[MediaItem],
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> None:
     """Mark movies as watched in scoped Plex libraries."""
     movies = [item for item in items if item.media_type == MediaType.MOVIE]
     if not movies:
         return
-    index = _library_videos_by_match_key(url, token, library_ids=library_ids)
+    index = _library_videos_by_match_key(url, token, library_ids=library_ids, snapshot=snapshot)
     for item in movies:
         video = _find_library_video(index, item)
         if not video.isWatched:
@@ -691,6 +789,7 @@ def mark_library_items_watched(
     items: list[MediaItem],
     *,
     library_ids: list[str] | None = None,
+    snapshot: PlexLibrarySnapshot | None = None,
 ) -> None:
     """Mark movies and episodes as watched in scoped Plex libraries."""
     if not items:
@@ -698,10 +797,10 @@ def mark_library_items_watched(
     movies = [item for item in items if item.media_type == MediaType.MOVIE]
     episodes = [item for item in items if item.media_type == MediaType.EPISODE]
     if movies:
-        mark_library_movies_watched(url, token, movies, library_ids=library_ids)
+        mark_library_movies_watched(url, token, movies, library_ids=library_ids, snapshot=snapshot)
     if not episodes:
         return
-    index = _library_episodes_by_match_key(url, token, library_ids=library_ids)
+    index = _library_episodes_by_match_key(url, token, library_ids=library_ids, snapshot=snapshot)
     for item in episodes:
         video = _find_library_video(index, item)
         if not video.isWatched:
@@ -715,6 +814,8 @@ def _plex_account(token: str) -> MyPlexAccount:
 
 def _resolve_discover_item(account: MyPlexAccount, item: MediaItem) -> Any:
     """Resolve a Plex Discover movie or show object for watchlist writes."""
+    from plextraktbox.services import plex_discover_key_cache
+
     libtype = "show" if item.media_type == MediaType.SHOW else "movie"
     target_key = item.match_key()
     results = account.searchDiscover(item.title, limit=25, libtype=libtype)
@@ -723,7 +824,13 @@ def _resolve_discover_item(account: MyPlexAccount, item: MediaItem) -> Any:
         if mapped is None:
             continue
         if target_key and mapped.match_key() == target_key:
+            try:
+                discover_key = _discover_metadata_key(result)
+            except ValueError:
+                return result
+            plex_discover_key_cache.store_discover_key(item, discover_key)
             return result
+    plex_discover_key_cache.invalidate_discover_key(item)
     raise ValueError(f"Could not resolve {item.title!r} on Plex Discover")
 
 

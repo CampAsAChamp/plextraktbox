@@ -31,6 +31,8 @@ def test_get_and_put_settings(client: TestClient) -> None:
     body = got.json()
     assert body["global_dry_run"] is True
     assert body["log_retention_days"] == 30
+    assert body["letterboxd_export_cache_ttl_hours"] == 24
+    assert body["trakt_list_cache_ttl_minutes"] == 30
 
     assert body["cron_timezone"] == "UTC"
 
@@ -42,6 +44,8 @@ def test_get_and_put_settings(client: TestClient) -> None:
             "log_retention_days": 7,
             "global_dry_run": False,
             "exclude_ids": {"tmdb": ["99"], "imdb": [], "tvdb": []},
+            "letterboxd_export_cache_ttl_hours": 12,
+            "trakt_list_cache_ttl_minutes": 45,
         },
         headers=HEADERS,
     )
@@ -51,6 +55,8 @@ def test_get_and_put_settings(client: TestClient) -> None:
     assert put.json()["cron_timezone_resolved"] == "America/Los_Angeles"
     assert put.json()["global_dry_run"] is False
     assert put.json()["exclude_ids"]["tmdb"] == ["99"]
+    assert put.json()["letterboxd_export_cache_ttl_hours"] == 12
+    assert put.json()["trakt_list_cache_ttl_minutes"] == 45
 
     local = client.put(
         "/api/settings",
@@ -61,12 +67,34 @@ def test_get_and_put_settings(client: TestClient) -> None:
             "log_retention_days": 7,
             "global_dry_run": False,
             "exclude_ids": {"tmdb": ["99"], "imdb": [], "tvdb": []},
+            "letterboxd_export_cache_ttl_hours": 12,
+            "trakt_list_cache_ttl_minutes": 45,
         },
         headers=HEADERS,
     )
     assert local.status_code == 200
     assert local.json()["cron_timezone"] == "local"
     assert local.json()["cron_timezone_resolved"] == "America/Denver"
+
+
+def test_clear_sync_caches(client: TestClient) -> None:
+    _login(client)
+    resp = client.post(
+        "/api/settings/clear-sync-caches",
+        json={
+            "letterboxd_export": True,
+            "letterboxd_slug": True,
+            "trakt_lists": True,
+            "discover_keys": True,
+        },
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["letterboxd_export"] == 0
+    assert body["letterboxd_slug"] == 0
+    assert body["trakt_lists"] == 0
+    assert body["discover_keys"] == 0
 
 
 def test_put_settings_validates_cron(client: TestClient) -> None:

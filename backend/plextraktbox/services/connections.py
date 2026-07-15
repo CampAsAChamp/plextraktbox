@@ -172,19 +172,32 @@ def save_letterboxd(
     password: str | None,
     test: bool = True,
 ) -> Connection:
+    from plextraktbox.services import letterboxd_export_cache
+
     resolved_password = resolve_letterboxd_password(session, password)
     if test:
         result = letterboxd_client.test_connection(username, resolved_password)
         if not result.ok:
             raise ValueError(result.message)
 
-    return _save_connection(
+    existing = get_connection(session, Service.LETTERBOXD)
+    previous_username = ""
+    if existing is not None:
+        previous_username = str(existing.public_config().get("username", ""))
+
+    connection = _save_connection(
         session,
         service=Service.LETTERBOXD,
         config={"username": username},
         secrets={"password": resolved_password},
         status=ConnectionStatus.OK,
     )
+    # Credential changes (or password updates) invalidate the durable export cache.
+    if connection.id is not None and (
+        existing is None or previous_username != username or password is not None
+    ):
+        letterboxd_export_cache.invalidate_export_cache(connection.id)
+    return connection
 
 
 def save_tmdb(session: Session, *, api_key: str, test: bool = True) -> Connection:

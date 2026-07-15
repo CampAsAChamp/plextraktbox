@@ -24,11 +24,11 @@ def _mock_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("plextraktbox.clients.plex_client.fetch_watchlist", lambda token: [])
     monkeypatch.setattr(
         "plextraktbox.clients.plex_client.fetch_watched",
-        lambda url, token, library_ids=None: [],
+        lambda url, token, library_ids=None, snapshot=None: [],
     )
     monkeypatch.setattr(
         "plextraktbox.clients.plex_client.fetch_ratings_movies",
-        lambda url, token, library_ids=None: [],
+        lambda url, token, library_ids=None, snapshot=None: [],
     )
     monkeypatch.setattr(
         "plextraktbox.clients.trakt_client.fetch_watchlist",

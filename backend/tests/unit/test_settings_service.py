@@ -21,6 +21,8 @@ def test_ensure_defaults_seeds_keys(session: Session) -> None:
     assert settings.global_dry_run is True
     assert settings.exclude_ids == {}
     assert settings.ui_theme == "one-dark-pro"
+    assert settings.letterboxd_export_cache_ttl_hours == 24
+    assert settings.trakt_list_cache_ttl_minutes == 30
 
 
 def test_update_and_get_round_trip(session: Session) -> None:

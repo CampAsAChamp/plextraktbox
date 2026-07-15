@@ -16,6 +16,8 @@ from plextraktbox.config import get_settings
 from plextraktbox.models.connection import ConnectionStatus, Service
 from plextraktbox.models.job import Job
 from plextraktbox.services import connections as conn_svc
+from plextraktbox.services import letterboxd_slug_cache
+from plextraktbox.services import settings as settings_svc
 from plextraktbox.sync.sources.base import Source
 from plextraktbox.sync.sources.letterboxd_source import LetterboxdSource
 from plextraktbox.sync.sources.plex_source import PlexSource
@@ -50,7 +52,7 @@ def _letterboxd_resolver(api_key: str) -> Callable[[str, str, str | None], dict[
         )
         return ids or None
 
-    return resolve
+    return letterboxd_slug_cache.wrap_resolver(resolve)
 
 
 def build_sources(
@@ -58,6 +60,7 @@ def build_sources(
     job: Job,
     *,
     log: BoundLogger | None = None,
+    force_cache_refresh: bool = False,
 ) -> dict[str, Source]:
     """Instantiate client-backed sources required by the job's source pair."""
     required = job.services_for_pair()
@@ -65,6 +68,7 @@ def build_sources(
     if missing:
         raise ValueError(f"Connections not configured: {', '.join(sorted(missing))}")
 
+    app_settings = settings_svc.get_app_settings(session)
     tmdb_connection = conn_svc.get_connection(session, Service.TMDB)
     tmdb_secrets = (
         conn_svc.load_secrets(tmdb_connection) if tmdb_connection and tmdb_connection.secret_enc else {}
@@ -93,7 +97,12 @@ def build_sources(
             raise ValueError("Trakt connection not configured")
         access_token = conn_svc.ensure_trakt_access_token(session, trakt)
         client_id, _ = get_settings().require_trakt_credentials()
-        sources["trakt"] = TraktSource(client_id=client_id, access_token=access_token)
+        sources["trakt"] = TraktSource(
+            client_id=client_id,
+            access_token=access_token,
+            list_cache_ttl_minutes=app_settings.trakt_list_cache_ttl_minutes,
+            force_list_refresh=force_cache_refresh,
+        )
 
     if "letterboxd" in required:
         letterboxd = conn_svc.get_connection(session, Service.LETTERBOXD)
@@ -101,9 +110,15 @@ def build_sources(
             raise ValueError("Letterboxd connection not configured")
         config = letterboxd.public_config()
         secrets = conn_svc.load_secrets(letterboxd)
+        connection_id = letterboxd.id
+        if connection_id is None:
+            raise ValueError("Letterboxd connection is missing an id")
         sources["letterboxd"] = LetterboxdSource(
             username=str(config.get("username", "")),
             password=str(secrets.get("password", "")),
+            connection_id=connection_id,
+            export_cache_ttl_hours=app_settings.letterboxd_export_cache_ttl_hours,
+            force_export_refresh=force_cache_refresh,
             resolve_identifiers=letterboxd_resolver,
             log=run_log,
         )

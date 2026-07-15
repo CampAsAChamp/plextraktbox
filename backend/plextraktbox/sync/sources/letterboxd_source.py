@@ -9,6 +9,7 @@ import structlog
 
 from plextraktbox.clients import letterboxd_client
 from plextraktbox.clients.letterboxd_client import LetterboxdExport
+from plextraktbox.services import letterboxd_export_cache
 from plextraktbox.sync.media_item import MediaItem
 from plextraktbox.sync.plans import ApplyResult, PlannedChange
 from plextraktbox.sync.sources.base import NotSupported, SourceCapabilities
@@ -35,27 +36,53 @@ class LetterboxdSource(MemorySource):
         *,
         username: str,
         password: str,
+        connection_id: int | None = None,
+        export_cache_ttl_hours: int = 24,
+        force_export_refresh: bool = False,
         resolve_identifiers: IdentifierResolver | None = None,
         log: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         super().__init__(name="letterboxd", capabilities=READ_ONLY)
         self._username = username
         self._password = password
+        self._connection_id = connection_id
+        self._export_cache_ttl_hours = export_cache_ttl_hours
+        self._force_export_refresh = force_export_refresh
         self._resolve_identifiers = resolve_identifiers
         self._log = log or structlog.get_logger("sync.letterboxd")
         self._export: LetterboxdExport | None = None
 
     async def _get_export(self) -> LetterboxdExport:
         if self._export is None:
-            self._log.info(
-                "sync.letterboxd.export.start",
-                message="Downloading Letterboxd CSV export (login + ZIP)",
-            )
-            self._export = await asyncio.to_thread(
-                letterboxd_client.download_export,
-                self._username,
-                self._password,
-            )
+            if self._connection_id is not None:
+                self._log.info(
+                    "sync.letterboxd.export.start",
+                    message="Loading Letterboxd CSV export (cache or download)",
+                )
+                export, status = await asyncio.to_thread(
+                    letterboxd_export_cache.get_or_download_export,
+                    connection_id=self._connection_id,
+                    username=self._username,
+                    password=self._password,
+                    ttl_hours=self._export_cache_ttl_hours,
+                    force=self._force_export_refresh,
+                )
+                self._export = export
+                self._log.info(
+                    "sync.letterboxd.export.cache",
+                    message=f"Letterboxd export cache {status}",
+                    cache_status=status,
+                )
+            else:
+                self._log.info(
+                    "sync.letterboxd.export.start",
+                    message="Downloading Letterboxd CSV export (login + ZIP)",
+                )
+                self._export = await asyncio.to_thread(
+                    letterboxd_client.download_export,
+                    self._username,
+                    self._password,
+                )
             ratings_count = _csv_row_count(self._export.ratings_csv)
             watchlist_count = _csv_row_count(self._export.watchlist_csv)
             diary_count = _csv_row_count(self._export.diary_csv)

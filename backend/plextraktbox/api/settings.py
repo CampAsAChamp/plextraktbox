@@ -15,9 +15,15 @@ from starlette.background import BackgroundTask
 from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
 from plextraktbox.config import get_settings
 from plextraktbox.scheduler import get_scheduler_manager
-from plextraktbox.schemas.settings import SettingsResponse, SettingsUpdateRequest
+from plextraktbox.schemas.settings import (
+    ClearSyncCachesRequest,
+    ClearSyncCachesResponse,
+    SettingsResponse,
+    SettingsUpdateRequest,
+)
 from plextraktbox.schemas.themes import ThemeActiveResponse, ThemeUpdateRequest
 from plextraktbox.services import settings as settings_svc
+from plextraktbox.services import sync_caches as sync_caches_svc
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -59,6 +65,31 @@ def update_theme_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return ThemeActiveResponse(theme_id=theme_id)
+
+
+@router.post(
+    "/clear-sync-caches",
+    response_model=ClearSyncCachesResponse,
+    dependencies=[Depends(require_csrf)],
+)
+def clear_sync_caches_endpoint(
+    body: ClearSyncCachesRequest,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> ClearSyncCachesResponse:
+    result = sync_caches_svc.clear_sync_caches(
+        session,
+        letterboxd_export=body.letterboxd_export,
+        letterboxd_slug=body.letterboxd_slug,
+        trakt_lists=body.trakt_lists,
+        discover_keys=body.discover_keys,
+    )
+    return ClearSyncCachesResponse(
+        letterboxd_export=result.letterboxd_export,
+        letterboxd_slug=result.letterboxd_slug,
+        trakt_lists=result.trakt_lists,
+        discover_keys=result.discover_keys,
+    )
 
 
 def _unlink_quiet(path: Path) -> None:

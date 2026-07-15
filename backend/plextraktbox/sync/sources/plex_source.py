@@ -23,6 +23,11 @@ class PlexSource(MemorySource):
         self._url = url.rstrip("/")
         self._token = token
         self._library_ids = list(library_ids or [])
+        self._library = plex_client.PlexLibrarySnapshot(
+            url=self._url,
+            token=self._token,
+            library_ids=self._library_ids,
+        )
 
     async def fetch_watchlist(self) -> list[MediaItem]:
         return await asyncio.to_thread(plex_client.fetch_watchlist, self._token)
@@ -33,6 +38,7 @@ class PlexSource(MemorySource):
             self._url,
             self._token,
             library_ids=self._library_ids,
+            snapshot=self._library,
         )
 
     async def fetch_watched(self) -> list[MediaItem]:
@@ -41,6 +47,7 @@ class PlexSource(MemorySource):
             self._url,
             self._token,
             library_ids=self._library_ids,
+            snapshot=self._library,
         )
 
     async def apply_watchlist(
@@ -82,6 +89,7 @@ class PlexSource(MemorySource):
                 self._token,
                 ratings,
                 library_ids=self._library_ids,
+                snapshot=self._library,
             )
 
         library_applied, discover_applied, errors = await asyncio.to_thread(apply)
@@ -99,6 +107,7 @@ class PlexSource(MemorySource):
                 self._token,
                 [change.item for change in batch],
                 library_ids=self._library_ids,
+                snapshot=self._library,
             )
 
         return await apply_live(changes, dry_run=dry_run, apply_batch=apply_batch)

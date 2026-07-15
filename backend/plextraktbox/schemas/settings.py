@@ -36,6 +36,8 @@ class SettingsResponse(BaseModel):
     global_dry_run: bool
     exclude_ids: ExcludeIds
     ui_theme: str
+    letterboxd_export_cache_ttl_hours: int
+    trakt_list_cache_ttl_minutes: int
 
     @classmethod
     def from_app_settings(cls, settings: AppSettings) -> SettingsResponse:
@@ -52,6 +54,8 @@ class SettingsResponse(BaseModel):
                 tvdb=normalized.get("tvdb", []),
             ),
             ui_theme=settings.ui_theme,
+            letterboxd_export_cache_ttl_hours=settings.letterboxd_export_cache_ttl_hours,
+            trakt_list_cache_ttl_minutes=settings.trakt_list_cache_ttl_minutes,
         )
 
 
@@ -62,6 +66,8 @@ class SettingsUpdateRequest(BaseModel):
     log_retention_days: int = Field(ge=1, le=3650)
     global_dry_run: bool
     exclude_ids: ExcludeIds = Field(default_factory=ExcludeIds)
+    letterboxd_export_cache_ttl_hours: int = Field(ge=1, le=720, default=24)
+    trakt_list_cache_ttl_minutes: int = Field(ge=1, le=1440, default=30)
 
     @field_validator("default_cron")
     @classmethod
@@ -89,4 +95,20 @@ class SettingsUpdateRequest(BaseModel):
             log_retention_days=self.log_retention_days,
             global_dry_run=self.global_dry_run,
             exclude_ids=dump_exclude_ids(normalize_exclude_ids(raw)),
+            letterboxd_export_cache_ttl_hours=self.letterboxd_export_cache_ttl_hours,
+            trakt_list_cache_ttl_minutes=self.trakt_list_cache_ttl_minutes,
         )
+
+
+class ClearSyncCachesRequest(BaseModel):
+    letterboxd_export: bool = True
+    letterboxd_slug: bool = True
+    trakt_lists: bool = True
+    discover_keys: bool = True
+
+
+class ClearSyncCachesResponse(BaseModel):
+    letterboxd_export: int
+    letterboxd_slug: int
+    trakt_lists: int
+    discover_keys: int
