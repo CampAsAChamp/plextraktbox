@@ -152,6 +152,11 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
               onChange={() => toggleDataType(dataType)}
             />
           ))}
+          {sourcePair === "plex_trakt" ? (
+            <Text size="xs" c="dimmed">
+              TV shows and episodes sync when show libraries are selected under Connections.
+            </Text>
+          ) : null}
           {errors.data_types ? (
             <Text size="sm" c="red">
               {errors.data_types}

@@ -164,7 +164,7 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
   if (libraries.length === 0) {
     return (
       <Alert color="yellow" title="No Plex libraries">
-        Add a Plex library to your server to sync ratings and watched history.
+        Add a movie or show library to your Plex server to sync ratings and watched history.
       </Alert>
     );
   }
@@ -175,13 +175,18 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
         Plex libraries to sync
       </Text>
       <Text c="dimmed" size="sm">
-        Ratings and watched history are fetched from the Plex libraries you select. Leave all
-        unchecked to include every Plex library.
+        Movie ratings and movie/episode watched history are fetched from the libraries you select.
+        Show libraries enable episode watched sync; leave all unchecked to include every movie and
+        show library.
       </Text>
       <Checkbox.Group value={selected} onChange={setSelected}>
         <Stack gap="xs">
           {libraries.map((library) => (
-            <Checkbox key={library.id} value={library.id} label={library.title} />
+            <Checkbox
+              key={library.id}
+              value={library.id}
+              label={`${library.title} (${library.type})`}
+            />
           ))}
         </Stack>
       </Checkbox.Group>
