@@ -3,6 +3,7 @@ import {
   Button,
   Group,
   Loader,
+  Modal,
   Stack,
   Table,
   Text,
@@ -20,7 +21,7 @@ import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { RoundedTable } from "../components/table/RoundedTable";
 import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { ApiError } from "../api/client";
-import { deleteJob, listJobs, runJob } from "../api/jobApi";
+import { cloneJob, deleteJob, listJobs, runJob } from "../api/jobApi";
 import { DryRunBadge, JobStatusBadge } from "../components/JobForm/JobForm";
 import { TrashIcon } from "../components/icons/TrashIcon";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
@@ -29,6 +30,7 @@ import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 
 type JobSortColumn = "name" | "source_pair" | "data_types" | "cron" | "dry_run" | "enabled";
+type RunMode = "run" | "dry-run";
 
 function StrokeIcon({ size = 14, children }: { size?: number; children: React.ReactNode }) {
   return (
@@ -76,34 +78,49 @@ function HistoryIcon() {
   );
 }
 
+function CloneIcon() {
+  return (
+    <StrokeIcon>
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </StrokeIcon>
+  );
+}
+
 function ScheduleCell({ job }: { job: Job }) {
   const { preferences } = useDisplayPreferences();
-  const label = !job.enabled
-    ? "Schedule disabled — no next run"
+  const nextLabel = !job.enabled
+    ? "Disabled — no next run"
     : job.next_run_at
-      ? `Next run: ${formatScheduleDateTime(job.next_run_at, preferences)}`
+      ? formatScheduleDateTime(job.next_run_at, preferences)
       : "Next run unavailable";
 
   return (
-    <Tooltip label={label} withArrow openDelay={200}>
-      <Text size="sm" ff="monospace" component="span" style={{ display: "inline-block", cursor: "help" }}>
+    <Stack gap={2}>
+      <Text size="sm" ff="monospace">
         {job.cron}
       </Text>
-    </Tooltip>
+      <Text size="xs" c="dimmed">
+        {nextLabel}
+      </Text>
+    </Stack>
   );
 }
 
 export function JobsPage() {
   const queryClient = useQueryClient();
   const [sort, setSort] = useState<SortState<JobSortColumn> | null>(null);
+  const [jobPendingDelete, setJobPendingDelete] = useState<Job | null>(null);
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
   });
 
   const runMutation = useMutation({
-    mutationFn: (job: Job) => runJob(job.id),
+    mutationFn: ({ job, mode }: { job: Job; mode: RunMode }) =>
+      runJob(job.id, mode === "dry-run" ? true : undefined),
     onSuccess: (run) => {
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] });
       void queryClient.invalidateQueries({ queryKey: ["runs"] });
       showToast({
         color: run.status === "success" ? "green" : "orange",
@@ -116,9 +133,33 @@ export function JobsPage() {
     },
   });
 
+  function isRunning(job: Job, mode: RunMode): boolean {
+    return (
+      runMutation.isPending &&
+      runMutation.variables?.job.id === job.id &&
+      runMutation.variables.mode === mode
+    );
+  }
+
+  const cloneMutation = useMutation({
+    mutationFn: (job: Job) => cloneJob(job.id),
+    onSuccess: (cloned) => {
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      showToast({
+        color: "green",
+        message: `Cloned as "${cloned.name}" (disabled)`,
+      });
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof ApiError ? String(error.message) : "Clone failed";
+      showToast({ color: "red", message });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (jobId: number) => deleteJob(jobId),
     onSuccess: () => {
+      setJobPendingDelete(null);
       void queryClient.invalidateQueries({ queryKey: ["jobs"] });
       showToast({ color: "green", message: "Job deleted" });
     },
@@ -212,49 +253,68 @@ export function JobsPage() {
                   <JobStatusBadge enabled={job.enabled} />
                 </Table.Td>
                 <Table.Td>
-                  <Group gap="xs">
+                  <Group gap={4}>
                     <Tooltip label="Run now">
                       <ActionIcon
                         variant="light"
                         aria-label="Run now"
-                        loading={runMutation.isPending && runMutation.variables?.id === job.id}
-                        onClick={() => runMutation.mutate(job)}
+                        loading={isRunning(job, "run")}
+                        onClick={() => runMutation.mutate({ job, mode: "run" })}
                       >
                         ▶
                       </ActionIcon>
                     </Tooltip>
-                    <Button
-                      component={Link}
-                      to={`/jobs/${job.id}/edit`}
-                      size="xs"
-                      variant="subtle"
-                      leftSection={<PencilIcon />}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      component={Link}
-                      to={`/runs?job_id=${job.id}`}
-                      size="xs"
-                      variant="subtle"
-                      leftSection={<HistoryIcon />}
-                    >
-                      History
-                    </Button>
-                    <Button
-                      size="xs"
-                      color="red"
-                      variant="subtle"
-                      leftSection={<TrashIcon />}
-                      loading={deleteMutation.isPending && deleteMutation.variables === job.id}
-                      onClick={() => {
-                        if (window.confirm(`Delete job "${job.name}"?`)) {
-                          deleteMutation.mutate(job.id);
-                        }
-                      }}
-                    >
-                      Delete
-                    </Button>
+                    <Tooltip label="Dry-run">
+                      <ActionIcon
+                        variant="light"
+                        color="blue"
+                        aria-label="Dry-run"
+                        loading={isRunning(job, "dry-run")}
+                        onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
+                      >
+                        ▷
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Edit">
+                      <ActionIcon
+                        component={Link}
+                        to={`/jobs/${job.id}/edit`}
+                        variant="subtle"
+                        aria-label="Edit"
+                      >
+                        <PencilIcon />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Clone">
+                      <ActionIcon
+                        variant="subtle"
+                        aria-label="Clone"
+                        loading={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+                        onClick={() => cloneMutation.mutate(job)}
+                      >
+                        <CloneIcon />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="History">
+                      <ActionIcon
+                        component={Link}
+                        to={`/runs?job_id=${job.id}`}
+                        variant="subtle"
+                        aria-label="History"
+                      >
+                        <HistoryIcon />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Delete">
+                      <ActionIcon
+                        color="red"
+                        variant="subtle"
+                        aria-label="Delete"
+                        onClick={() => setJobPendingDelete(job)}
+                      >
+                        <TrashIcon />
+                      </ActionIcon>
+                    </Tooltip>
                   </Group>
                 </Table.Td>
               </Table.Tr>
@@ -262,6 +322,47 @@ export function JobsPage() {
           </Table.Tbody>
         </RoundedTable>
       )}
+
+      <Modal
+        opened={jobPendingDelete !== null}
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setJobPendingDelete(null);
+          }
+        }}
+        title="Delete job"
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            Delete{" "}
+            <Text span fw={600}>
+              {jobPendingDelete?.name}
+            </Text>
+            ? Scheduled runs will stop. Past run history is kept.
+          </Text>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="default"
+              disabled={deleteMutation.isPending}
+              onClick={() => setJobPendingDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              loading={deleteMutation.isPending}
+              onClick={() => {
+                if (jobPendingDelete) {
+                  deleteMutation.mutate(jobPendingDelete.id);
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Stack>
   );
 }

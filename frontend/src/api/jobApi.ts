@@ -21,6 +21,10 @@ export function deleteJob(id: number) {
   return api.del<void>(`/jobs/${id}`);
 }
 
+export function cloneJob(id: number) {
+  return api.post<Job>(`/jobs/${id}/clone`);
+}
+
 export function runJob(id: number, dryRun?: boolean) {
   return api.post<JobRun>(`/jobs/${id}/run`, dryRun === undefined ? undefined : { dry_run: dryRun });
 }

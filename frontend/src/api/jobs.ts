@@ -13,6 +13,19 @@ export interface ExcludeIds {
   tvdb: string[];
 }
 
+export type JobRunStatus = "running" | "success" | "failed" | "partial";
+
+export interface JobLastRun {
+  id: number;
+  status: JobRunStatus;
+  dry_run: boolean;
+  started_at: string;
+  finished_at: string | null;
+  matched: number;
+  added: number;
+  errors: number;
+}
+
 export interface Job {
   id: number;
   name: string;
@@ -26,6 +39,8 @@ export interface Job {
   exclude_ids: ExcludeIds;
   /** Next scheduled fire time (ISO UTC), null when disabled or unscheduled. */
   next_run_at: string | null;
+  /** Most recent run snapshot, null when the job has never run. */
+  last_run: JobLastRun | null;
 }
 
 export interface SchedulePreview {
@@ -45,7 +60,6 @@ export interface JobInput {
 }
 
 export type RunTrigger = "scheduled" | "manual";
-export type JobRunStatus = "running" | "success" | "failed" | "partial";
 
 export interface JobRun {
   id: number;
