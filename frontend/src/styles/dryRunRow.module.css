@@ -1,7 +1,12 @@
+/* Dry-run rows: faint hatch + reduced opacity so they read as preview,
+   without stealing the blue sorted-column fill. */
 .dryRunRow {
-  background-color: var(--mantine-color-blue-light) !important;
-}
-
-.dryRunRow[data-hover]:hover {
-  background-color: var(--mantine-color-blue-light-hover) !important;
+  opacity: 0.58;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 5px,
+    color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 6px
+  ) !important;
 }
