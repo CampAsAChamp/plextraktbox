@@ -11,15 +11,19 @@ import {
   NavLink,
   Stack,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { formatVersionLabel, useHealthQuery } from "../../api/health";
+import { GitHubIcon } from "../icons/GitHubIcon";
 import { HomeIcon } from "../icons/HomeIcon";
 import { ApiHealthBadge } from "./ApiHealthBadge";
 import { NotificationBell } from "../notifications/NotificationBell";
+
+const GITHUB_REPO_URL = "https://github.com/CampAsAChamp/plextraktbox";
 
 function ChevronDownIcon({ size = 14 }: { size?: number }) {
   return (
@@ -101,6 +105,8 @@ export function AppLayout({
 }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useMantineTheme();
+  const primary = theme.primaryColor;
   const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure(false);
   const isHome = location.pathname === "/";
   const isSettings = location.pathname.startsWith("/settings");
@@ -154,7 +160,7 @@ export function AppLayout({
                   <ActionIcon
                     component="span"
                     variant={isHome ? "light" : "subtle"}
-                    color={isHome ? "amber" : "gray"}
+                    color={isHome ? primary : "gray"}
                     size="lg"
                     aria-hidden
                     tabIndex={-1}
@@ -179,7 +185,7 @@ export function AppLayout({
                       component={Link}
                       to={link.to}
                       variant={active ? "light" : "subtle"}
-                      color={active ? "amber" : "gray"}
+                      color={active ? primary : "gray"}
                       size="compact-sm"
                       aria-current={active ? "page" : undefined}
                     >
@@ -204,18 +210,22 @@ export function AppLayout({
                     py="xs"
                     h={44}
                     miw={44}
-                    styles={{ label: { lineHeight: 1 } }}
+                    leftSection={
+                      avatarUrl ? (
+                        <Avatar src={avatarUrl} alt="" size={24} radius="xl" />
+                      ) : undefined
+                    }
+                    rightSection={<ChevronDownIcon />}
+                    styles={{
+                      root: { overflow: "visible" },
+                      label: { lineHeight: 1, overflow: "visible" },
+                      section: { overflow: "visible" },
+                    }}
                     aria-label="Account menu"
                   >
-                    <Group gap={6} wrap="nowrap" align="center">
-                      {avatarUrl ? (
-                        <Avatar src={avatarUrl} alt="" size={24} radius="xl" />
-                      ) : null}
-                      <Box component="span" visibleFrom="sm">
-                        {username}
-                      </Box>
-                      <ChevronDownIcon />
-                    </Group>
+                    <Box component="span" visibleFrom="sm">
+                      {username}
+                    </Box>
                   </Button>
                 </Menu.Target>
                 <Menu.Dropdown>
@@ -228,12 +238,17 @@ export function AppLayout({
                   >
                     Settings
                   </Menu.Item>
-                  {versionLabel ? (
-                    <>
-                      <Menu.Divider />
-                      <Menu.Label>{versionLabel}</Menu.Label>
-                    </>
-                  ) : null}
+                  <Menu.Divider />
+                  {versionLabel ? <Menu.Label>{versionLabel}</Menu.Label> : null}
+                  <Menu.Item
+                    component="a"
+                    href={GITHUB_REPO_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    leftSection={<GitHubIcon />}
+                  >
+                    GitHub Repo
+                  </Menu.Item>
                   <Menu.Divider />
                   <Menu.Item
                     color="red"

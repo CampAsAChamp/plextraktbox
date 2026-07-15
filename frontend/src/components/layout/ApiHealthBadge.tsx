@@ -1,32 +1,32 @@
 import { Badge, Box, Tooltip } from "@mantine/core";
 import { formatVersionLabel, useHealthQuery } from "../../api/health";
 
+/** Shown only when `/health` is degraded or unreachable — healthy stays out of the navbar. */
 export function ApiHealthBadge() {
   const { data, isError } = useHealthQuery();
 
+  if (data?.status === "ok") {
+    return null;
+  }
+
   if (data) {
     const label = formatVersionLabel(data);
-    const degraded = data.status === "degraded";
-    const tooltipParts = [`plextraktbox ${label}`];
-    if (degraded) {
-      tooltipParts.push("degraded");
-      if (!data.db_writable) tooltipParts.push("db not writable");
-      if (!data.scheduler_running) tooltipParts.push("scheduler stopped");
-    }
+    const tooltipParts = [`plextraktbox ${label}`, "degraded"];
+    if (!data.db_writable) tooltipParts.push("db not writable");
+    if (!data.scheduler_running) tooltipParts.push("scheduler stopped");
     if (data.built_at) {
       tooltipParts.push(`built ${data.built_at}`);
     }
     const tooltip = tooltipParts.join(" · ");
-    const icon = degraded ? "⚠" : "✓";
 
     return (
       <Tooltip label={tooltip} withArrow>
-        <Badge color={degraded ? "yellow" : "green"} variant="light">
+        <Badge color="yellow" variant="light">
           <Box component="span" hiddenFrom="sm">
-            {icon}
+            ⚠
           </Box>
           <Box component="span" visibleFrom="sm">
-            {icon} API · {label}
+            ⚠ API · {label}
           </Box>
         </Badge>
       </Tooltip>
@@ -46,14 +46,5 @@ export function ApiHealthBadge() {
     );
   }
 
-  return (
-    <Badge color="gray" variant="light">
-      <Box component="span" hiddenFrom="sm">
-        …
-      </Box>
-      <Box component="span" visibleFrom="sm">
-        connecting…
-      </Box>
-    </Badge>
-  );
+  return null;
 }
