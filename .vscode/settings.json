@@ -7,5 +7,6 @@
   "python.analysis.extraPaths": ["${workspaceFolder}/backend"],
 
   "vitest.rootConfig": "${workspaceFolder}/frontend/vitest.config.ts",
-  "vitest.vitestPackagePath": "./frontend/package.json"
+  "vitest.vitestPackagePath": "${workspaceFolder}/frontend/node_modules/vitest/package.json",
+  "vitest.configSearchPatternExclude": "{**/node_modules/**,**/vendor/**,**/.*/**,**/*.d.ts,**/vite.config.*}"
 }
