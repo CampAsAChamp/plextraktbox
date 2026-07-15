@@ -49,6 +49,7 @@ import { ServiceStepLabel } from "../components/connections/ServiceStepLabel";
 import { StatusCheckIcon } from "../components/connections/StatusCheckIcon";
 import { ConnectIcon } from "../components/icons/ConnectIcon";
 import { FilmIcon } from "../components/icons/FilmIcon";
+import { HomeIcon } from "../components/icons/HomeIcon";
 import { KeyIcon } from "../components/icons/KeyIcon";
 import { LockIcon } from "../components/icons/LockIcon";
 import { SaveIcon } from "../components/icons/SaveIcon";
@@ -953,20 +954,7 @@ function FinishedStep({
           anytime to review or update a connection.
         </Text>
       </Alert>
-      <Group gap="lg">
-        {SERVICE_ORDER.map((service) => (
-          <Group key={service} gap="xs" wrap="nowrap">
-            <ServiceLogo service={service} size={20} />
-            <Text size="sm" fw={500}>
-              {SERVICE_LABELS[service]}
-            </Text>
-            <span style={{ color: "var(--mantine-color-green-6)", display: "inline-flex" }}>
-              <StatusCheckIcon size={14} />
-            </span>
-          </Group>
-        ))}
-      </Group>
-      <Button onClick={onGoToDashboard} w="fit-content">
+      <Button onClick={onGoToDashboard} w="fit-content" leftSection={<HomeIcon />}>
         Go to dashboard
       </Button>
     </Stack>
