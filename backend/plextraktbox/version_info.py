@@ -1,4 +1,7 @@
-"""Package and build metadata for health checks and the UI."""
+"""Package and build metadata for health checks and the UI.
+
+Semver comes from ``backend/pyproject.toml`` (bumped by release-please).
+"""
 
 from __future__ import annotations
 
