@@ -20,7 +20,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 7 | [Client-backed fetch (movies)](phase-7.md) | Done | Real Plex/Trakt/LB fetch | [phase-7](test-plans/phase-7-test-plan.md) |
 | 8 | [Client-backed apply (movies)](phase-8.md) | Done | Real Plex/Trakt apply | [phase-8](test-plans/phase-8-test-plan.md) |
 | 11 | [TV sync](phase-11.md) | Done | Shows and episodes | [phase-11](test-plans/phase-11-test-plan.md) |
-| 12 | [CI & quality](phase-12.md) | Planned | GitHub Actions, e2e, API types | TBD |
+| 12 | [CI & quality](phase-12.md) | Done | GitHub Actions, e2e, API types | [phase-12](test-plans/phase-12-test-plan.md) |
 | 13 | [Settings & operations](phase-13.md) | Planned | Safety guards, health, backup | TBD |
 | 14 | [Dashboard & scheduling UX](phase-14.md) | Planned | Ops view, schedule picker, export | TBD |
 | 15 | [Doppler secrets](phase-15.md) | Planned | Maintainer dev/CI workflow | TBD |
@@ -32,7 +32,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
 
-**Current focus:** Phase 12 or product track Phase 13; Phases 0–8, 11, and 18 are complete.
+**Current focus:** Phase 13 (settings/ops); Phases 0–8, 11, 12, and 18 are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is last on the roadmap;
@@ -47,7 +47,7 @@ use the tracks below when parallel work makes sense.
 Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 → 14 → 20
 Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
-Release                18 ✓ → 12 → 19
+Release                18 ✓ → 12 ✓ → 19
 
 TrueNAS                22 → 23 — after product + GHCR releases
 
@@ -61,7 +61,7 @@ Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 | **Product** | **13** | Settings after TV sync |
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
 | **Ops** | 13 → 14 → **20** | Settings/safety, dashboard UX, then mobile — after core sync |
-| **Release** | 12 → **19** | CI before automated releases / GHCR |
+| **Release** | 12 ✓ → **19** | CI before automated releases / GHCR |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 |
 | **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |
 | **Maintainer** | 15 | Independent of deploy |

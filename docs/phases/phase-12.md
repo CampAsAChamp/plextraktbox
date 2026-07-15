@@ -1,6 +1,6 @@
 # Phase 12 — CI & quality
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
@@ -13,19 +13,23 @@ development share the same `mise run check` bar — prerequisite for [Phase 19](
 ### Continuous integration
 
 - **GitHub Actions CI** — `.github/workflows/ci.yml` mirrors `mise run check` (ruff, mypy, pytest,
-  frontend typecheck + vitest)
+  frontend typecheck + vitest, OpenAPI types drift check)
 - Runs on pull requests and pushes to `main`
 
 ### Quality & DX
 
-- structlog redaction audit; improve error surfaces in API/UI
-- OpenAPI → TypeScript types generation
-- e2e smoke test (minimal happy path: health → login → list jobs)
+- structlog redaction on all output (console/JSON + persist/stream); expanded key coverage + tests
+- API error surfaces: frontend normalizes FastAPI 422 `detail` arrays for notifications
+- OpenAPI → TypeScript types generation (`mise run generate-api-types` / `check-api-types`)
+- API smoke test: health → setup/login → list jobs (in-process `TestClient`)
 
-## Key files (expected)
+## Key files
 
 - `.github/workflows/ci.yml`
-- Optional: `scripts/generate-api-types.sh`, e2e test harness
+- `scripts/generate-api-types.sh`
+- `frontend/src/api/generated/schema.d.ts`
+- `backend/tests/api/test_smoke.py`
+- `backend/plextraktbox/logstream/handler.py` (`redact_log_processor`)
 
 ## Prerequisites
 
@@ -44,6 +48,6 @@ required for CI wiring alone.
 
 ## Verification
 
-Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+[phase-12-test-plan.md](test-plans/phase-12-test-plan.md)
 
 **Next:** [Phase 13 — Settings, safety & operations](phase-13.md)
