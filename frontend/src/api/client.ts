@@ -11,6 +11,45 @@ export class ApiError extends Error {
   }
 }
 
+/** Normalize FastAPI `detail` (string or 422 validation array) for UI display. */
+export function formatApiDetail(detail: unknown, fallback: string): string {
+  if (typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+  if (Array.isArray(detail)) {
+    const parts = detail
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+        if (item && typeof item === "object") {
+          const entry = item as { loc?: unknown[]; msg?: unknown };
+          const loc = Array.isArray(entry.loc)
+            ? entry.loc
+                .filter((part) => part !== "body" && part !== "query" && part !== "path")
+                .join(".")
+            : "";
+          const msg = typeof entry.msg === "string" ? entry.msg : "";
+          if (loc && msg) {
+            return `${loc}: ${msg}`;
+          }
+          return msg || loc;
+        }
+        return "";
+      })
+      .filter(Boolean);
+    return parts.length > 0 ? parts.join("; ") : fallback;
+  }
+  if (detail != null && typeof detail === "object") {
+    try {
+      return JSON.stringify(detail);
+    } catch {
+      // fall through
+    }
+  }
+  return fallback;
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const resp = await fetch(`/api${path}`, {
     method,
@@ -23,14 +62,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   });
 
   if (!resp.ok) {
-    let detail = resp.statusText;
+    let detail: unknown = resp.statusText;
     try {
-      const data = await resp.json();
+      const data = (await resp.json()) as { detail?: unknown };
       detail = data.detail ?? detail;
     } catch {
       // non-JSON error body; keep statusText
     }
-    throw new ApiError(resp.status, detail);
+    throw new ApiError(resp.status, formatApiDetail(detail, resp.statusText));
   }
 
   if (resp.status === 204) return undefined as T;
