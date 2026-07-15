@@ -278,7 +278,7 @@ export function RunHistoryPage() {
                   <Table.Td>{run.job_name ?? `Job #${run.job_id}`}</Table.Td>
                   <Table.Td>
                     {run.source_pair ? (
-                      <SourcePairLabel sourcePair={run.source_pair} variant="logo" />
+                      <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
                     ) : (
                       <Text c="dimmed">—</Text>
                     )}

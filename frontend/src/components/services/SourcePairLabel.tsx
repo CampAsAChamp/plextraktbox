@@ -1,4 +1,4 @@
-import { Group, Text } from "@mantine/core";
+import { Group, Text, Tooltip } from "@mantine/core";
 import type { SourcePair } from "../../api/jobs";
 import { ServiceLogo } from "../connections/ServiceLogo";
 import { SERVICE_LABELS } from "../connections/connectionStatus";
@@ -14,6 +14,12 @@ const SOURCE_PAIR_SERVICES: Record<
   letterboxd_plex: { from: "letterboxd", to: "plex", bidirectional: false },
   letterboxd_trakt: { from: "letterboxd", to: "trakt", bidirectional: false },
 };
+
+function sourcePairLabelText(sourcePair: SourcePair): string {
+  const { from, to, bidirectional } = SOURCE_PAIR_SERVICES[sourcePair];
+  const arrow = bidirectional ? "↔" : "→";
+  return `${SERVICE_LABELS[from]} ${arrow} ${SERVICE_LABELS[to]}`;
+}
 
 function ServiceName({ service }: { service: SyncService }) {
   return (
@@ -60,11 +66,34 @@ export function SourcePairLabel({
   logoSize = 20,
 }: {
   sourcePair: SourcePair;
-  variant?: "text" | "logo";
+  variant?: "text" | "logo" | "icons";
   logoSize?: number;
 }) {
   const { from, to, bidirectional } = SOURCE_PAIR_SERVICES[sourcePair];
   const arrow = bidirectional ? "↔" : "→";
+  const label = sourcePairLabelText(sourcePair);
+
+  if (variant === "icons") {
+    return (
+      <Tooltip label={label} withArrow>
+        <Group
+          gap={4}
+          wrap="nowrap"
+          align="center"
+          w="fit-content"
+          aria-label={label}
+          style={{ cursor: "default" }}
+        >
+          <SourcePairIcons
+            from={from}
+            to={to}
+            bidirectional={bidirectional}
+            logoSize={logoSize}
+          />
+        </Group>
+      </Tooltip>
+    );
+  }
 
   if (variant === "logo") {
     return (
