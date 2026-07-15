@@ -104,10 +104,7 @@ class LetterboxdSource(MemorySource):
             if resolved % _PROGRESS_INTERVAL == 0 or (total is not None and resolved == total):
                 log.info(
                     "sync.letterboxd.resolve.progress",
-                    message=(
-                        f"Matched {resolved}{total_suffix} Letterboxd {data_type} "
-                        "item(s) to TMDB IDs"
-                    ),
+                    message=(f"Matched {resolved}{total_suffix} Letterboxd {data_type} item(s) to TMDB IDs"),
                     data_type=data_type,
                     resolved=resolved,
                     total=total,

@@ -45,7 +45,4 @@ def test_access_log_level_debug_for_run_detail_poll() -> None:
 
 
 def test_format_access_log_line_without_service() -> None:
-    assert (
-        format_access_log_line("GET", "/api/setup/status", status_code=200)
-        == "GET /api/setup/status 200"
-    )
+    assert format_access_log_line("GET", "/api/setup/status", status_code=200) == "GET /api/setup/status 200"

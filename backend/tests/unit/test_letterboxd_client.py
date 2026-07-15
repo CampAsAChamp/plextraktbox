@@ -35,9 +35,7 @@ def _zip_bytes(*files: tuple[str, str]) -> bytes:
 def test_items_from_ratings_csv_maps_ratings() -> None:
     items = letterboxd_client.items_from_ratings_csv(
         RATINGS_CSV,
-        resolve_identifiers=lambda slug, title, year: {"tmdb": "603"}
-        if slug == "dune-2021"
-        else None,
+        resolve_identifiers=lambda slug, title, year: {"tmdb": "603"} if slug == "dune-2021" else None,
     )
     assert len(items) == 2
     assert items[0].title == "Dune"
@@ -118,10 +116,7 @@ def test_test_connection_accepts_json_login() -> None:
 
 
 def test_slug_from_uri_resolves_letterboxd_film_url() -> None:
+    assert letterboxd_client._slug_from_uri("https://letterboxd.com/film/dune-2021/") == "dune-2021"
     assert (
-        letterboxd_client._slug_from_uri("https://letterboxd.com/film/dune-2021/") == "dune-2021"
-    )
-    assert (
-        letterboxd_client._slug_from_uri("https://letterboxd.com/campasachamp/film/heat-1995/")
-        == "heat-1995"
+        letterboxd_client._slug_from_uri("https://letterboxd.com/campasachamp/film/heat-1995/") == "heat-1995"
     )

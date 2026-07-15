@@ -64,9 +64,7 @@ class RatingsReconciler(Reconciler):
                         field="rating",
                         old_value=current,
                         new_value=desired,
-                        message=(
-                            f'rate "{truth_item.title}" on {target_name}: {current} → {desired}'
-                        ),
+                        message=(f'rate "{truth_item.title}" on {target_name}: {current} → {desired}'),
                     )
                 )
 
