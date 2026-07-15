@@ -154,14 +154,14 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - structlog redaction processor scrubs token/password-shaped keys on all structlog output
   (console/JSON + persist/stream). Reverse proxy / TLS setup documented in
   [deploy/truenas.md](deploy/truenas.md) (Phase 22).
-- **Planned (Phase 15):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
+- **Maintainer secrets (Phase 15):** optional [Doppler](https://www.doppler.com/) injection (`doppler run`, `mise run *-doppler`, service tokens for CI). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is not a runtime dependency for end users. See [dev-workflow.md](dev-workflow.md).
 
 
 
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 20 (mobile) or 19 (releases); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
+**Current focus:** Phase 20 (mobile) or 19 (releases); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler maintainer secrets (15), and version info (18) are complete. **Phase 24** (UI themes — built-ins + custom upload/volume) is planned last on the roadmap.
 
 
 

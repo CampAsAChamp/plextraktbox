@@ -20,6 +20,8 @@ These apply whenever touching Dockerfile, compose, or entrypoint — not only at
 - **No hardcoded UIDs** — support `PUID`/`PGID`-style env vars so file ownership on the mounted
   dataset behaves on TrueNAS
 - Ship via TrueNAS **Apps** (custom app / "Launch Docker Image" workflow, or catalog app later)
+- **Secrets via app env / `.env`** — do not require [Doppler](https://www.doppler.com/). Doppler is
+  optional for maintainers in local/CI only ([Phase 15](../phases/phase-15.md))
 
 See [architecture.md](../architecture.md) for full stack context.
 

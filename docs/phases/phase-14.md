@@ -51,5 +51,5 @@ by hand, and export run logs for debugging.
 
 [phase-14-test-plan.md](test-plans/phase-14-test-plan.md)
 
-**Next:** [Phase 15 — Doppler secrets](phase-15.md) (optional maintainer track) or
+**Next:** [Phase 15 — Doppler secrets](phase-15.md) (done) or
 [Phase 20 — Mobile layout](phase-20.md) / [Phase 19 — Automated releases](phase-19.md)

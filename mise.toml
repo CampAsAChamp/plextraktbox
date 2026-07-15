@@ -29,6 +29,10 @@ DATA_DIR = "{{ config_root }}/data"
 description = "[META] Run linters/typecheck and all tests (CI parity)"
 depends = ["lint", "test"]
 
+[tasks."check-doppler"]
+description = "[META] Run check with secrets from Doppler (maintainer; no hand-edited .env needed)"
+run = "doppler run -- mise run check"
+
 [tasks."generate-api-types"]
 description = "[META] Generate frontend OpenAPI TypeScript types from FastAPI schema"
 depends = ["install-backend", "install-frontend"]
@@ -160,6 +164,10 @@ depends = ["clean", "clean-data", "clean-deps", "down-v"]
 description = "[DOCKER-PROD] Start production container (foreground, rebuilds image)"
 run = "podman compose up --build"
 
+[tasks."up-doppler"]
+description = "[DOCKER-PROD] Start production container with secrets from Doppler (maintainer)"
+run = "doppler run -- podman compose up --build"
+
 [tasks.down]
 description = "[DOCKER-PROD] Stop container and keep the ./data directory"
 run = "podman compose down"
@@ -188,7 +196,15 @@ run = "podman compose build"
 # --- DOCKER-DEV: dev containers with hot reload ---
 
 [tasks."up-dev"]
-description = "[DOCKER-DEV] Start dev containers with hot reload (backend :8000, frontend :5173)"
+description = "[DOCKER-DEV] Start hot-reload stack with secrets from Doppler (backend :8000, frontend :5173)"
+run = "doppler run -- podman compose -f docker-compose.dev.yml up --build"
+
+[tasks."up-dev-doppler"]
+description = "[DOCKER-DEV] Alias for up-dev (Doppler + hot reload)"
+run = "doppler run -- podman compose -f docker-compose.dev.yml up --build"
+
+[tasks."up-dev-env"]
+description = "[DOCKER-DEV] Hot-reload stack using .env only (no Doppler)"
 run = "podman compose -f docker-compose.dev.yml up --build"
 
 [tasks."down-dev"]
@@ -196,30 +212,30 @@ description = "[DOCKER-DEV] Stop dev containers"
 run = "podman compose -f docker-compose.dev.yml down"
 
 [tasks."rebuild-dev"]
-description = "[DOCKER-DEV] Stop dev stack, rebuild images from scratch, and start"
+description = "[DOCKER-DEV] Stop dev stack, rebuild images from scratch, and start (Doppler secrets)"
 run = '''
 podman compose -f docker-compose.dev.yml down -v
 podman compose -f docker-compose.dev.yml build --no-cache
-podman compose -f docker-compose.dev.yml up
+doppler run -- podman compose -f docker-compose.dev.yml up
 '''
 
 # --- utilities ---
 
 [tasks."api-login"]
-description = "[UTIL] Save cookies.txt for curl API smoke tests (prompts or uses .env DEV_USER/DEV_PASSWORD)"
-run = "bash scripts/api-login.sh"
+description = "[UTIL] Save cookies.txt for curl API smoke tests (Doppler or .env DEV_USER/DEV_PASSWORD)"
+run = "doppler run -- bash scripts/api-login.sh"
 
 [tasks."dev-bootstrap"]
-description = "[UTIL] Create dev user + connections from .env after wiping ./data (API must be running)"
+description = "[UTIL] Create dev user + connections from Doppler/.env after wiping ./data (API must be running)"
 depends = ["install-backend"]
-run = "backend/.venv/bin/python scripts/dev-bootstrap.py bootstrap"
+run = "doppler run -- backend/.venv/bin/python scripts/dev-bootstrap.py bootstrap"
 
 [tasks."dev-export-secrets"]
-description = "[UTIL] Print .env lines for user + connection secrets from local SQLite DB"
+description = "[UTIL] Print env lines for user + connection secrets from local SQLite DB (Doppler SECRET_KEY)"
 depends = ["install-backend"]
-run = "backend/.venv/bin/python scripts/dev-bootstrap.py export"
+run = "doppler run -- backend/.venv/bin/python scripts/dev-bootstrap.py export"
 
 [tasks."dev-reencrypt-secrets"]
 description = "[UTIL] Re-encrypt connection secrets after migrating off legacy SECRET_KEY=dev"
 depends = ["install-backend"]
-run = "backend/.venv/bin/python scripts/dev-bootstrap.py reencrypt"
+run = "doppler run -- backend/.venv/bin/python scripts/dev-bootstrap.py reencrypt"

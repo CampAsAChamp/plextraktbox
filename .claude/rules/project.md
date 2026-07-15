@@ -20,7 +20,7 @@ Task groups appear in `mise tasks` as `[META]`, `[LOCAL]`, `[DOCKER-PROD]` (prod
 mise run install       # deps
 mise run dev-backend   # :8000
 mise run dev-frontend  # :5173
-mise run up-dev        # container hot reload
+mise run up-dev        # container hot reload (Doppler)
 mise run test          # pytest + vitest
 mise run check         # lint + typecheck + tests
 mise run db-upgrade    # Alembic

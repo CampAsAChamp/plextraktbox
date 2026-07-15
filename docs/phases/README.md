@@ -23,7 +23,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 12 | [CI & quality](phase-12.md) | Done | GitHub Actions, e2e, API types | [phase-12](test-plans/phase-12-test-plan.md) |
 | 13 | [Settings & operations](phase-13.md) | Done | Safety guards, health, backup | [phase-13](test-plans/phase-13-test-plan.md) |
 | 14 | [Dashboard & scheduling UX](phase-14.md) | Done | Ops view, schedule picker, export | [phase-14](test-plans/phase-14-test-plan.md) |
-| 15 | [Doppler secrets](phase-15.md) | Planned | Maintainer dev/CI workflow | TBD |
+| 15 | [Doppler secrets](phase-15.md) | Done | Maintainer dev/CI workflow | [phase-15](test-plans/phase-15-test-plan.md) |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Planned | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 | 20 | [Mobile & responsive layout](phase-20.md) | Planned | Phone/tablet layouts, touch UX | TBD |
@@ -32,7 +32,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
 
-**Current focus:** Phase 20 (mobile layout) or release track (19); Phases 0–8, 11–14, and 18 are
+**Current focus:** Phase 20 (mobile layout) or release track (19); Phases 0–8, 11–15, and 18 are
 complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
@@ -54,7 +54,7 @@ TrueNAS                22 → 23 — after product + GHCR releases
 
 Themes (last)          24 — after TrueNAS (or anytime after 13)
 
-Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
+Maintainer (optional)  15 ✓ — Doppler
 ```
 
 | Track | Order | Notes |
@@ -65,7 +65,7 @@ Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 | **Release** | 12 ✓ → **19** | CI before automated releases / GHCR |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 |
 | **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |
-| **Maintainer** | 15 | Independent of deploy |
+| **Maintainer** | 15 ✓ | Doppler optional for local/CI secrets |
 
 When a phase lands: update its scope doc (mark done), copy
 [test-plans/phase-test-plan-template.md](test-plans/phase-test-plan-template.md) →

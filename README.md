@@ -109,14 +109,15 @@ Target deployment environment is **TrueNAS SCALE** — see [docs/deploy/truenas.
 One terminal — the image serves the API and built UI together on port 8000.
 
 ```bash
-# First time only: cp .env.example .env and set SECRET_KEY (and Trakt API app credentials for the Trakt onboarding step)
+# Maintainers: doppler login && doppler setup (secrets in Doppler; see docs/dev-workflow.md)
+# Without Doppler: cp .env.example .env and set SECRET_KEY + Trakt API app credentials
 mise trust && mise install   # first clone only
-mise run up                  # or: podman compose up --build
+mise run up-doppler          # prod container with Doppler; or: mise run up with a filled .env
 # open http://localhost:8000 — setup wizard on first run, then login → dashboard
 ```
 
 Run `mise tasks` to list everything. See [docs/testing.md](docs/testing.md) for smoke tests and
-[docs/dev-workflow.md](docs/dev-workflow.md) for hot reload and dev bootstrap.
+[docs/dev-workflow.md](docs/dev-workflow.md) for hot reload, Doppler, and dev bootstrap.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -127,20 +128,20 @@ Hot reload while editing — pick one approach:
 **Container dev (one terminal):**
 
 ```bash
-mise run up-dev   # backend :8000 + Vite :5173 with bind mounts and reload
+mise run up-dev   # Doppler + backend :8000 + Vite :5173 with bind mounts and reload
 # open http://localhost:5173
 mise run down-dev
 ```
 
-`up-dev` runs `compose up --build`, which rebuilds images when Dockerfiles or dependency files change, but still uses layer cache. After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev` for a no-cache image rebuild (also recreates the frontend `node_modules` volume). Source edits under `backend/` and `frontend/` reload live via bind mounts — no rebuild needed for those.
+`up-dev` runs `doppler run -- compose up --build` (use `up-dev-env` if secrets are only in `.env`). After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev` for a no-cache image rebuild (also recreates the frontend `node_modules` volume). Source edits under `backend/` and `frontend/` reload live via bind mounts — no rebuild needed for those.
 
 **Native dev (two terminals, no Docker):**
 
 ```bash
 mise trust && mise install   # first time only
 mise run install             # backend venv + frontend deps
-mise run dev-backend         # terminal 1 — uvicorn on :8000
-mise run dev-frontend        # terminal 2 — Vite on :5173
+doppler run -- mise run dev-backend   # terminal 1 — uvicorn on :8000
+mise run dev-frontend              # terminal 2 — Vite on :5173
 ```
 
 Native dev and docker both use `./data` at the repo root (`DATA_DIR` in `.env`). Open the Vite URL (usually http://localhost:5173) for the dev SPA. Both backend and frontend must be running for the health badge to go green.

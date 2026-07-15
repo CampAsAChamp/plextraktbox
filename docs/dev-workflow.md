@@ -12,27 +12,66 @@ mise run install             # backend venv + frontend deps
 
 Run `mise tasks` for the full task list.
 
+## Doppler (maintainers — recommended)
+
+[Doppler](https://www.doppler.com/) holds **maintainer** bootstrap secrets. Local `.env` keeps only
+non-secret knobs (`DATA_DIR`, `SYNC_RUN_DELAY_SECONDS`, …). Self-hosted / TrueNAS installs ignore
+Doppler and use `.env` or the app-config UI.
+
+**What belongs in Doppler** (project `plextraktbox`, configs `local` / `ci` — see
+[phase-15](phases/phase-15.md)):
+
+- Required: `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
+- Optional for `dev-bootstrap`: `DEV_*`, `PLEX_*`, `TMDB_API_KEY`, `LETTERBOXD_*`, Trakt user tokens
+
+**One-time setup:**
+
+1. Create the Doppler project/configs and paste secrets (dashboard steps in
+   [phase-15](phases/phase-15.md)).
+2. Install the [Doppler CLI](https://docs.doppler.com/docs/install-cli), then:
+
+```bash
+doppler login
+doppler setup   # reads doppler.yaml → project plextraktbox, config local
+```
+
+**Day-to-day:**
+
+```bash
+mise run up-dev          # hot-reload stack, secrets from Doppler (default)
+mise run up-doppler      # prod container, secrets from Doppler
+mise run check-doppler   # lint + tests with Doppler-injected env
+mise run down-dev
+```
+
+`up-dev-doppler` is an alias of `up-dev`. Without Doppler, use `mise run up-dev-env` and put secrets
+in `.env` (see [`.env.example`](../.env.example)).
+
+GitHub Actions still stubs a dummy `.env` for the default `check` job (no Doppler required). To
+run optional live-credential CI later, add a Doppler service token as `DOPPLER_TOKEN` and wrap
+those steps with `doppler run --` against the `ci` config.
+
 ## Local dev (hot reload)
 
 Pick one approach — do **not** run `up` and `up-dev` together (both bind port 8000).
 
-**One terminal (container dev):**
+**One terminal (container dev — recommended for maintainers):**
 
 ```bash
-mise run up-dev      # backend :8000 + Vite :5173, bind-mounted source
-mise run rebuild-dev # no-cache image rebuild after dependency changes
+mise run up-dev      # Doppler + backend :8000 + Vite :5173
+mise run rebuild-dev # no-cache image rebuild after dependency changes (also uses Doppler)
 mise run down-dev
 ```
 
-`up-dev` runs `compose up --build`, which rebuilds when Dockerfiles or dependency files change.
-After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev`. Source edits under
-`backend/` and `frontend/` reload live via bind mounts.
+`up-dev` runs `doppler run -- compose up --build`, which rebuilds when Dockerfiles or dependency
+files change. After changing `pyproject.toml` or `package.json`, use `mise run rebuild-dev`. Source
+edits under `backend/` and `frontend/` reload live via bind mounts.
 
 **Two terminals (native, no Docker):**
 
 ```bash
-mise run dev-backend    # terminal 1 — uvicorn on :8000
-mise run dev-frontend   # terminal 2 — Vite on :5173
+doppler run -- mise run dev-backend    # terminal 1 — uvicorn on :8000
+mise run dev-frontend                  # terminal 2 — Vite on :5173
 ```
 
 Native dev and docker both use `./data` at the repo root (`DATA_DIR` in `.env`). Open the Vite URL
@@ -48,17 +87,10 @@ dev session:
 
 ```bash
 mise run api-login
-# prompts for username/password (hidden), writes cookies.txt, verifies /api/auth/me
+# uses DEV_USER/DEV_PASSWORD from Doppler (or prompts); writes cookies.txt
 ```
 
-To skip prompts, add to your gitignored `.env` (see `.env.example`):
-
-```bash
-DEV_USER=nick
-DEV_PASSWORD=your-password
-```
-
-Then `mise run api-login` reads those vars automatically. Use the saved jar on later curls:
+Use the saved jar on later curls:
 
 ```bash
 curl -s -b cookies.txt http://localhost:8000/api/jobs
@@ -67,25 +99,24 @@ curl -s -b cookies.txt http://localhost:8000/api/jobs
 ## Dev bootstrap (after wiping `./data`)
 
 After `mise run down-v`, `mise run clean-data`, or `mise run rebuild`, skip the setup wizard by
-seeding from your gitignored `.env`:
+seeding from Doppler (or a filled `.env` if not using Doppler):
 
-1. **Once**, after configuring connections in the UI, capture secrets into `.env`:
+1. **Once**, after configuring connections in the UI, capture secrets into Doppler (or `.env`):
 
    ```bash
-   mise run dev-export-secrets >> .env   # review before saving; password must be set manually
+   mise run dev-export-secrets   # review output; paste into Doppler `local` (set DEV_PASSWORD in Doppler too)
    ```
 
    Export reads `DATA_DIR` from `.env` (use `./data` for docker dev). It logs which database file
    it opened. If you previously ran docker when mise forced `SECRET_KEY=dev`, run
-   `mise run dev-reencrypt-secrets` once so tokens match your `.env` key, then export again.
+   `mise run dev-reencrypt-secrets` once so tokens match your current key, then export again.
 
-2. Ensure `DEV_USER`, `DEV_PASSWORD`, and any connection vars you need are in `.env` (see
-   `.env.example`).
+2. Ensure `DEV_USER`, `DEV_PASSWORD`, and any connection vars you need are in Doppler `local`.
 
 3. Start the app, then bootstrap:
 
    ```bash
-   mise run up-dev          # or dev-backend / up
+   mise run up-dev          # or: doppler run -- mise run dev-backend
    mise run dev-bootstrap   # creates user, logs in, saves connections, writes cookies.txt
    ```
 

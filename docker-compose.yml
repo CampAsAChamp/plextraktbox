@@ -1,3 +1,5 @@
+# Secrets: use a gitignored .env (default for TrueNAS / self-host), or inject from the host
+# environment (advanced — e.g. `doppler run -- podman compose up --build` for maintainers).
 services:
   plextraktbox:
     build: .
@@ -8,9 +10,9 @@ services:
     environment:
       ENV: prod
       # REQUIRED in prod. Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"
-      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
-      TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:?set TRAKT_CLIENT_ID in .env}
-      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:?set TRAKT_CLIENT_SECRET in .env}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env or via Doppler}
+      TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:?set TRAKT_CLIENT_ID in .env or via Doppler}
+      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:?set TRAKT_CLIENT_SECRET in .env or via Doppler}
       DATA_DIR: /data
     volumes:
       - ./data:/data

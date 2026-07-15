@@ -1,5 +1,6 @@
-# Dev stack: hot-reload backend + Vite frontend. Use `mise run up-dev`.
+# Dev stack: hot-reload backend + Vite frontend. Use `mise run up-dev` (Doppler).
 # Open http://localhost:5173 (UI) — API on http://localhost:8000.
+# Without Doppler: `mise run up-dev-env` with secrets in `.env`.
 services:
   backend:
     build:
@@ -21,6 +22,8 @@ services:
       LOG_FORMAT: console
       FORCE_COLOR: "1"
       DATA_DIR: /data
+      # Host env wins over env_file when set (Doppler / shell). Compose also loads `.env` for ${…}.
+      SECRET_KEY: ${SECRET_KEY:-}
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
       TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
       # Bind mounts on macOS/Podman often miss fs events; poll so uvicorn --reload works.

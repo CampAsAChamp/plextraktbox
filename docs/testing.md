@@ -50,7 +50,8 @@ mise run test-frontend
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `mise run check` on pull requests and
 pushes to `main`. The workflow stubs a CI `.env` (dummy `SECRET_KEY` / Trakt placeholders);
-pytest uses in-process FastAPI + throwaway SQLite — not a live container.
+pytest uses in-process FastAPI + throwaway SQLite — not a live container. Doppler is optional for
+maintainers (`mise run check-doppler`); default CI does not require a Doppler token.
 
 ## Phase verification
 
@@ -79,5 +80,6 @@ Reference for phase test plans and automated tests:
   connection health transition notify; health `ok`/`degraded`
 - **Dashboard / scheduling UX (Phase 14):** `last_run` on jobs; clone job; log export txt/jsonl; cron
   presets; dashboard ops actions
-- **Doppler (Phase 15):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
+- **Doppler (Phase 15):** `mise run up-dev` (default hot reload) / `up-doppler` / `check-doppler`;
+  optional CI `DOPPLER_TOKEN` — secrets in Doppler, knobs in `.env` (see [dev-workflow.md](dev-workflow.md))
 - **TrueNAS (Phases 22–23):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans

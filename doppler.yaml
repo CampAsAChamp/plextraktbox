@@ -1,0 +1,6 @@
+# Optional maintainer secrets (Doppler). Self-hosted installs use .env / TrueNAS app config.
+# Install CLI: https://docs.doppler.com/docs/install-cli
+# Then: doppler login && doppler setup
+setup:
+  - project: plextraktbox
+    config: local

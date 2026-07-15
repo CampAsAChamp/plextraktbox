@@ -6,12 +6,12 @@
 | [sync-flows.md](sync-flows.md) | Sync job flow charts + sequence diagrams (per data type) |
 | [phases/README.md](phases/README.md) | **Phase index** (status, scope, test plans) |
 | [testing.md](testing.md) | Smoke tests, automated checks, testing conventions |
-| [dev-workflow.md](dev-workflow.md) | Hot reload, `api-login`, dev bootstrap |
+| [dev-workflow.md](dev-workflow.md) | Hot reload, Doppler (optional), `api-login`, dev bootstrap |
 | [deploy/truenas.md](deploy/truenas.md) | TrueNAS install constraints and milestones |
 
 ## Quick links
 
-- **Current focus:** see [phases/README.md](phases/README.md); dashboard UX ([Phase 14](phases/phase-14.md)) is done
+- **Current focus:** see [phases/README.md](phases/README.md); Doppler maintainer secrets ([Phase 15](phases/phase-15.md)) is done
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)
