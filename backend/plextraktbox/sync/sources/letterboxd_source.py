@@ -71,48 +71,93 @@ class LetterboxdSource(MemorySource):
             )
         return self._export
 
-    def _resolver_with_progress(self, data_type: str) -> IdentifierResolver | None:
+    def _resolver_with_progress(
+        self, data_type: str, *, total: int | None = None
+    ) -> IdentifierResolver | None:
         if self._resolve_identifiers is None:
             return None
 
         resolved = 0
         base = self._resolve_identifiers
         log = self._log
+        total_suffix = f"/{total}" if total is not None else ""
 
         def resolve(slug: str, title: str, year: str | None = None) -> dict[str, str] | None:
             nonlocal resolved
             result = base(slug, title, year)
             resolved += 1
-            if resolved % _PROGRESS_INTERVAL == 0:
+            log.debug(
+                "sync.letterboxd.resolve.item",
+                message=(
+                    f'Matched Letterboxd "{title}"'
+                    + (f" ({year})" if year else "")
+                    + f" to TMDB: {result or 'unmatched'}"
+                ),
+                data_type=data_type,
+                slug=slug,
+                title=title,
+                year=year,
+                identifiers=result or {},
+                resolved=resolved,
+                total=total,
+            )
+            if resolved % _PROGRESS_INTERVAL == 0 or (total is not None and resolved == total):
                 log.info(
                     "sync.letterboxd.resolve.progress",
-                    message=f"Resolved TMDB IDs for {resolved} {data_type} item(s)",
+                    message=(
+                        f"Matched {resolved}{total_suffix} Letterboxd {data_type} "
+                        "item(s) to TMDB IDs"
+                    ),
                     data_type=data_type,
                     resolved=resolved,
+                    total=total,
                 )
             return result
 
         return resolve
 
+    def _log_resolve_start(self, data_type: str, csv_text: str | None) -> None:
+        if self._resolve_identifiers is None:
+            return
+        count = _csv_row_count(csv_text)
+        self._log.info(
+            "sync.letterboxd.resolve.start",
+            message=(
+                f"Matching {count} Letterboxd {data_type} item(s) to TMDB IDs "
+                "(Letterboxd CSV has no external IDs; needed to match Plex/Trakt)"
+            ),
+            data_type=data_type,
+            count=count,
+        )
+
     async def fetch_watchlist(self) -> list[MediaItem]:
         export = await self._get_export()
+        self._log_resolve_start("watchlist", export.watchlist_csv)
         return letterboxd_client.items_from_watchlist_csv(
             export.watchlist_csv,
-            resolve_identifiers=self._resolver_with_progress("watchlist"),
+            resolve_identifiers=self._resolver_with_progress(
+                "watchlist", total=_csv_row_count(export.watchlist_csv)
+            ),
         )
 
     async def fetch_ratings(self) -> list[MediaItem]:
         export = await self._get_export()
+        self._log_resolve_start("ratings", export.ratings_csv)
         return letterboxd_client.items_from_ratings_csv(
             export.ratings_csv,
-            resolve_identifiers=self._resolver_with_progress("ratings"),
+            resolve_identifiers=self._resolver_with_progress(
+                "ratings", total=_csv_row_count(export.ratings_csv)
+            ),
         )
 
     async def fetch_watched(self) -> list[MediaItem]:
         export = await self._get_export()
+        self._log_resolve_start("watched", export.diary_csv)
         return letterboxd_client.items_from_diary_csv(
             export.diary_csv,
-            resolve_identifiers=self._resolver_with_progress("watched"),
+            resolve_identifiers=self._resolver_with_progress(
+                "watched", total=_csv_row_count(export.diary_csv)
+            ),
         )
 
     async def apply_watchlist(
