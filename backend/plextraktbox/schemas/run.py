@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from plextraktbox.models.job import SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.utils.datetime import UtcDatetime
 
@@ -12,6 +13,7 @@ class RunListItem(BaseModel):
     id: int
     job_id: int
     job_name: str | None
+    source_pair: SourcePair | None
     trigger: RunTrigger
     dry_run: bool
     status: JobRunStatus
@@ -21,11 +23,18 @@ class RunListItem(BaseModel):
     error: str | None
 
     @classmethod
-    def from_model(cls, run: JobRun, *, job_name: str | None = None) -> RunListItem:
+    def from_model(
+        cls,
+        run: JobRun,
+        *,
+        job_name: str | None = None,
+        source_pair: SourcePair | None = None,
+    ) -> RunListItem:
         return cls(
             id=run.id or 0,
             job_id=run.job_id,
             job_name=job_name,
+            source_pair=source_pair,
             trigger=run.trigger,
             dry_run=run.dry_run,
             status=run.status,

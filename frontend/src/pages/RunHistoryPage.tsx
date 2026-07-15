@@ -29,6 +29,7 @@ import {
   RunTriggerBadge,
 } from "../components/runs/RunBadges";
 import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
+import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatDateTime } from "../utils/dateTimeFormat";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
@@ -238,6 +239,7 @@ export function RunHistoryPage() {
             <Table.Tr>
               <Table.Th>Run</Table.Th>
               <Table.Th>Job</Table.Th>
+              <Table.Th>Job Type</Table.Th>
               <Table.Th>Trigger</Table.Th>
               <Table.Th>Dry run</Table.Th>
               <Table.Th>Status</Table.Th>
@@ -274,6 +276,13 @@ export function RunHistoryPage() {
                     <Text fw={500}>#{run.id}</Text>
                   </Table.Td>
                   <Table.Td>{run.job_name ?? `Job #${run.job_id}`}</Table.Td>
+                  <Table.Td>
+                    {run.source_pair ? (
+                      <SourcePairLabel sourcePair={run.source_pair} variant="logo" />
+                    ) : (
+                      <Text c="dimmed">—</Text>
+                    )}
+                  </Table.Td>
                   <Table.Td>
                     <RunTriggerBadge trigger={run.trigger} />
                   </Table.Td>

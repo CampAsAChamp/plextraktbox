@@ -45,6 +45,7 @@ export interface JobRun {
 
 export interface RunListItem extends JobRun {
   job_name: string | null;
+  source_pair: SourcePair | null;
 }
 
 export interface RunListResponse {
