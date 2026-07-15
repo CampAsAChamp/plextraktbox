@@ -1,5 +1,5 @@
 import { Button, Group, Loader, Stack, Text, Title } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { JobInput } from "../api/jobs";
@@ -23,12 +23,12 @@ export function JobEditPage() {
     mutationFn: (input: JobInput) => updateJob(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      notifications.show({ color: "green", message: "Job updated" });
+      showToast({ color: "green", message: "Job updated" });
       navigate("/jobs", { replace: true });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Update failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 

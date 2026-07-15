@@ -1,5 +1,5 @@
 import { Button, Group, Stack, Title } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import type { JobInput } from "../api/jobs";
@@ -15,12 +15,12 @@ export function JobCreatePage() {
     mutationFn: (input: JobInput) => createJob(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      notifications.show({ color: "green", message: "Job created" });
+      showToast({ color: "green", message: "Job created" });
       navigate("/jobs", { replace: true });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Create failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 

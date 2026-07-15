@@ -9,7 +9,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
@@ -126,7 +126,7 @@ export function NotificationBell() {
     mutationFn: markAllInAppRead,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      notifications.show({ color: "green", message: "All notifications marked read" });
+      showToast({ color: "green", message: "All notifications marked read" });
     },
   });
 

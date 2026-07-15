@@ -1,5 +1,5 @@
 import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
@@ -66,11 +66,11 @@ export function RunDetailPage() {
     onSuccess: (run) => {
       queryClient.setQueryData(["runs", id], run);
       void queryClient.invalidateQueries({ queryKey: ["runs"] });
-      notifications.show({ color: "orange", message: `Run #${run.id} marked as failed` });
+      showToast({ color: "orange", message: `Run #${run.id} marked as failed` });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 

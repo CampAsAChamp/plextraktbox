@@ -1,8 +1,8 @@
 import { Button } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "../../api/client";
 import type { ConnectionTestResult } from "../../api/connections";
+import { showToast } from "../../toast";
 import { StatusCheckIcon } from "./StatusCheckIcon";
 import { StatusXIcon } from "./StatusXIcon";
 import { TestConnectionIcon } from "./TestConnectionIcon";
@@ -13,17 +13,15 @@ export type ConnectionTestStatus = "idle" | "success" | "error";
 const SUCCESS_BUTTON_RESET_MS = 1500;
 
 export function showConnectionTestResult(result: ConnectionTestResult) {
-  notifications.show({
+  showToast({
     color: result.ok ? "green" : "red",
-    icon: result.ok ? <StatusCheckIcon size={18} /> : <StatusXIcon size={18} />,
     message: result.message,
   });
 }
 
 export function showConnectionTestError(error: unknown, fallbackMessage: string) {
-  notifications.show({
+  showToast({
     color: "red",
-    icon: <StatusXIcon size={18} />,
     message: error instanceof ApiError ? String(error.message) : fallbackMessage,
   });
 }

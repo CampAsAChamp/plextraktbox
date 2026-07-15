@@ -1,4 +1,4 @@
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import {
   DEFAULT_DISPLAY_PREFERENCES,
@@ -38,7 +38,7 @@ export function DisplayPreferencesProvider({ children }: { children: ReactNode }
       return next;
     });
     if (didChange) {
-      notifications.show({
+      showToast({
         color: "green",
         message: "Settings saved",
       });

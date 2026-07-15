@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -105,14 +105,14 @@ export function JobsPage() {
     mutationFn: (job: Job) => runJob(job.id),
     onSuccess: (run) => {
       void queryClient.invalidateQueries({ queryKey: ["runs"] });
-      notifications.show({
+      showToast({
         color: run.status === "success" ? "green" : "orange",
         message: `Run #${run.id} finished with status ${run.status}`,
       });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Run failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 
@@ -120,11 +120,11 @@ export function JobsPage() {
     mutationFn: (jobId: number) => deleteJob(jobId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      notifications.show({ color: "green", message: "Job deleted" });
+      showToast({ color: "green", message: "Job deleted" });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Delete failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 

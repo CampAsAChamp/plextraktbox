@@ -12,7 +12,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -96,13 +96,13 @@ function ClearConnectionButton({
     mutationFn: () => api.del(`/connections/${service}`),
     onSuccess: () => {
       onCleared();
-      notifications.show({
+      showToast({
         color: "green",
         message: `${SERVICE_LABELS[service]} connection cleared`,
       });
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message:
           error instanceof ApiError
@@ -156,10 +156,10 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connections"] });
       queryClient.invalidateQueries({ queryKey: ["connections", "plex", "libraries"] });
-      notifications.show({ color: "green", message: "Plex library selection saved" });
+      showToast({ color: "green", message: "Plex library selection saved" });
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Could not save Plex libraries",
       });
@@ -254,10 +254,10 @@ function PlexStep({
       setPollError(null);
       setPin(data);
       setPolling(true);
-      notifications.show({ color: "blue", message: "Sign in to Plex to authorize plextraktbox" });
+      showToast({ color: "blue", message: "Sign in to Plex to authorize plextraktbox" });
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Plex authorization failed",
       });
@@ -271,7 +271,7 @@ function PlexStep({
       if (data.status === "ok") {
         setPolling(false);
         setPin(null);
-        notifications.show({ color: "green", message: "Plex connected" });
+        showToast({ color: "green", message: "Plex connected" });
         onSaved();
       }
     },
@@ -280,7 +280,7 @@ function PlexStep({
       const message =
         error instanceof ApiError ? String(error.message) : "Plex authorization failed";
       setPollError(message);
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
   const pollMutate = useRef(poll.mutate);
@@ -424,10 +424,10 @@ function TraktStep({
     mutationFn: () => api.post<TraktDeviceStart>("/connections/trakt/device/start"),
     onSuccess: (data) => {
       setDevice(data);
-      notifications.show({ color: "blue", message: "Visit Trakt to authorize this device" });
+      showToast({ color: "blue", message: "Visit Trakt to authorize this device" });
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Trakt authorization failed",
       });
@@ -440,12 +440,12 @@ function TraktStep({
     onSuccess: (data) => {
       if (data.status === "ok") {
         setDevice(null);
-        notifications.show({ color: "green", message: "Trakt connected" });
+        showToast({ color: "green", message: "Trakt connected" });
         onSaved();
       }
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Trakt authorization failed",
       });
@@ -564,11 +564,11 @@ function LetterboxdStep({
     mutationFn: (body: LetterboxdConnectionInput) =>
       api.post<ConnectionSummary>("/connections/letterboxd", body),
     onSuccess: () => {
-      notifications.show({ color: "green", message: "Letterboxd connected" });
+      showToast({ color: "green", message: "Letterboxd connected" });
       onSaved();
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Letterboxd setup failed",
       });
@@ -809,11 +809,11 @@ function TmdbStep({
     mutationFn: (body: TmdbConnectionInput) =>
       api.post<ConnectionSummary>("/connections/tmdb", body),
     onSuccess: () => {
-      notifications.show({ color: "green", message: "TMDB connected" });
+      showToast({ color: "green", message: "TMDB connected" });
       onSaved();
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "TMDB setup failed",
       });
@@ -997,10 +997,10 @@ export function ConnectionsPage() {
     onSuccess: () => {
       setActive(0);
       refreshStatus();
-      notifications.show({ color: "green", message: "All connections cleared" });
+      showToast({ color: "green", message: "All connections cleared" });
     },
     onError: (error: unknown) => {
-      notifications.show({
+      showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Could not clear connections",
       });

@@ -9,7 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +39,7 @@ export function LoginPage() {
     onError: (error: unknown) => {
       const message =
         error instanceof ApiError ? String(error.message) : "Login failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 
