@@ -81,10 +81,7 @@ class _HttpMethodEventFormatter:
         method = match.group(1)
         rest = padded[len(method) :]
         method_style = self._method_styles.get(method, self._value_style)
-        return (
-            f"{method_style}{method}{self._reset_style}"
-            f"{self._value_style}{rest}{self._reset_style}"
-        )
+        return f"{method_style}{method}{self._reset_style}{self._value_style}{rest}{self._reset_style}"
 
 
 class _HttpMethodValueFormatter:
@@ -106,10 +103,7 @@ class _HttpMethodValueFormatter:
     def __call__(self, key: str, value: object) -> str:
         text = str(value)
         method_style = self._method_styles.get(text, self._fallback_value_style)
-        return (
-            f"{self._key_style}{key}{self._reset_style}="
-            f"{method_style}{text}{self._reset_style}"
-        )
+        return f"{self._key_style}{key}{self._reset_style}={method_style}{text}{self._reset_style}"
 
 
 def _http_method_styles(*, colors: bool) -> dict[str, str]:
