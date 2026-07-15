@@ -14,6 +14,7 @@ from plextraktbox.models.job import Job  # noqa: F401
 from plextraktbox.models.job_run import JobRun  # noqa: F401
 from plextraktbox.models.log_entry import LogEntry  # noqa: F401
 from plextraktbox.models.notification_config import NotificationConfig  # noqa: F401
+from plextraktbox.models.setting import Setting  # noqa: F401
 from plextraktbox.models.user import User  # noqa: F401
 
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     "JobRun",
     "LogEntry",
     "NotificationConfig",
+    "Setting",
     "User",
 ]
