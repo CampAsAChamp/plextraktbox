@@ -99,6 +99,18 @@ class SchedulerManager:
             self._scheduler.remove_job(aps_id)
             log.info("scheduler.job.removed", job_id=job_id)
 
+    def get_next_run_time(self, job_id: int) -> datetime | None:
+        """Return the next scheduled fire time for a job, or None if unscheduled."""
+        if self._scheduler is None:
+            return None
+        aps_job = self._scheduler.get_job(f"{SCHEDULED_JOB_PREFIX}{job_id}")
+        if aps_job is None or aps_job.next_run_time is None:
+            return None
+        nxt = aps_job.next_run_time
+        if nxt.tzinfo is None:
+            return nxt.replace(tzinfo=UTC)
+        return nxt.astimezone(UTC)
+
     def trigger_now(
         self,
         job_id: int,

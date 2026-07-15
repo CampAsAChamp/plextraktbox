@@ -282,11 +282,14 @@ def test_job_crud(client: TestClient) -> None:
         headers=HEADERS,
     )
     assert create.status_code == 200
-    job_id = create.json()["id"]
+    created = create.json()
+    job_id = created["id"]
+    assert created["next_run_at"] is not None
 
     get_resp = client.get(f"/api/jobs/{job_id}")
     assert get_resp.status_code == 200
     assert get_resp.json()["name"] == "Original"
+    assert get_resp.json()["next_run_at"] is not None
 
     update = client.put(
         f"/api/jobs/{job_id}",
@@ -304,9 +307,33 @@ def test_job_crud(client: TestClient) -> None:
     assert update.json()["name"] == "Updated"
     assert update.json()["enabled"] is False
     assert update.json()["dry_run"] is True
+    assert update.json()["next_run_at"] is None
 
     delete = client.delete(f"/api/jobs/{job_id}", headers=HEADERS)
     assert delete.status_code == 204
 
     missing = client.get(f"/api/jobs/{job_id}")
     assert missing.status_code == 404
+
+
+def test_schedule_preview(client: TestClient) -> None:
+    _create_user_and_login(client)
+    resp = client.post(
+        "/api/jobs/schedule-preview",
+        json={"cron": "0 3 * * *", "count": 5},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    times = resp.json()["times"]
+    assert len(times) == 5
+    assert times[0].endswith("Z")
+
+
+def test_schedule_preview_rejects_invalid_cron(client: TestClient) -> None:
+    _create_user_and_login(client)
+    resp = client.post(
+        "/api/jobs/schedule-preview",
+        json={"cron": "not-a-cron", "count": 5},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 422

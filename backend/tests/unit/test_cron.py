@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 
-from plextraktbox.cron import validate_cron_expression
+from plextraktbox.cron import compute_next_run_times, validate_cron_expression
 
 
 def test_validate_cron_expression_accepts_valid_expressions() -> None:
@@ -19,3 +21,30 @@ def test_validate_cron_expression_accepts_valid_expressions() -> None:
 def test_validate_cron_expression_rejects_invalid_expressions(expression: str) -> None:
     with pytest.raises(ValueError, match="Invalid cron expression|Cron expression is required"):
         validate_cron_expression(expression)
+
+
+def test_compute_next_run_times_daily() -> None:
+    after = datetime(2026, 7, 14, 12, 0, 0, tzinfo=UTC)
+    times = compute_next_run_times("0 3 * * *", count=5, after=after)
+    assert times == [
+        datetime(2026, 7, 15, 3, 0, tzinfo=UTC),
+        datetime(2026, 7, 16, 3, 0, tzinfo=UTC),
+        datetime(2026, 7, 17, 3, 0, tzinfo=UTC),
+        datetime(2026, 7, 18, 3, 0, tzinfo=UTC),
+        datetime(2026, 7, 19, 3, 0, tzinfo=UTC),
+    ]
+
+
+def test_compute_next_run_times_weekly_monday() -> None:
+    # APScheduler crontab weekday 0 = Monday
+    after = datetime(2026, 7, 14, 12, 0, 0, tzinfo=UTC)  # Tuesday
+    times = compute_next_run_times("0 3 * * 0", count=2, after=after)
+    assert times == [
+        datetime(2026, 7, 20, 3, 0, tzinfo=UTC),
+        datetime(2026, 7, 27, 3, 0, tzinfo=UTC),
+    ]
+
+
+def test_compute_next_run_times_rejects_invalid_cron() -> None:
+    with pytest.raises(ValueError, match="Invalid cron expression"):
+        compute_next_run_times("not-a-cron", count=5)

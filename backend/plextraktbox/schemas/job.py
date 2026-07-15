@@ -41,6 +41,20 @@ class JobUpdateRequest(BaseModel):
         return validate_cron_expression(value)
 
 
+class SchedulePreviewRequest(BaseModel):
+    cron: str
+    count: int = Field(default=5, ge=1, le=20)
+
+    @field_validator("cron")
+    @classmethod
+    def validate_cron(cls, value: str) -> str:
+        return validate_cron_expression(value)
+
+
+class SchedulePreviewResponse(BaseModel):
+    times: list[UtcDatetime]
+
+
 class JobResponse(BaseModel):
     id: int
     name: str
@@ -50,9 +64,10 @@ class JobResponse(BaseModel):
     dry_run: bool
     data_types: list[DataType]
     notify_mode: NotifyMode
+    next_run_at: UtcDatetime | None = None
 
     @classmethod
-    def from_model(cls, job: Job) -> JobResponse:
+    def from_model(cls, job: Job, *, next_run_at: UtcDatetime | None = None) -> JobResponse:
         return cls(
             id=job.id or 0,
             name=job.name,
@@ -62,6 +77,7 @@ class JobResponse(BaseModel):
             dry_run=job.dry_run,
             data_types=sorted(job.data_types(), key=lambda dt: dt.value),
             notify_mode=job.notify_mode(),
+            next_run_at=next_run_at,
         )
 
 
