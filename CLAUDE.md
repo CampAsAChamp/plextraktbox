@@ -58,8 +58,9 @@ Do not run `up` and `up-dev` simultaneously — both bind port 8000.
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) for every commit
 (`feat:`, `fix:`, `chore:`, …) — required for semantic-release on `main`. No trailing
-period on the subject. Enabled by `mise run install` (`.githooks/commit-msg`). Only
-commit when the user asks.
+period on the subject. Enabled by `mise run install` (`.githooks/commit-msg`).
+`pre-push` runs `mise run check` (bypass: `git push --no-verify`). Only commit when
+the user asks.
 
 ## Coding principles
 

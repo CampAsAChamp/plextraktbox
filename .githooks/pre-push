@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Block pushes that would fail CI: lint + typecheck + tests.
+# Enabled by: mise run install  (sets core.hooksPath=.githooks)
+# Or manually: git config core.hooksPath .githooks
+# Bypass (emergency only): git push --no-verify
+
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+if ! command -v mise >/dev/null 2>&1; then
+  cat >&2 <<EOF
+pre-push: mise not found on PATH.
+
+Install mise (https://mise.jdx.dev/) or bypass with: git push --no-verify
+EOF
+  exit 1
+fi
+
+echo "pre-push: running mise run check (lint + tests)…" >&2
+exec mise run check

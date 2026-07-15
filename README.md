@@ -173,7 +173,8 @@ images publish to GHCR on each GitHub Release.
 1. Land changes on `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
    subject (`feat: …`, `fix: …`, `feat!: …`) — either a direct push or a squash-merge PR
    title. A local `commit-msg` hook (enabled by `mise run install`) and
-   `.github/workflows/pr-title.yml` enforce the format.
+   `.github/workflows/pr-title.yml` enforce the format. The same install enables a
+   `pre-push` hook that runs `mise run check` before push.
 2. [semantic-release](https://semantic-release.gitbook.io/) bumps the one app semver (root
    `package.json`, `backend/pyproject.toml`, `frontend/package.json`, `CHANGELOG.md`), creates tag
    `vX.Y.Z` + a GitHub Release, and publishes `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`)

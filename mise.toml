@@ -81,11 +81,11 @@ run = "npm run test"
 # --- LOCAL: native install, build, dev ---
 
 [tasks.install]
-description = "[LOCAL] Install backend and frontend dependencies; enable Conventional Commit hooks"
+description = "[LOCAL] Install backend and frontend dependencies; enable git hooks"
 depends = ["install-backend", "install-frontend", "install-hooks"]
 
 [tasks."install-hooks"]
-description = "[LOCAL] Point git at .githooks (Conventional Commit commit-msg)"
+description = "[LOCAL] Point git at .githooks (commit-msg + pre-push check)"
 run = "git config core.hooksPath .githooks"
 
 [tasks."install-backend"]

@@ -7,12 +7,17 @@ see [testing.md](testing.md).
 
 ```bash
 mise trust && mise install   # first clone only
-mise run install             # backend venv + frontend deps + Conventional Commit hooks
+mise run install             # backend venv + frontend deps + git hooks
 ```
 
-`mise run install` sets `git config core.hooksPath .githooks` so commit subjects must be
-[Conventional Commits](https://www.conventionalcommits.org/) (needed for semantic-release).
-If you skip that task: `git config core.hooksPath .githooks`.
+`mise run install` sets `git config core.hooksPath .githooks` so:
+
+- **commit-msg** — subjects must be [Conventional Commits](https://www.conventionalcommits.org/)
+  (needed for semantic-release)
+- **pre-push** — runs `mise run check` (lint + typecheck + tests) before `git push`
+
+If you skip that task: `git config core.hooksPath .githooks`. Emergency bypass:
+`git push --no-verify`.
 
 Run `mise tasks` for the full task list.
 

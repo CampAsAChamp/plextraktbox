@@ -2,7 +2,8 @@
 
 This repo uses [Conventional Commits](https://www.conventionalcommits.org/) so
 semantic-release can bump on `main`. Local `commit-msg` hook (`.githooks/`) and
-PR-title CI both enforce the format.
+PR-title CI both enforce the format. `pre-push` runs `mise run check` before push
+(`git push --no-verify` to bypass).
 
 - Subject: `type: description`, `type(scope): description`, or `type!: description`
 - Types: `feat`, `fix`, `perf`, `revert`, `chore`, `docs`, `style`, `refactor`, `test`, `build`, `ci`

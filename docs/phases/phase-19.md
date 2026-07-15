@@ -58,6 +58,7 @@ build is running?” on TrueNAS.
 - `.github/workflows/pr-title.yml` — Conventional Commit PR titles
 - `.github/workflows/release.yml` — semantic-release + GHCR publish
 - `.githooks/commit-msg` — local Conventional Commit enforcement
+- `.githooks/pre-push` — runs `mise run check` before push
 - `.releaserc.json` — semantic-release plugins (inline prepare syncs backend / frontend)
 - Root `package.json` — semantic-release version home
 - `CHANGELOG.md` — maintained by semantic-release
