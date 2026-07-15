@@ -20,8 +20,8 @@ import { ApiError } from "../../api/client";
 import type { Job } from "../../api/jobs";
 import { listJobs, runJob } from "../../api/jobApi";
 import { ConnectionStatusBadge } from "../../components/connections/ConnectionStatusBadge";
-import { JobStatusBadge } from "../../components/JobForm/JobForm";
-import { DryRunBadge, RunStatusBadge } from "../../components/runs/RunBadges";
+import { DryRunBadge, JobStatusBadge } from "../../components/JobForm/JobForm";
+import { RunStatusBadge } from "../../components/runs/RunBadges";
 import { SourcePairLabel } from "../../components/services/SourcePairLabel";
 import { RoundedTable } from "../../components/table/RoundedTable";
 import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
@@ -44,10 +44,24 @@ function problemJobsSignature(jobs: Job[]): string {
     .join("|");
 }
 
-function nextRunLabel(job: Job, formatNext: (iso: string) => string): string {
-  if (!job.enabled) return "Disabled";
-  if (!job.next_run_at) return "Unscheduled";
-  return formatNext(job.next_run_at);
+function ScheduleCell({ job }: { job: Job }) {
+  const { preferences } = useDisplayPreferences();
+  const nextLabel = !job.enabled
+    ? "Disabled — no next run"
+    : job.next_run_at
+      ? formatScheduleDateTime(job.next_run_at, preferences)
+      : "Next run unavailable";
+
+  return (
+    <Stack gap={2}>
+      <Text size="sm" ff="monospace">
+        {job.cron}
+      </Text>
+      <Text size="xs" c="dimmed">
+        {nextLabel}
+      </Text>
+    </Stack>
+  );
 }
 
 function LastRunCell({ job }: { job: Job }) {
@@ -82,7 +96,6 @@ function LastRunCell({ job }: { job: Job }) {
 
 export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
   const queryClient = useQueryClient();
-  const { preferences } = useDisplayPreferences();
   const [dismissedProblemsKey, setDismissedProblemsKey] = useState<string | null>(null);
 
   const jobsQuery = useQuery({
@@ -230,8 +243,11 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
           <RoundedTable striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Job</Table.Th>
-                <Table.Th>Next run</Table.Th>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Job Type</Table.Th>
+                <Table.Th>Schedule</Table.Th>
+                <Table.Th>Dry run</Table.Th>
+                <Table.Th>Status</Table.Th>
                 <Table.Th>Last run</Table.Th>
                 <Table.Th>Actions</Table.Th>
               </Table.Tr>
@@ -243,22 +259,19 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                   className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
                 >
                   <Table.Td>
-                    <Stack gap={4}>
-                      <Group gap="xs">
-                        <Text fw={500}>{job.name}</Text>
-                        <JobStatusBadge enabled={job.enabled} />
-                        <DryRunBadge dryRun={job.dry_run} compact />
-                      </Group>
-                      <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
-                    </Stack>
+                    <Text fw={500}>{job.name}</Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm">
-                      {nextRunLabel(job, (iso) => formatScheduleDateTime(iso, preferences))}
-                    </Text>
-                    <Text size="xs" c="dimmed" ff="monospace">
-                      {job.cron}
-                    </Text>
+                    <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
+                  </Table.Td>
+                  <Table.Td>
+                    <ScheduleCell job={job} />
+                  </Table.Td>
+                  <Table.Td>
+                    <DryRunBadge dryRun={job.dry_run} compact />
+                  </Table.Td>
+                  <Table.Td>
+                    <JobStatusBadge enabled={job.enabled} />
                   </Table.Td>
                   <Table.Td>
                     <LastRunCell job={job} />
