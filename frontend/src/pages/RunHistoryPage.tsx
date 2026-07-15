@@ -13,7 +13,10 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import type { RunListItem } from "../api/jobs";
+import { SOURCE_PAIR_LABELS } from "../api/jobs";
 import { listJobs } from "../api/jobApi";
 import { listRuns } from "../api/runs";
 import {
@@ -30,10 +33,29 @@ import {
 } from "../components/runs/RunBadges";
 import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
+import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatDateTime } from "../utils/dateTimeFormat";
+import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 import classes from "./RunHistoryPage.module.css";
+
+type RunSortColumn =
+  | "id"
+  | "job_name"
+  | "source_pair"
+  | "trigger"
+  | "dry_run"
+  | "status"
+  | "started_at"
+  | "duration";
+
+function runDurationMs(run: RunListItem): number | null {
+  if (!run.finished_at) {
+    return null;
+  }
+  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
+}
 
 function StrokeIcon({
   size = 14,
@@ -78,6 +100,7 @@ export function RunHistoryPage() {
   const navigate = useNavigate();
   const { preferences } = useDisplayPreferences();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [sort, setSort] = useState<SortState<RunSortColumn> | null>(null);
   const jobIdParam = searchParams.get("job_id");
   const jobId = jobIdParam && !Number.isNaN(Number(jobIdParam)) ? Number(jobIdParam) : undefined;
   const statusFilters = parseRunStatuses(searchParams.get("status"));
@@ -137,13 +160,30 @@ export function RunHistoryPage() {
   const selectedJob = jobId !== undefined ? jobs.find((job) => job.id === jobId) : undefined;
   const deletedJob = jobId !== undefined && selectedJob === undefined;
   const allRuns = runsQuery.data?.items ?? [];
-  const runs = filterRuns(allRuns, { statuses: statusFilters, trigger: triggerFilter });
+  const runs = sortRows(
+    filterRuns(allRuns, { statuses: statusFilters, trigger: triggerFilter }),
+    sort,
+    {
+      id: (run) => run.id,
+      job_name: (run) => run.job_name ?? `Job #${run.job_id}`,
+      source_pair: (run) => (run.source_pair ? SOURCE_PAIR_LABELS[run.source_pair] : null),
+      trigger: (run) => run.trigger,
+      dry_run: (run) => run.dry_run,
+      status: (run) => run.status,
+      started_at: (run) => new Date(run.started_at).getTime(),
+      duration: (run) => runDurationMs(run),
+    },
+  );
   const deletedJobName = allRuns.find((run) => run.job_id === jobId)?.job_name ?? null;
 
   const jobOptions = [
     { value: "", label: "All jobs" },
     ...jobs.map((job) => ({ value: String(job.id), label: job.name })),
   ];
+
+  function handleSort(column: RunSortColumn) {
+    setSort((current) => nextSortState(current, column));
+  }
 
   return (
     <Stack gap="md">
@@ -237,21 +277,19 @@ export function RunHistoryPage() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Run</Table.Th>
-              <Table.Th>Job</Table.Th>
-              <Table.Th>Job Type</Table.Th>
-              <Table.Th>Trigger</Table.Th>
-              <Table.Th>Dry run</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Started</Table.Th>
-              <Table.Th>Duration</Table.Th>
+              <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
+              <SortableTh column="job_name" label="Job" sort={sort} onSort={handleSort} />
+              <SortableTh column="source_pair" label="Job Type" sort={sort} onSort={handleSort} />
+              <SortableTh column="trigger" label="Trigger" sort={sort} onSort={handleSort} />
+              <SortableTh column="dry_run" label="Dry run" sort={sort} onSort={handleSort} />
+              <SortableTh column="status" label="Status" sort={sort} onSort={handleSort} />
+              <SortableTh column="started_at" label="Started" sort={sort} onSort={handleSort} />
+              <SortableTh column="duration" label="Duration" sort={sort} onSort={handleSort} />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {runs.map((run) => {
-              const started = new Date(run.started_at);
-              const finished = run.finished_at ? new Date(run.finished_at) : null;
-              const durationMs = finished ? finished.getTime() - started.getTime() : null;
+              const durationMs = runDurationMs(run);
               const duration =
                 durationMs === null ? "running…" : durationMs < 1000 ? "<1s" : `${Math.round(durationMs / 1000)}s`;
 
@@ -272,28 +310,32 @@ export function RunHistoryPage() {
                     }
                   }}
                 >
-                  <Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "id")}>
                     <Text fw={500}>#{run.id}</Text>
                   </Table.Td>
-                  <Table.Td>{run.job_name ?? `Job #${run.job_id}`}</Table.Td>
-                  <Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "job_name")}>
+                    {run.job_name ?? `Job #${run.job_id}`}
+                  </Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
                     {run.source_pair ? (
                       <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
                     ) : (
                       <Text c="dimmed">—</Text>
                     )}
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "trigger")}>
                     <RunTriggerBadge trigger={run.trigger} />
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
                     <DryRunBadge dryRun={run.dry_run} compact />
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "status")}>
                     <RunStatusBadge status={run.status} />
                   </Table.Td>
-                  <Table.Td>{formatDateTime(run.started_at, preferences)}</Table.Td>
-                  <Table.Td>{duration}</Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
+                    {formatDateTime(run.started_at, preferences)}
+                  </Table.Td>
+                  <Table.Td className={sortedColumnCellClass(sort, "duration")}>{duration}</Table.Td>
                 </Table.Tr>
               );
             })}

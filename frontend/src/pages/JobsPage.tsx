@@ -11,17 +11,23 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Job } from "../api/jobs";
+import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "../api/jobs";
 import { DataTypeBadge } from "../components/services/DataTypeBadge";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
+import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { ApiError } from "../api/client";
 import { deleteJob, listJobs, runJob } from "../api/jobApi";
 import { DryRunBadge, JobStatusBadge } from "../components/JobForm/JobForm";
 import { TrashIcon } from "../components/icons/TrashIcon";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatScheduleDateTime } from "../utils/dateTimeFormat";
+import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
+
+type JobSortColumn = "name" | "source_pair" | "data_types" | "cron" | "dry_run" | "enabled";
 
 function StrokeIcon({ size = 14, children }: { size?: number; children: React.ReactNode }) {
   return (
@@ -99,6 +105,7 @@ function ScheduleCell({ job }: { job: Job }) {
 
 export function JobsPage() {
   const queryClient = useQueryClient();
+  const [sort, setSort] = useState<SortState<JobSortColumn> | null>(null);
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
@@ -144,7 +151,23 @@ export function JobsPage() {
     return <Text c="red">Could not load jobs.</Text>;
   }
 
-  const jobs = jobsQuery.data ?? [];
+  const jobs = sortRows(jobsQuery.data ?? [], sort, {
+    name: (job) => job.name,
+    source_pair: (job) => SOURCE_PAIR_LABELS[job.source_pair],
+    data_types: (job) =>
+      job.data_types
+        .map((dt) => DATA_TYPE_LABELS[dt])
+        .slice()
+        .sort((a, b) => a.localeCompare(b))
+        .join(", "),
+    cron: (job) => job.cron,
+    dry_run: (job) => job.dry_run,
+    enabled: (job) => job.enabled,
+  });
+
+  function handleSort(column: JobSortColumn) {
+    setSort((current) => nextSortState(current, column));
+  }
 
   return (
     <Stack gap="md">
@@ -161,12 +184,12 @@ export function JobsPage() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Job Type</Table.Th>
-              <Table.Th>Data</Table.Th>
-              <Table.Th>Schedule</Table.Th>
-              <Table.Th>Dry run</Table.Th>
-              <Table.Th>Status</Table.Th>
+              <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
+              <SortableTh column="source_pair" label="Job Type" sort={sort} onSort={handleSort} />
+              <SortableTh column="data_types" label="Data" sort={sort} onSort={handleSort} />
+              <SortableTh column="cron" label="Schedule" sort={sort} onSort={handleSort} />
+              <SortableTh column="dry_run" label="Dry run" sort={sort} onSort={handleSort} />
+              <SortableTh column="enabled" label="Status" sort={sort} onSort={handleSort} />
               <Table.Th>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -176,26 +199,26 @@ export function JobsPage() {
                 key={job.id}
                 className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
               >
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "name")}>
                   <Text fw={500}>{job.name}</Text>
                 </Table.Td>
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
                   <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "data_types")}>
                   <Group gap={4}>
                     {job.data_types.map((dt) => (
                       <DataTypeBadge key={dt} dataType={dt} />
                     ))}
                   </Group>
                 </Table.Td>
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "cron")}>
                   <ScheduleCell job={job} />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
                   <DryRunBadge dryRun={job.dry_run} compact />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
                   <JobStatusBadge enabled={job.enabled} />
                 </Table.Td>
                 <Table.Td>

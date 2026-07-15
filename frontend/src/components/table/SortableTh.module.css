@@ -1,0 +1,79 @@
+.th {
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.thSorted {
+  background-color: var(--mantine-color-blue-light);
+  color: var(--mantine-color-blue-light-color);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.label {
+  transition: color 180ms ease;
+}
+
+.sortedCell {
+  background-color: var(--mantine-color-blue-light) !important;
+  transition: background-color 180ms ease;
+}
+
+.indicator {
+  position: relative;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--mantine-color-gray-5);
+  transition: color 180ms ease;
+}
+
+.indicatorSorted {
+  color: var(--mantine-color-blue-light-color);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.idle {
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.active {
+  opacity: 0;
+  transform: rotate(0deg);
+  /* Opacity only while hidden — avoids spinning when clearing sort. */
+  transition: opacity 180ms ease;
+}
+
+.indicatorSorted .idle {
+  opacity: 0;
+}
+
+.indicatorSorted .active {
+  opacity: 1;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.indicatorDesc .active {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .th,
+  .label,
+  .sortedCell,
+  .indicator,
+  .idle,
+  .active,
+  .indicatorSorted .active {
+    transition: none;
+  }
+}
