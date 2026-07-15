@@ -6,6 +6,7 @@ import { DisplayPreferencesSection } from "./DisplayPreferencesSection";
 import { BackupSection } from "./BackupSection";
 import { SettingsMobileNav, SettingsToc } from "./SettingsToc";
 import { SyncSettingsSection } from "./SyncSettingsSection";
+import { ThemeSection } from "./ThemeSection";
 
 interface SettingsPageProps {
   user: User;
@@ -23,6 +24,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
           <SyncSettingsSection />
           <BackupSection />
           <DisplayPreferencesSection />
+          <ThemeSection />
           <NotificationSettings />
         </Stack>
       </Group>

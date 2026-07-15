@@ -1,8 +1,9 @@
-import { Box, Group, Select, TableOfContents, Text } from "@mantine/core";
+import { Box, Group, Select, TableOfContents, Text, useMantineTheme } from "@mantine/core";
 import type { ComponentType } from "react";
 import { BellIcon } from "../../components/icons/BellIcon";
 import { ClockIcon } from "../../components/icons/ClockIcon";
 import { DatabaseIcon } from "../../components/icons/DatabaseIcon";
+import { PaletteIcon } from "../../components/icons/PaletteIcon";
 import { SyncIcon } from "../../components/icons/SyncIcon";
 import { UserIcon } from "../../components/icons/UserIcon";
 
@@ -11,6 +12,7 @@ const INITIAL_SECTIONS = [
   { id: "settings-sync", value: "Sync defaults & safety", depth: 1 },
   { id: "settings-backup", value: "Backup", depth: 1 },
   { id: "settings-display", value: "Display preferences", depth: 1 },
+  { id: "settings-theme", value: "Theme", depth: 1 },
   { id: "settings-notifications", value: "Notifications", depth: 1 },
 ] as const;
 
@@ -19,6 +21,7 @@ const SECTION_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   "settings-sync": SyncIcon,
   "settings-backup": DatabaseIcon,
   "settings-display": ClockIcon,
+  "settings-theme": PaletteIcon,
   "settings-notifications": BellIcon,
 };
 
@@ -50,6 +53,7 @@ export function SettingsMobileNav() {
 }
 
 export function SettingsToc() {
+  const theme = useMantineTheme();
   return (
     <Box
       component="nav"
@@ -63,7 +67,7 @@ export function SettingsToc() {
       </Text>
       <TableOfContents
         variant="light"
-        color="amber"
+        color={theme.primaryColor}
         size="sm"
         radius="sm"
         scrollSpyOptions={{
