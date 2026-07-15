@@ -9,6 +9,7 @@ import {
   Table,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ import { CRON_PRESETS, matchCronPreset } from "../../utils/cronPresets";
 import { formatScheduleDateTimeParts } from "../../utils/dateTimeFormat";
 import { DataTypeBadge } from "../services/DataTypeBadge";
 import { SourcePairLabel } from "../services/SourcePairLabel";
+import { HelpCircleIcon } from "../icons/HelpCircleIcon";
 import { SaveIcon } from "../icons/SaveIcon";
 
 const jobSchema = z.object({
@@ -251,11 +253,25 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
           ) : null}
         </Stack>
 
-        <Group>
+        <Group align="center">
           <Switch label="Enabled" checked={enabled} onChange={(event) => setEnabled(event.currentTarget.checked)} />
           <Switch
-            label="Dry run"
-            description="Log planned changes without writing"
+            label={
+              <Group gap={4} wrap="nowrap" component="span">
+                Dry run
+                <Tooltip label="Log planned changes without writing" withArrow openDelay={200}>
+                  <Text
+                    component="span"
+                    c="dimmed"
+                    display="inline-flex"
+                    style={{ cursor: "help" }}
+                    aria-label="Dry run help"
+                  >
+                    <HelpCircleIcon size={12} />
+                  </Text>
+                </Tooltip>
+              </Group>
+            }
             checked={dryRun}
             onChange={(event) => setDryRun(event.currentTarget.checked)}
           />

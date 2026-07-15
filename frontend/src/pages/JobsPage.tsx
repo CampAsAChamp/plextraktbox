@@ -77,28 +77,17 @@ function HistoryIcon() {
 
 function ScheduleCell({ job }: { job: Job }) {
   const { preferences } = useDisplayPreferences();
-  const cronText = (
-    <Text
-      size="sm"
-      ff="monospace"
-      component="span"
-      style={{ display: "inline-block", cursor: job.enabled ? "help" : undefined }}
-    >
-      {job.cron}
-    </Text>
-  );
-
-  if (!job.enabled) {
-    return cronText;
-  }
-
-  const label = job.next_run_at
-    ? `Next run: ${formatScheduleDateTime(job.next_run_at, preferences)}`
-    : "Next run unavailable";
+  const label = !job.enabled
+    ? "Schedule disabled — no next run"
+    : job.next_run_at
+      ? `Next run: ${formatScheduleDateTime(job.next_run_at, preferences)}`
+      : "Next run unavailable";
 
   return (
     <Tooltip label={label} withArrow openDelay={200}>
-      {cronText}
+      <Text size="sm" ff="monospace" component="span" style={{ display: "inline-block", cursor: "help" }}>
+        {job.cron}
+      </Text>
     </Tooltip>
   );
 }
