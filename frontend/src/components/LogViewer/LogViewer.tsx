@@ -338,7 +338,7 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
           onScrollPositionChange={handleScrollPositionChange}
           style={{
             border: "1px solid var(--mantine-color-dark-4)",
-            borderRadius: 8,
+            borderRadius: "var(--mantine-radius-lg)",
             background: "var(--mantine-color-dark-7)",
           }}
         >

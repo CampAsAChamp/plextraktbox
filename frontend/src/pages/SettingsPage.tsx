@@ -1,4 +1,14 @@
-import { Anchor, Avatar, Group, Paper, SegmentedControl, Stack, Text, Title } from "@mantine/core";
+import {
+  Anchor,
+  Avatar,
+  Code,
+  Group,
+  Paper,
+  SegmentedControl,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import type { User } from "../api/auth";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { TimezonePreferenceControls } from "../settings/TimezonePreferenceControls";
@@ -15,7 +25,8 @@ const DATE_FORMAT_OPTIONS = [
   { value: "dmy", label: "DD/MM/YYYY" },
 ] as const;
 
-const PREVIEW_TIMESTAMP = "2026-07-11T18:30:45.123Z";
+/** Afternoon in US zones so 24h vs 12h (e.g. 15:30 vs 3:30 PM) is obvious. */
+const PREVIEW_TIMESTAMP = "2026-07-11T22:30:45.123Z";
 
 interface SettingsPageProps {
   user: User;
@@ -28,7 +39,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
     <Stack gap="md" maw="85%" mx="auto">
       <Title order={3}>Settings</Title>
 
-      <Paper withBorder p="md" radius="md">
+      <Paper withBorder p="md">
         <Stack gap="md">
           <Text fw={500}>Account</Text>
           <Group gap="md" align="flex-start" wrap="nowrap">
@@ -51,7 +62,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
         </Stack>
       </Paper>
 
-      <Paper withBorder p="md" radius="md">
+      <Paper withBorder p="md">
         <Stack gap="lg">
           <TimezonePreferenceControls />
 
@@ -79,13 +90,20 @@ export function SettingsPage({ user }: SettingsPageProps) {
             />
           </Stack>
 
-          <Stack gap={4}>
+          <Stack gap={6}>
             <Text size="sm" fw={500}>
               Preview
             </Text>
-            <Text size="sm" c="dimmed">
+            <Code
+              block
+              style={{
+                fontSize: "var(--mantine-font-size-md)",
+                fontWeight: 600,
+                width: "fit-content",
+              }}
+            >
               {formatDateTime(PREVIEW_TIMESTAMP, preferences)}
-            </Text>
+            </Code>
           </Stack>
         </Stack>
       </Paper>

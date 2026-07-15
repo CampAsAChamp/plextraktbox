@@ -206,7 +206,7 @@ function ChannelSettings({
         p="sm"
         style={{
           borderLeft: `3px solid ${DISCORD_BLURPLE}`,
-          borderRadius: "var(--mantine-radius-sm)",
+          borderRadius: "var(--mantine-radius-lg)",
           background:
             "color-mix(in srgb, var(--mantine-color-body) 92%, #5865F2 8%)",
         }}
@@ -236,7 +236,7 @@ export function NotificationSettings() {
   }
 
   return (
-    <Paper withBorder p="md" radius="md">
+    <Paper withBorder p="md">
       <Stack gap="md">
         <Stack gap={4}>
           <Title order={4}>Notifications</Title>

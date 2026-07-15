@@ -102,7 +102,7 @@ export function ColoredJson({ value }: ColoredJsonProps) {
         overflowX: "auto",
         whiteSpace: "pre",
         background: "var(--mantine-color-dark-6)",
-        borderRadius: 4,
+        borderRadius: "var(--mantine-radius-md)",
       }}
     >
       <ColoredJsonSpans value={value} />

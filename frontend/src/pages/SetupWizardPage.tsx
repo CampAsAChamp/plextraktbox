@@ -2,6 +2,7 @@ import {
   Button,
   Center,
   Loader,
+  Paper,
   PasswordInput,
   Stack,
   Text,
@@ -77,49 +78,51 @@ export function SetupWizardPage() {
   }
 
   return (
-    <Center mih="60vh">
-      <Stack maw={400} w="100%" gap="md">
-        <Title order={3}>Welcome to plextraktbox</Title>
-        <Text c="dimmed" size="sm">
-          Create the local admin account. This app supports a single user.
-        </Text>
-        <form onSubmit={handleSubmit}>
-          <Stack gap="sm">
-            <TextInput
-              label="Username"
-              value={username}
-              onChange={(event) => setUsername(event.currentTarget.value)}
-              error={errors.username}
-              autoComplete="username"
-            />
-            <TextInput
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.currentTarget.value)}
-              error={errors.email}
-              autoComplete="email"
-            />
-            <PasswordInput
-              label="Password"
-              value={password}
-              onChange={(event) => setPassword(event.currentTarget.value)}
-              error={errors.password}
-              autoComplete="new-password"
-            />
-            <PasswordInput
-              label="Confirm password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.currentTarget.value)}
-              error={errors.confirmPassword}
-              autoComplete="new-password"
-            />
-            <Button type="submit" loading={setup.isPending}>
-              Create account
-            </Button>
-          </Stack>
-        </form>
-      </Stack>
+    <Center mih="60vh" px="md">
+      <Paper withBorder p="xl" maw={420} w="100%">
+        <Stack gap="md">
+          <Title order={3}>Welcome to plextraktbox</Title>
+          <Text c="dimmed" size="sm">
+            Create the local admin account. This app supports a single user.
+          </Text>
+          <form onSubmit={handleSubmit}>
+            <Stack gap="sm">
+              <TextInput
+                label="Username"
+                value={username}
+                onChange={(event) => setUsername(event.currentTarget.value)}
+                error={errors.username}
+                autoComplete="username"
+              />
+              <TextInput
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.currentTarget.value)}
+                error={errors.email}
+                autoComplete="email"
+              />
+              <PasswordInput
+                label="Password"
+                value={password}
+                onChange={(event) => setPassword(event.currentTarget.value)}
+                error={errors.password}
+                autoComplete="new-password"
+              />
+              <PasswordInput
+                label="Confirm password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.currentTarget.value)}
+                error={errors.confirmPassword}
+                autoComplete="new-password"
+              />
+              <Button type="submit" loading={setup.isPending}>
+                Create account
+              </Button>
+            </Stack>
+          </form>
+        </Stack>
+      </Paper>
     </Center>
   );
 }

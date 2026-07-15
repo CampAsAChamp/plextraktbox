@@ -5,7 +5,6 @@ import {
   Button,
   Group,
   Menu,
-  NavLink,
   Title,
   Tooltip,
 } from "@mantine/core";
@@ -13,6 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { formatVersionLabel, useHealthQuery } from "../../api/health";
+import { HomeIcon } from "../icons/HomeIcon";
 import { ApiHealthBadge } from "./ApiHealthBadge";
 import { NotificationBell } from "../notifications/NotificationBell";
 
@@ -73,25 +73,6 @@ function LogoutIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-function HomeIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
 interface AppLayoutProps {
   username?: string;
   avatarUrl?: string;
@@ -123,21 +104,22 @@ export function AppLayout({
   });
 
   return (
-    <AppShell header={{ height: 56 }} padding="md">
+    <AppShell header={{ height: 64 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
+          <Group gap="md">
             {showHome ? (
               <Tooltip label="Dashboard">
                 {isHome ? (
                   <ActionIcon
                     component="span"
                     variant="light"
+                    color="amber"
                     size="lg"
                     aria-label="Dashboard"
                     aria-current="page"
                   >
-                    <HomeIcon />
+                    <HomeIcon size={18} />
                   </ActionIcon>
                 ) : (
                   <ActionIcon
@@ -147,38 +129,46 @@ export function AppLayout({
                     size="lg"
                     aria-label="Go to dashboard"
                   >
-                    <HomeIcon />
+                    <HomeIcon size={18} />
                   </ActionIcon>
                 )}
               </Tooltip>
             ) : null}
-            <Title order={4}>plextraktbox</Title>
+            <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
+              plextraktbox
+            </Title>
             {showLogout ? (
-              <Group gap="xs">
-                <NavLink
+              <Group gap={4}>
+                <Button
                   component={Link}
                   to="/jobs"
-                  label="Jobs"
-                  active={isJobs}
-                  variant="subtle"
-                  style={{ width: "auto", borderRadius: 4 }}
-                />
-                <NavLink
+                  variant={isJobs ? "light" : "subtle"}
+                  color={isJobs ? "amber" : "gray"}
+                  size="compact-sm"
+                  aria-current={isJobs ? "page" : undefined}
+                >
+                  Jobs
+                </Button>
+                <Button
                   component={Link}
                   to="/runs"
-                  label="Runs"
-                  active={isRuns}
-                  variant="subtle"
-                  style={{ width: "auto", borderRadius: 4 }}
-                />
-                <NavLink
+                  variant={isRuns ? "light" : "subtle"}
+                  color={isRuns ? "amber" : "gray"}
+                  size="compact-sm"
+                  aria-current={isRuns ? "page" : undefined}
+                >
+                  Runs
+                </Button>
+                <Button
                   component={Link}
                   to="/connections"
-                  label="Connections"
-                  active={isConnections}
-                  variant="subtle"
-                  style={{ width: "auto", borderRadius: 4 }}
-                />
+                  variant={isConnections ? "light" : "subtle"}
+                  color={isConnections ? "amber" : "gray"}
+                  size="compact-sm"
+                  aria-current={isConnections ? "page" : undefined}
+                >
+                  Connections
+                </Button>
               </Group>
             ) : null}
           </Group>
@@ -227,7 +217,7 @@ export function AppLayout({
                   {versionLabel ? (
                     <>
                       <Menu.Divider />
-                      <Menu.Label>plextraktbox {versionLabel}</Menu.Label>
+                      <Menu.Label>{versionLabel}</Menu.Label>
                     </>
                   ) : null}
                   <Menu.Divider />
