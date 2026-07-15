@@ -26,6 +26,7 @@ import {
 } from "../../api/notifications";
 import { ApiError } from "../../api/client";
 import { DiscordIcon } from "../icons/DiscordIcon";
+import { SaveIcon } from "../icons/SaveIcon";
 
 const CHANNELS: NotificationChannel[] = ["discord", "inapp"];
 const DISCORD_BLURPLE = "#5865F2";
@@ -177,7 +178,7 @@ function ChannelSettings({
       ) : null}
 
       <Group>
-        <Button loading={save.isPending} onClick={() => save.mutate()}>
+        <Button loading={save.isPending} onClick={() => save.mutate()} leftSection={<SaveIcon />}>
           Save
         </Button>
         {config ? (
