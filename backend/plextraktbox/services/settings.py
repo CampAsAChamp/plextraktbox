@@ -15,6 +15,7 @@ from plextraktbox.cron import (
     validate_iana_timezone,
 )
 from plextraktbox.models.setting import Setting
+from plextraktbox.services.themes import DEFAULT_THEME_ID, resolve_theme_id
 from plextraktbox.sync.excludes import dump_exclude_ids, normalize_exclude_ids
 
 KEY_DEFAULT_CRON = "default_cron"
@@ -23,10 +24,12 @@ KEY_CRON_LOCAL_ZONE = "cron_local_zone"
 KEY_LOG_RETENTION_DAYS = "log_retention_days"
 KEY_GLOBAL_DRY_RUN = "global_dry_run"
 KEY_EXCLUDE_IDS = "exclude_ids"
+KEY_UI_THEME = "ui_theme"
 
 DEFAULT_CRON = "0 3 * * *"
 DEFAULT_LOG_RETENTION_DAYS = 30
 DEFAULT_GLOBAL_DRY_RUN = True
+DEFAULT_UI_THEME = DEFAULT_THEME_ID
 
 
 @dataclass
@@ -37,6 +40,7 @@ class AppSettings:
     log_retention_days: int = DEFAULT_LOG_RETENTION_DAYS
     global_dry_run: bool = DEFAULT_GLOBAL_DRY_RUN
     exclude_ids: dict[str, list[str]] = field(default_factory=dict)
+    ui_theme: str = DEFAULT_UI_THEME
 
     @property
     def cron_timezone_resolved(self) -> str:
@@ -81,6 +85,9 @@ def ensure_defaults(session: Session) -> AppSettings:
     if _read_json(session, KEY_EXCLUDE_IDS) is None:
         _write_json(session, KEY_EXCLUDE_IDS, {})
         changed = True
+    if _read_json(session, KEY_UI_THEME) is None:
+        _write_json(session, KEY_UI_THEME, DEFAULT_UI_THEME)
+        changed = True
     if changed:
         session.commit()
     return get_app_settings(session)
@@ -124,6 +131,11 @@ def get_app_settings(session: Session) -> AppSettings:
     exclude_raw = _read_json(session, KEY_EXCLUDE_IDS)
     exclude_ids = dump_exclude_ids(normalize_exclude_ids(exclude_raw if exclude_raw is not None else {}))
 
+    theme_raw = _read_json(session, KEY_UI_THEME)
+    ui_theme = DEFAULT_UI_THEME
+    if isinstance(theme_raw, str) and theme_raw.strip():
+        ui_theme = resolve_theme_id(theme_raw.strip())
+
     return AppSettings(
         default_cron=default_cron,
         cron_timezone=cron_timezone,
@@ -131,6 +143,7 @@ def get_app_settings(session: Session) -> AppSettings:
         log_retention_days=log_retention_days,
         global_dry_run=global_dry_run,
         exclude_ids=exclude_ids,
+        ui_theme=ui_theme,
     )
 
 
@@ -155,8 +168,21 @@ def update_app_settings(session: Session, settings: AppSettings) -> AppSettings:
     _write_json(session, KEY_LOG_RETENTION_DAYS, settings.log_retention_days)
     _write_json(session, KEY_GLOBAL_DRY_RUN, settings.global_dry_run)
     _write_json(session, KEY_EXCLUDE_IDS, exclude_ids)
+    # Preserve ui_theme — it is managed via update_ui_theme / PUT /settings/theme.
     session.commit()
     return get_app_settings(session)
+
+
+def update_ui_theme(session: Session, theme_id: str) -> str:
+    """Persist the active UI theme id after validating it exists."""
+    from plextraktbox.services.themes import theme_exists
+
+    cleaned = theme_id.strip()
+    if not cleaned or not theme_exists(cleaned):
+        raise ValueError(f"unknown theme id: {theme_id}")
+    _write_json(session, KEY_UI_THEME, cleaned)
+    session.commit()
+    return cleaned
 
 
 def list_all_setting_rows(session: Session) -> list[Setting]:

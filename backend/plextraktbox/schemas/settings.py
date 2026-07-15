@@ -35,6 +35,7 @@ class SettingsResponse(BaseModel):
     log_retention_days: int
     global_dry_run: bool
     exclude_ids: ExcludeIds
+    ui_theme: str
 
     @classmethod
     def from_app_settings(cls, settings: AppSettings) -> SettingsResponse:
@@ -50,6 +51,7 @@ class SettingsResponse(BaseModel):
                 imdb=normalized.get("imdb", []),
                 tvdb=normalized.get("tvdb", []),
             ),
+            ui_theme=settings.ui_theme,
         )
 
 

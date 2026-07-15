@@ -28,6 +28,7 @@ from plextraktbox.api import (
     run_logs,
     runs,
     setup,
+    themes,
 )
 from plextraktbox.api import settings as settings_api
 from plextraktbox.config import get_settings
@@ -90,6 +91,7 @@ def create_app() -> FastAPI:
     app.include_router(run_logs.router, prefix="/api")
     app.include_router(notifications.router, prefix="/api")
     app.include_router(settings_api.router, prefix="/api")
+    app.include_router(themes.router, prefix="/api")
 
     if settings.env == "local":
         app.include_router(dev.router, prefix="/api/dev")

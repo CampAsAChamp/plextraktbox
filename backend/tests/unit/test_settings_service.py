@@ -20,6 +20,7 @@ def test_ensure_defaults_seeds_keys(session: Session) -> None:
     assert settings.log_retention_days == 30
     assert settings.global_dry_run is True
     assert settings.exclude_ids == {}
+    assert settings.ui_theme == "one-dark-pro"
 
 
 def test_update_and_get_round_trip(session: Session) -> None:

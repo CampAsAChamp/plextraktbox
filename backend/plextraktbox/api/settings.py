@@ -8,7 +8,7 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
@@ -16,6 +16,7 @@ from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
 from plextraktbox.config import get_settings
 from plextraktbox.scheduler import get_scheduler_manager
 from plextraktbox.schemas.settings import SettingsResponse, SettingsUpdateRequest
+from plextraktbox.schemas.themes import ThemeActiveResponse, ThemeUpdateRequest
 from plextraktbox.services import settings as settings_svc
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -40,6 +41,24 @@ def update_settings_endpoint(
         # Re-register job triggers so hour/minute walls follow the new zone.
         get_scheduler_manager().load_all_jobs()
     return SettingsResponse.from_app_settings(updated)
+
+
+@router.put(
+    "/theme",
+    response_model=ThemeActiveResponse,
+    dependencies=[Depends(require_csrf)],
+)
+def update_theme_endpoint(
+    body: ThemeUpdateRequest,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> ThemeActiveResponse:
+    settings_svc.ensure_defaults(session)
+    try:
+        theme_id = settings_svc.update_ui_theme(session, body.theme_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return ThemeActiveResponse(theme_id=theme_id)
 
 
 def _unlink_quiet(path: Path) -> None:
