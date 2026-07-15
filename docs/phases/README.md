@@ -22,7 +22,7 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 11 | [TV sync](phase-11.md) | Done | Shows and episodes | [phase-11](test-plans/phase-11-test-plan.md) |
 | 12 | [CI & quality](phase-12.md) | Done | GitHub Actions, e2e, API types | [phase-12](test-plans/phase-12-test-plan.md) |
 | 13 | [Settings & operations](phase-13.md) | Done | Safety guards, health, backup | [phase-13](test-plans/phase-13-test-plan.md) |
-| 14 | [Dashboard & scheduling UX](phase-14.md) | Planned | Ops view, schedule picker, export | TBD |
+| 14 | [Dashboard & scheduling UX](phase-14.md) | Done | Ops view, schedule picker, export | [phase-14](test-plans/phase-14-test-plan.md) |
 | 15 | [Doppler secrets](phase-15.md) | Planned | Maintainer dev/CI workflow | TBD |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Planned | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
@@ -32,7 +32,8 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
 
-**Current focus:** Phase 14 (dashboard UX); Phases 0–8, 11–13, and 18 are complete.
+**Current focus:** Phase 20 (mobile layout) or release track (19); Phases 0–8, 11–14, and 18 are
+complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is last on the roadmap;
@@ -44,7 +45,7 @@ Phase numbers follow implementation order where possible. [Phase 18](phase-18.md
 use the tracks below when parallel work makes sense.
 
 ```
-Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 ✓ → 14 → 20
+Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 ✓ → 14 ✓ → 20
 Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
 Release                18 ✓ → 12 ✓ → 19
@@ -58,9 +59,9 @@ Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 
 | Track | Order | Notes |
 | ----- | ----- | ----- |
-| **Product** | **14** | Dashboard after settings/ops |
+| **Product** | 14 ✓ → **20** | Dashboard done; mobile next |
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
-| **Ops** | 13 ✓ → **14** → **20** | Settings/safety done; dashboard UX, then mobile |
+| **Ops** | 13 ✓ → 14 ✓ → **20** | Settings + dashboard done; mobile next |
 | **Release** | 12 ✓ → **19** | CI before automated releases / GHCR |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 |
 | **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |
