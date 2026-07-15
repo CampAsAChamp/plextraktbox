@@ -6,7 +6,7 @@
 
 ## 1. Release flow
 
-- [ ] Squash-merge to `main` with a Conventional Commit title (`feat: …` / `fix: …`)
+- [ ] Push or squash-merge to `main` with a Conventional Commit subject (`feat: …` / `fix: …`)
 - [ ] semantic-release bumps root `package.json`, `backend/pyproject.toml`,
       `frontend/package.json`, and `CHANGELOG.md` to the **same** semver (no Release PR)
 - [ ] git tag `vX.Y.Z` and a GitHub Release are created in the same workflow run
@@ -16,6 +16,8 @@
 
 - [ ] Release job runs `mise run check` and does **not** bump/publish if that step fails
 - [ ] CI workflow mirrors local `mise run check` (ruff, mypy, pytest, vitest)
+- [ ] PR title workflow rejects non-Conventional Commit titles
+- [ ] Local `commit-msg` hook (`.githooks/`, via `mise run install`) rejects non-Conventional subjects
 
 ## 3. Container publish
 
@@ -38,12 +40,13 @@ curl -s http://localhost:8000/api/health
 ## 5. Docs
 
 - [ ] [deploy/truenas.md](../../deploy/truenas.md) documents GHCR image name and tags
-- [ ] README has a Releases section (squash titles, automatic release, pull image)
+- [ ] README has a Releases section (Conventional Commits on `main`, automatic release, pull image)
 
 ## 6. Notes
 
-- Local commits stay plain imperative subjects. Only the **squash-merge PR title on `main`** needs
-  Conventional Commits so semantic-release can bump.
+- Commits that land on `main` (direct push or squash-merge PR title) must use Conventional
+  Commits so semantic-release can bump. Enable the hook with `mise run install` or
+  `git config core.hooksPath .githooks`.
 - After the first image push: GitHub → Packages → `plextraktbox` → Package settings → change
   visibility to **public** (required for unauthenticated TrueNAS pulls in Phase 22).
 - Manual tags: `git tag vX.Y.Z && git push origin vX.Y.Z` runs the `publish-tag` job in

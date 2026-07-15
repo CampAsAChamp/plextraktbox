@@ -140,7 +140,7 @@ mise run down-dev
 
 ```bash
 mise trust && mise install   # first time only
-mise run install             # backend venv + frontend deps
+mise run install             # backend venv + frontend deps + commit hooks
 doppler run -- mise run dev-backend   # terminal 1 — uvicorn on :8000
 mise run dev-frontend              # terminal 2 — Vite on :5173
 ```
@@ -170,8 +170,10 @@ images publish to GHCR on each GitHub Release.
 
 **Cutting a release**
 
-1. Squash-merge PRs to `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
-   title (`feat: …`, `fix: …`, `feat!: …`). Local commit subjects can stay plain imperative.
+1. Land changes on `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
+   subject (`feat: …`, `fix: …`, `feat!: …`) — either a direct push or a squash-merge PR
+   title. A local `commit-msg` hook (enabled by `mise run install`) and
+   `.github/workflows/pr-title.yml` enforce the format.
 2. [semantic-release](https://semantic-release.gitbook.io/) bumps the one app semver (root
    `package.json`, `backend/pyproject.toml`, `frontend/package.json`, `CHANGELOG.md`), creates tag
    `vX.Y.Z` + a GitHub Release, and publishes `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`)

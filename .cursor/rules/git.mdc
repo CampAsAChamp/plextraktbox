@@ -1,15 +1,24 @@
 ---
-description: Git commit style for this personal repo
+description: Git commit style for plextraktbox (Conventional Commits)
 alwaysApply: true
 ---
 
-# Git (personal repo)
+# Git (plextraktbox)
 
-- Plain imperative subject lines — **no** conventional commits (`feat:`, `fix:`) in local commits unless the user asks
-- No trailing period on subject lines (e.g. `Add job scheduler UI`, not `Add job scheduler UI.`)
-- Match recent `git log` in this repo (e.g. `Add job scheduler UI`, `Fix Trakt token refresh`)
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/) so
+semantic-release can bump on `main`. Local `commit-msg` hook (`.githooks/`) and
+PR-title CI both enforce the format.
+
+- Subject: `type: description`, `type(scope): description`, or `type!: description`
+- Types: `feat`, `fix`, `perf`, `revert`, `chore`, `docs`, `style`, `refactor`, `test`, `build`, `ci`
+- No trailing period on the subject
 - Optional short body focusing on **why**
 - No Jira IDs
 - Only commit when explicitly requested; never push unless asked
 
-**Releases (Phase 19):** When squash-merging a PR to `main` that should trigger a version bump, use a Conventional Commit **PR title** (`feat:`, `fix:`, `feat!:`). semantic-release parses that squash commit; local branch commits stay plain.
+Examples: `feat: add mobile nav drawer`, `fix: retry Trakt token refresh on 401`,
+`chore: tighten API health badge typography`
+
+**Releases (Phase 19):** Commits that land on `main` (direct push or squash-merge PR
+title) must be Conventional Commits. CI also checks PR titles via
+`.github/workflows/pr-title.yml`.

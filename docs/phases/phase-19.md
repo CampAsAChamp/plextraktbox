@@ -34,8 +34,9 @@ build is running?” on TrueNAS.
 - **semantic-release** on push to `main` — no Release PR
 - Bumps root `package.json`, syncs `backend/pyproject.toml` + `frontend/package.json`, updates
   `CHANGELOG.md`, commits `chore(release): X.Y.Z [skip ci]`, tags `vX.Y.Z`, creates GitHub Release
-- **Squash-merge with Conventional Commit PR titles** (`feat:` / `fix:` / `feat!:`) when landing on
-  `main` — local day-to-day subjects stay plain; semantic-release parses the squash commit
+- **Conventional Commits** required for anything that lands on `main` (direct push or squash-merge
+  PR title: `feat:` / `fix:` / `feat!:`). Enforced by `.githooks/commit-msg` (`mise run install`)
+  and `.github/workflows/pr-title.yml`
 
 ### GitHub Release + GHCR
 
@@ -54,7 +55,9 @@ build is running?” on TrueNAS.
 ## Key files
 
 - `.github/workflows/ci.yml` — Phase 12 check gate
+- `.github/workflows/pr-title.yml` — Conventional Commit PR titles
 - `.github/workflows/release.yml` — semantic-release + GHCR publish
+- `.githooks/commit-msg` — local Conventional Commit enforcement
 - `.releaserc.json` — semantic-release plugins (inline prepare syncs backend / frontend)
 - Root `package.json` — semantic-release version home
 - `CHANGELOG.md` — maintained by semantic-release

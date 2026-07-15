@@ -56,7 +56,10 @@ Do not run `up` and `up-dev` simultaneously — both bind port 8000.
 
 ## Git
 
-Personal repo — plain imperative commit subjects, no trailing period (no conventional commits unless asked). Match recent `git log`. Only commit when the user asks.
+Use [Conventional Commits](https://www.conventionalcommits.org/) for every commit
+(`feat:`, `fix:`, `chore:`, …) — required for semantic-release on `main`. No trailing
+period on the subject. Enabled by `mise run install` (`.githooks/commit-msg`). Only
+commit when the user asks.
 
 ## Coding principles
 
@@ -79,9 +82,9 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, **18 (version/build info)**, **19 (automated releases / GHCR)**, and **20 (mobile layout)** are done; next is sync fetch/resolve caches (21), TrueNAS deploy (22–23), and **UI themes (24)** last. Frontend redesign (former 9–10) was retired — stay on Mantine.
 
-**Releases:** Local commits stay plain imperative subjects. When squash-merging to `main` for
-release-worthy work, use a Conventional Commit PR title (`feat:` / `fix:` / `feat!:`) so
-semantic-release can bump and publish. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
+**Releases:** Commits that land on `main` (direct push or squash-merge PR title) must use
+Conventional Commits (`feat:` / `fix:` / `feat!:`) so semantic-release can bump and
+publish. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.

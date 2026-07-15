@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Enforce Conventional Commits so semantic-release can bump on main.
+# Enabled by: mise run install  (sets core.hooksPath=.githooks)
+# Or manually: git config core.hooksPath .githooks
+
+set -euo pipefail
+
+msg_file="${1:?commit message file required}"
+subject="$(head -n1 "$msg_file" | tr -d '\r')"
+
+# Empty / merge / revert / fixup / squash subjects are fine
+if [[ -z "$subject" || "$subject" =~ ^(Merge |Revert |fixup! |squash! ) ]]; then
+  exit 0
+fi
+
+# semantic-release's release commits
+if [[ "$subject" =~ ^chore\(release\): ]]; then
+  exit 0
+fi
+
+types='feat|fix|perf|revert|chore|docs|style|refactor|test|build|ci'
+pattern="^(${types})(\\([a-z0-9._-]+\\))?(!)?: .+"
+
+if [[ ! "$subject" =~ $pattern ]]; then
+  cat >&2 <<EOF
+commit-msg: subject must be a Conventional Commit:
+
+  type: description
+  type(scope): description
+  type!: description
+
+Allowed types: feat fix perf revert chore docs style refactor test build ci
+Example: feat: add mobile nav drawer
+
+Got: ${subject}
+EOF
+  exit 1
+fi
+
+# No trailing period on the subject (style preference)
+if [[ "$subject" =~ \.$ ]]; then
+  echo "commit-msg: subject must not end with a period" >&2
+  exit 1
+fi
+
+exit 0
