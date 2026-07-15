@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Release Please maintains this file from Conventional Commit squash titles on `main`.
 
+## [0.2.1](https://github.com/CampAsAChamp/plextraktbox/compare/v0.2.0...v0.2.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* stop hardcoding package version in unit test ([c2f78ae](https://github.com/CampAsAChamp/plextraktbox/commit/c2f78aed1a0ba87ec887b6f2372dd7a7190867bc))
+* use one app version across release-please targets ([3c00bb4](https://github.com/CampAsAChamp/plextraktbox/commit/3c00bb4ea786203ff1352d27cab46d8a8b49b214))
+
 ## [0.2.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.1.0...v0.2.0) (2026-07-15)
 
 
