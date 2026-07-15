@@ -35,11 +35,15 @@ describe("formatTimestamp", () => {
     expect(formatTimestamp(naive, prefs)).toBe(formatTimestamp(explicit, prefs));
   });
 
-  it("formats local and UTC timestamps differently", () => {
+  it("formats fixed IANA timezones differently from UTC", () => {
     const value = "2026-07-11T18:30:45.123Z";
-    expect(
-      formatTimestamp(value, { timezone: "local", timeFormat: "24h", dateFormat: "mdy" }),
-    ).not.toBe(formatTimestamp(value, preferences));
+    const utc = formatTimestamp(value, preferences);
+    const chicago = formatTimestamp(value, {
+      timezone: "America/Chicago",
+      timeFormat: "24h",
+      dateFormat: "mdy",
+    });
+    expect(chicago).not.toBe(utc);
   });
 });
 
