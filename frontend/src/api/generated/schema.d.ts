@@ -457,6 +457,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/{job_id}/clone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clone Job */
+        post: operations["clone_job_api_jobs__job_id__clone_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/jobs/{job_id}/run": {
         parameters: {
             query?: never;
@@ -537,6 +554,23 @@ export interface paths {
         };
         /** List Run Logs */
         get: operations["list_run_logs_api_runs__run_id__logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/logs/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Run Logs */
+        get: operations["export_run_logs_api_runs__run_id__logs_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -909,6 +943,27 @@ export interface components {
             notify_mode: components["schemas"]["NotifyMode"];
             exclude_ids?: components["schemas"]["ExcludeIds"];
         };
+        /**
+         * JobLastRun
+         * @description Compact latest-run snapshot for job list / dashboard ops.
+         */
+        JobLastRun: {
+            /** Id */
+            id: number;
+            status: components["schemas"]["JobRunStatus"];
+            /** Dry Run */
+            dry_run: boolean;
+            /** Started At */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Matched */
+            matched: number;
+            /** Added */
+            added: number;
+            /** Errors */
+            errors: number;
+        };
         /** JobResponse */
         JobResponse: {
             /** Id */
@@ -930,6 +985,7 @@ export interface components {
             exclude_ids: components["schemas"]["ExcludeIds"];
             /** Next Run At */
             next_run_at?: string | null;
+            last_run?: components["schemas"]["JobLastRun"] | null;
         };
         /** JobRunRequest */
         JobRunRequest: {
@@ -2332,6 +2388,39 @@ export interface operations {
             };
         };
     };
+    clone_job_api_jobs__job_id__clone_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     run_job_api_jobs__job_id__run_post: {
         parameters: {
             query?: never;
@@ -2489,6 +2578,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LogListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_run_logs_api_runs__run_id__logs_export_get: {
+        parameters: {
+            query?: {
+                format?: "txt" | "jsonl";
+            };
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
