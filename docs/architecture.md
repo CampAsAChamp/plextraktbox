@@ -44,9 +44,9 @@ drops in without rework.
 ## Tech choices
 
 **Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
-**Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine** (current UI;
-**Phases 9–10** prototype then migrate to Radix + Tailwind ops-console design), `@microsoft/fetch-event-source` (SSE),
-react-hook-form + zod, `@tanstack/react-virtual` (log virtualization). Tests: Vitest + RTL + MSW.
+**Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine**,
+`@microsoft/fetch-event-source` (SSE), react-hook-form + zod, `@tanstack/react-virtual` (log
+virtualization). Tests: Vitest + RTL + MSW.
 
 ## Directory structure
 
@@ -159,7 +159,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 9 — frontend prototype; movie fetch + apply (Phases 7–8) are complete.
+**Current focus:** Phase 11 — TV sync; movie fetch + apply (Phases 7–8) are complete.
 
 
 

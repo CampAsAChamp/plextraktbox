@@ -19,7 +19,6 @@ setup: [testing.md](../../testing.md).
 
 ## What Phase 8 defers to later phases
 
-- Frontend prototype (Phase 9); full redesign (Phase 10)
 - TV shows and episodes (Phase 11)
 - Global settings, dry-run guards, exclude list, connection health job (Phase 13)
 - Dashboard ops, schedule picker, clone/export (Phase 14)

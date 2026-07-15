@@ -5,26 +5,25 @@
 ## Goal
 
 Make the full SPA usable on phones and small tablets — not a separate mobile app, but a responsive
-layout that preserves every flow from desktop. Ops-console density on large screens; readable,
+layout that preserves every flow from desktop. Dense layouts on large screens; readable,
 touch-friendly layouts below ~768px.
 
 **No new sync features or API endpoints.**
 
 ## Context
 
-The app is built for repeat desktop use (sidebar, wide tables, split-pane run detail). Viewport meta
+The app is built for repeat desktop use (header nav, wide tables, split-pane run detail). Viewport meta
 is already set; the gap is layout, navigation, and component behavior at narrow widths. Do this **after**
-the Radix + Tailwind migration ([Phase 10](phase-10.md)) and major UX flows ([Phase 14](phase-14.md))
-so responsive work targets the final component set.
+major UX flows ([Phase 14](phase-14.md)) so responsive work targets the production Mantine pages.
 
 ## Deliverables
 
 ### Layout shell
 
-- **Breakpoint strategy** — document tokens (e.g. `sm` / `md` / `lg`) in the design system; default
+- **Breakpoint strategy** — use Mantine breakpoints (`sm` / `md` / `lg`); default
   mobile-first where practical
-- **Sidebar → drawer** — collapsible nav on small viewports; hamburger or equivalent; focus trap +
-  escape to close
+- **Nav → drawer / stacked** — header links become a hamburger or equivalent on small viewports;
+  focus trap + escape to close when using a drawer
 - **Header compaction** — version badge, health, notification bell, account menu usable without
   horizontal scroll
 - **Safe areas** — respect notches / home indicators where relevant (`env(safe-area-inset-*)`)
@@ -59,15 +58,13 @@ Apply consistently across all routes:
 
 ## Key files (expected)
 
-- `frontend/src/components/layout/` — responsive shell, mobile nav drawer
-- `frontend/src/components/ui/` — responsive variants for Table, Dialog, Sheet
+- `frontend/src/components/layout/` — responsive shell / mobile nav if introduced
 - `frontend/src/pages/*` — per-page layout adjustments (especially Connections, RunDetail, Jobs)
-- `frontend/tailwind.config.*` — breakpoint and spacing tokens if not already centralized
+- Mantine responsive props / CSS modules as needed
 - `docs/architecture.md` — note responsive layout as a first-class UI concern
 
 ## Prerequisites
 
-- [Phase 10](phase-10.md) — Radix + Tailwind stack and production layout shell (**required**)
 - [Phase 14](phase-14.md) — dashboard, schedule picker, run export (**recommended** — exercises
   the heaviest ops views)
 - [Phase 11](phase-11.md) — if TV job forms ship before this phase, include them in scope

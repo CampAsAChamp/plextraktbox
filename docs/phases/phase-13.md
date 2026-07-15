@@ -11,7 +11,7 @@ is safe to run unattended on a home server.
 
 ### Settings model + UI
 
-- **`setting` table** + Settings page (on [Phase 10](phase-10.md) UI stack)
+- **`setting` table** + Settings page (Mantine)
 - Default cron expression
 - `log_retention_days`
 - **Global dry-run default** — runner resolves `override ?? job.dry_run ?? global`
@@ -46,8 +46,7 @@ is safe to run unattended on a home server.
 
 ## Prerequisites
 
-[Phase 8](phase-8.md) — real movie sync proven; [Phase 10](phase-10.md) UI stack; [Phase 11](phase-11.md)
-if TV is in scope
+[Phase 8](phase-8.md) — real movie sync proven; [Phase 11](phase-11.md) if TV is in scope
 
 ## Defers to later phases
 

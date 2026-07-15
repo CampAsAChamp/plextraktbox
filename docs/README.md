@@ -11,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** Phase 9 — [frontend prototype](phases/phase-9.md)
+- **Current focus:** Phase 11 — [TV sync](phases/phase-11.md)
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)

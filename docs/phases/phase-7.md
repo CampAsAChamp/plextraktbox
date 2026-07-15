@@ -60,8 +60,6 @@ plans against live data. `apply_*` stays stubbed until [Phase 8](phase-8.md).
 | Item | Phase |
 | ---- | ----- |
 | `apply_*` writes to Plex and Trakt | 8 |
-| Frontend prototype (run detail + logs) | 9 |
-| Frontend redesign (full migration) | 10 |
 | TV shows and episodes | 11 |
 | Global settings, dry-run guards, exclude list | 13 |
 | Connection health monitoring job | 13 |

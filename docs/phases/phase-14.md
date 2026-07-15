@@ -36,7 +36,7 @@ by hand, and export run logs for debugging.
 
 ## Prerequisites
 
-[Phase 13](phase-13.md) — settings and safety rails in place; [Phase 10](phase-10.md) UI stack
+[Phase 13](phase-13.md) — settings and safety rails in place
 
 ## Defers to later phases
 

@@ -25,7 +25,7 @@ watched/history where each service supports them — building on the movie path 
 
 - Job data-type and source-pair options reflect TV scope where applicable
 - Run summary counts break out shows/episodes as needed
-- Job form changes built on the [Phase 10](phase-10.md) UI stack
+- Job form changes on the existing Mantine UI
 
 ## Key files (expected)
 
@@ -35,8 +35,7 @@ watched/history where each service supports them — building on the movie path 
 
 ## Prerequisites
 
-[Phases 7–8](phase-7.md) — **movies working on real data**; [Phase 10](phase-10.md) — full frontend
-redesign landed so TV UI is not built on Mantine
+[Phases 7–8](phase-7.md) — **movies working on real data**
 
 ## Defers to later phases
 

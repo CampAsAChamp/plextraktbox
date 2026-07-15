@@ -26,7 +26,6 @@ reporting. `apply_*` stays stubbed until [Phase 8](phase-8-test-plan.md).
 ## What Phase 7 defers to later phases
 
 - `apply_*` writes to Plex and Trakt (Phase 8)
-- Frontend prototype (Phase 9); full redesign (Phase 10)
 - TV shows and episodes (Phase 11)
 - Global settings, dry-run guards, exclude list, connection health job (Phase 13)
 - Dashboard ops, schedule picker, clone/export (Phase 14)

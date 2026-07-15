@@ -37,8 +37,6 @@ movies — building on the fetch path proven in [Phase 7](phase-7.md). Letterbox
 
 | Item | Phase |
 | ---- | ----- |
-| Frontend prototype (run detail + logs) | 9 |
-| Frontend redesign (full migration) | 10 |
 | TV shows and episodes | 11 |
 | Global settings, dry-run guards, exclude list | 13 |
 | Connection health monitoring job | 13 |
@@ -51,4 +49,4 @@ movies — building on the fetch path proven in [Phase 7](phase-7.md). Letterbox
 
 [phase-8-test-plan.md](test-plans/phase-8-test-plan.md)
 
-**Next:** [Phase 9 — Frontend prototype](phase-9.md)
+**Next:** [Phase 11 — TV sync](phase-11.md)

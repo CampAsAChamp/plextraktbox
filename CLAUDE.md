@@ -19,7 +19,7 @@ Letterboxd has **no write API** — `LetterboxdSource.apply_*` must stay unsuppo
 ## Stack
 
 - **Backend:** Python 3.14, FastAPI, SQLModel, Alembic, APScheduler, structlog, plexapi, trakt.py, letterboxd_stats
-- **Frontend:** React 18, TypeScript, Vite, Mantine (Phases 9–10 → Radix + Tailwind), TanStack Query, react-hook-form + zod
+- **Frontend:** React 18, TypeScript, Vite, Mantine, TanStack Query, react-hook-form + zod
 - **Tooling:** [mise.toml](mise.toml) pins Python/Node and defines all dev tasks
 - **Deploy target:** TrueNAS SCALE (single container, `/data` ZFS mount, port 8000)
 
@@ -77,7 +77,7 @@ Personal repo — plain imperative commit subjects, no trailing period (no conve
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–8 and **18 (version/build info)** are done; **Phase 9 (frontend prototype)** is next, then UI redesign (10), TV (11), CI (12), settings/ops (13), dashboard (14), Doppler (15), automated releases (19), mobile layout (20), sync fetch/resolve caches (21), and TrueNAS deploy last (22–23).
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–8 and **18 (version/build info)** are done; **Phase 11 (TV sync)** is next, then CI (12), settings/ops (13), dashboard (14), Doppler (15), automated releases (19), mobile layout (20), sync fetch/resolve caches (21), and TrueNAS deploy last (22–23). Frontend redesign (former 9–10) was retired — stay on Mantine.
 
 When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
 `docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.
