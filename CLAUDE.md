@@ -80,7 +80,7 @@ commit when the user asks.
 
 ## Phase progress
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, **18 (version/build info)**, **19 (automated releases / GHCR)**, **20 (mobile layout)**, and **24 (UI themes)** are done; next is sync fetch/resolve caches (21) and TrueNAS deploy (22–23). Default theme is Atom One Dark Pro; custom CSS under `{DATA_DIR}/themes/`. Frontend redesign (former 9–10) was retired — stay on Mantine.
+See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, **18 (version/build info)**, **19 (automated releases / GHCR)**, **20 (mobile layout)**, **21 (sync fetch/resolve caches)**, and **24 (UI themes)** are done; next is TrueNAS deploy (22–23). Default theme is Atom One Dark Pro; custom CSS under `{DATA_DIR}/themes/`. Frontend redesign (former 9–10) was retired — stay on Mantine.
 
 **Releases:** Commits that land on `main` (direct push or squash-merge PR title) must use
 Conventional Commits (`feat:` / `fix:` / `feat!:`) so semantic-release can bump and

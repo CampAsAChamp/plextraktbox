@@ -8,7 +8,7 @@ alwaysApply: false
 
 Ported from PlexTraktSync patterns: GUID matching, stateless diffing, dry-run, pluggy plugins.
 Sync fetch/resolve caches (LB export + slug→ids, Trakt lists, Discover keys, Plex once-per-run
-library) are planned in Phase 21 — not a cross-service match table.
+library) are Phase 21 — not a cross-service match table.
 
 ## Source of truth
 

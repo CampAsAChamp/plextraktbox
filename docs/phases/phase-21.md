@@ -1,6 +1,6 @@
 # Phase 21 — Sync fetch & resolve caches
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
@@ -15,89 +15,62 @@ fetches**, and **identifier / Discover key resolution** only.
 
 ### Letterboxd CSV export cache
 
-- Persist the downloaded export (ratings / diary CSVs; watchlist optional) under `/data` or SQLite
-- Reuse until TTL expires (default: e.g. 12–24h) or the user forces refresh
-- Settings (or job override): `letterboxd_export_cache_ttl` + “Refresh Letterboxd export” action
-- Still download on cache miss / expired / force; log cache hit vs miss in the run log
+- Persist downloaded export CSVs under `{DATA_DIR}/caches/letterboxd/{connection_id}/`
+- Reuse until TTL expires (default 24h) or the user forces refresh / clears cache
+- Setting: `letterboxd_export_cache_ttl_hours` + Settings → Sync caches clear control
 - Credentials change → invalidate export cache for that connection
+- Run log: `sync.cache.letterboxd_export.hit|miss|forced`
 
 ### Letterboxd slug → identifiers cache
 
-- Persist `letterboxd_slug` → `{tmdb, imdb?, …}` (and maybe title/year) in SQLite
-- On fetch: resolve only uncached / invalid slugs; reuse hits without scraping LB or calling TMDB
-- Write through on successful resolve; optional short-TTL on misses so bad resolves can retry
-- Does not replace `MediaMatcher` — only speeds resolution before items enter matching
+- SQLite table `letterboxd_slug_cache` (`slug` → tmdb/imdb + optional negative miss TTL)
+- Resolver wraps TMDB/LB resolve; write-through on success; 1h negative cache on miss
+- Clear via Settings → Sync caches
 
 ### Trakt list TTL cache
 
-- Today Trakt watchlist / ratings / watched use bare `httpx` and bypass Phase 7 `requests-cache`
-- Cache those list responses (or normalized `MediaItem` lists) with a short TTL (e.g. 15–60 min)
-- Invalidate on successful apply that mutates the same list (watchlist add/remove, rate, etc.)
-- Log cache hit vs miss; force-refresh path for debugging
+- SQLite table `trakt_list_cache` for watchlist / ratings / watched snapshots
+- Default TTL 30 minutes (`trakt_list_cache_ttl_minutes`)
+- Invalidate on successful apply that mutates the same list
+- Run log: `sync.cache.trakt_list.hit|miss|forced|invalidated`
 
 ### Plex Discover key map
 
-- Persist `tmdb` / `imdb` (and maybe title+year fallback) → Discover metadata key
-  (`plex://movie/…` id used by Discover rate / watchlist add)
-- On apply: skip `searchDiscover` when the key is cached
-- Write through after a successful Discover resolve; optional clear when rate/add fails with
-  not-found
+- SQLite table `plex_discover_key_cache` (`id_provider` + `external_id` + `libtype` → discover key)
+- `rate_discover_movie` uses cached key; write-through after searchDiscover; invalidate on rate failure / not-found
 
 ### Plex library load once per run
 
-- Ratings fetch, watched fetch, and apply indexing each call `fetch_library_movies` today — large
-  libraries pay 2–3 full scans per job
-- Within a run: load scoped library movies **once**, share the raw videos / `MediaItem` list /
-  match-key index across fetch + apply
-- Prefer in-process / `SyncContext` sharing over a long-lived DB snapshot (library state should stay
-  fresh across runs). Optional short HTTP TTL already exists via `requests-cache`; this deliverable
-  is about **deduping work inside one run**
+- `PlexLibrarySnapshot` on `PlexSource` shares movies/shows + match-key indexes across fetch + apply
+- Log once: `sync.plex.library.loaded`
+- Not persisted across runs
 
 ### Ops / safety
 
-- Durable caches live on the `/data` volume (survive container restarts)
-- Optional Settings clear-cache control (LB export, LB slug map, Trakt lists, Discover keys)
-- Run-log metrics: per-cache hit/miss / newly resolved counts; library “loaded once” confirmation
+- Durable caches on `/data` (files + SQLite)
+- Settings UI: TTL controls + clear selected caches (`POST /api/settings/clear-sync-caches`)
 
-### Testing
+## Key files
 
-- Unit tests: cache hit skips download / TMDB / Trakt HTTP / Discover search; TTL expiry re-fetches;
-  force refresh bypasses; apply mutations invalidate Trakt list cache
-- Plex: one library `section.all()` (or equivalent) per run when ratings + watched + apply all run
-- No change to reconciler plan outcomes when caches are warm vs cold (same effective MediaItems)
-
-## Key files (expected)
-
-- `backend/plextraktbox/clients/letterboxd_client.py` — export cache
-- `backend/plextraktbox/clients/tmdb_client.py` / `sync/guid.py` — slug resolve via cache
-- `backend/plextraktbox/clients/trakt_client.py` — list TTL (or shared list-cache helper)
-- `backend/plextraktbox/clients/plex_client.py` — Discover key map; library load sharing hooks
-- `backend/plextraktbox/sync/context.py` / `sync/sources/plex_source.py` — once-per-run library
-- `backend/plextraktbox/models/` — resolve / Discover / export metadata tables
-- `backend/migrations/` — new table(s)
-- Settings UI / API when [Phase 13](phase-13.md) exists; until then: env/TTL defaults + force flag
-
-## Prerequisites
-
-[Phase 8](phase-8.md) — real movie sync (all of the above sit on the hot path)
-
-## Defers to later phases
-
-| Item | Phase |
-| ---- | ----- |
-| Global Settings TTL UI + clear-cache button | 13 (if Settings lands first, wire here; else ship defaults in 21) |
-| HTTP `requests-cache` (~1h) for TMDB / LB film pages / Plex GETs | 7 (done) — complementary, not enough alone |
+- `backend/plextraktbox/clients/plex_client.py` — `PlexLibrarySnapshot`; Discover key hooks
+- `backend/plextraktbox/sync/sources/plex_source.py` — once-per-run library ownership
+- `backend/plextraktbox/services/letterboxd_export_cache.py`
+- `backend/plextraktbox/services/letterboxd_slug_cache.py`
+- `backend/plextraktbox/services/trakt_list_cache.py`
+- `backend/plextraktbox/services/plex_discover_key_cache.py`
+- `backend/plextraktbox/services/sync_caches.py` — clear orchestration
+- `backend/migrations/versions/009_sync_caches.py`
+- `frontend/src/pages/Settings/SyncCachesSection.tsx`
 
 ## Out of scope
 
-- Persisted Plex↔Trakt↔Letterboxd **match** table (architecture stays stateless matching)
-- Long-lived Plex library snapshot across runs (stale library ratings/watched are worse than a re-scan)
+- Persisted Plex↔Trakt↔Letterboxd **match** table
+- Long-lived Plex library snapshot across runs
 - Letterboxd write-back
 - Changing ratings / watchlist / watched source-of-truth
 
 ## Verification
 
-Test plan TBD when phase lands — copy
-[phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+[phase-21-test-plan.md](test-plans/phase-21-test-plan.md)
 
-**Next:** (end of product performance track for now — see [phases README](README.md))
+**Next:** [Phase index](README.md) — TrueNAS (22–23)

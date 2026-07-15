@@ -27,16 +27,16 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Done | semantic-release, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 | 20 | [Mobile & responsive layout](phase-20.md) | Done | Phone/tablet layouts, touch UX | [phase-20](test-plans/phase-20-test-plan.md) |
-| 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
+| 21 | [Sync fetch & resolve caches](phase-21.md) | Done | LB/Trakt/Discover caches + once-per-run Plex library | [phase-21](test-plans/phase-21-test-plan.md) |
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Done | Built-ins + custom upload/volume | [phase-24](test-plans/phase-24-test-plan.md) |
 
-**Current focus:** Phase 21 (sync caches) or TrueNAS (22–23); Phases 0–8, 11–15, 18–20, and **24** are complete.
+**Current focus:** TrueNAS (22–23); Phases 0–8, 11–15, 18–21, and **24** are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is done — factory default
-is Atom One Dark Pro.
+is Atom One Dark Pro. [Phase 21](phase-21.md) (sync caches) is done.
 
 ## Delivery order
 
@@ -45,7 +45,7 @@ use the tracks below when parallel work makes sense.
 
 ```
 Product (primary)     7 ✓ → 8 ✓ → 11 ✓ → 13 ✓ → 14 ✓ → 20 ✓
-Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
+Sync performance      21 ✓ — LB/Trakt/Discover caches + Plex once-per-run
 
 Release                18 ✓ → 12 ✓ → 19 ✓
 
@@ -59,7 +59,7 @@ Maintainer (optional)  15 ✓ — Doppler
 | Track | Order | Notes |
 | ----- | ----- | ----- |
 | **Product** | 14 ✓ → 20 ✓ | Dashboard + mobile done |
-| **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
+| **Sync perf** | **21** ✓ | LB export/slug, Trakt lists, Discover keys, Plex once-per-run |
 | **Ops** | 13 ✓ → 14 ✓ → 20 ✓ | Settings + dashboard + mobile done |
 | **Release** | 12 ✓ → 19 ✓ | CI + automated releases / GHCR done |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 ✓ |

@@ -126,7 +126,7 @@ flowchart LR
 
 Letterboxd titles resolve `letterboxd.com/...` → TMDB id (via TMDB client) → `tmdb://` before match.
 
-**Planned ([Phase 21](phases/phase-21.md)):** Letterboxd CSV export TTL + slug→ids; Trakt list TTL;
+**Done ([Phase 21](phases/phase-21.md)):** Letterboxd CSV export TTL + slug→ids; Trakt list TTL;
 Plex Discover key map; Plex library loaded once per run. Cross-service matching remains ID-based.
 
 ---

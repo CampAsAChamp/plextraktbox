@@ -93,7 +93,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 - `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (`movie` | `show` | `episode`), plus `season`/`episode` for episode match keys.
 - `guid.py` — port of PlexTraktSync `PlexGuid`/`MediaFactory`: parse Plex guids → structured `Guid`; LB path resolves URL → TMDB id → `tmdb://<id>`.
 - `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted Plex↔Trakt mapping).
-- **Fetch / resolve caches ([Phase 21](phases/phase-21.md), planned):** Letterboxd CSV export TTL; persisted `letterboxd_slug` → external ids; Trakt list TTL (watchlist/ratings/watched — currently bypass `requests-cache`); Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
+- **Fetch / resolve caches ([Phase 21](phases/phase-21.md), done):** Letterboxd CSV export TTL on `/data`; persisted `letterboxd_slug` → external ids; Trakt list TTL snapshots; Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
 - **Sources** (`sources/base.py` ABC): `fetch_watchlist/ratings/watched`, `apply_watchlist/ratings/watched(..., dry_run)`, `capabilities`. `PlexSource`/`TraktSource` full read/write; `LetterboxdSource` **read-only** — `apply_`* raise `NotSupported`, capabilities mark writes false (enforces no-write-back at type level).
 - **Reconcilers** compute a **plan** then **apply** (skipped on dry_run), each hard-coding its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
 - `plugins.py` — pluggy hookspecs (`provide_sources`, `provide_reconcilers`, `before_run`, `after_item`, `after_run`); leaves a seam for future services.
@@ -126,7 +126,7 @@ Reference: [plexapi Discover rating discussion](https://github.com/pkkid/python-
 - **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
 - **setting** — key/value_json (default cron, `cron_timezone` as UTC/local/IANA for interpreting job crons, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention + connection-health system jobs prune old logs/runs and probe connections (always UTC).
-- **Sync caches ([Phase 21](phases/phase-21.md), planned)** — Letterboxd export + `letterboxd_slug` → ids; Trakt list TTL snapshots; Plex Discover key map. (Plex once-per-run library share is in-process via sync context, not a DB table.)
+- **Sync caches ([Phase 21](phases/phase-21.md), done)** — Letterboxd export files + `letterboxd_slug_cache` / `trakt_list_cache` / `plex_discover_key_cache` tables. (Plex once-per-run library share is in-process via `PlexLibrarySnapshot`, not a DB table.)
 
 
 
@@ -166,7 +166,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** Phase 21 (sync caches) or TrueNAS (22–23); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), mobile layout (20), and **UI themes (24)** are complete. Themes use Mantine palettes (default Atom One Dark Pro) plus optional custom CSS under `{DATA_DIR}/themes/`.
+**Current focus:** TrueNAS (22–23); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), mobile layout (20), **sync caches (21)**, and **UI themes (24)** are complete. Themes use Mantine palettes (default Atom One Dark Pro) plus optional custom CSS under `{DATA_DIR}/themes/`.
 
 
 

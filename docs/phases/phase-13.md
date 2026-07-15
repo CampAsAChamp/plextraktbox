@@ -56,7 +56,7 @@ is safe to run unattended on a home server.
 | Dashboard ops view, friendly cron picker | 14 |
 | Log export download | 14 |
 | Doppler maintainer workflow | 15 |
-| Sync cache TTL / clear-cache UI (LB, Trakt, Discover — caches themselves) | 21 |
+| Sync cache TTL / clear-cache UI (LB, Trakt, Discover — caches themselves) | 21 ✓ |
 | TrueNAS deploy docs | 22 |
 | UI themes (built-ins + custom upload/volume) | 24 |
 
