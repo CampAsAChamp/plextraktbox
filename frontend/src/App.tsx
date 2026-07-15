@@ -14,7 +14,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { RunDetailPage } from "./pages/RunDetailPage";
 import { RunHistoryPage } from "./pages/RunHistoryPage";
-import { SettingsPage } from "./pages/SettingsPage";
+import { SettingsPage } from "./pages/Settings";
 import { SetupWizardPage } from "./pages/SetupWizardPage";
 import { DisplayPreferencesProvider } from "./settings/DisplayPreferencesProvider";
 

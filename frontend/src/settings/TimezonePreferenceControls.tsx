@@ -1,19 +1,42 @@
 import { Group, SegmentedControl, Select, Stack, Text } from "@mantine/core";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { ClockIcon } from "../components/icons/ClockIcon";
+import { GlobeIcon } from "../components/icons/GlobeIcon";
+import { MapPinIcon } from "../components/icons/MapPinIcon";
 import { useDisplayPreferences } from "./DisplayPreferencesProvider";
 import {
   formatTimezoneLabel,
   getBrowserTimezone,
-  getFixedTimezone,
+  getManualTimezone,
   getTimezoneMode,
   listIanaTimezones,
 } from "./displayPreferences";
 
-const TIMEZONE_MODE_OPTIONS = [
-  { value: "local", label: "Local" },
-  { value: "utc", label: "UTC" },
-  { value: "fixed", label: "Fixed" },
-] as const;
+function modeLabel(icon: ReactNode, text: string, title: string) {
+  return (
+    <Group gap={6} wrap="nowrap" justify="center" title={title}>
+      {icon}
+      <span>{text}</span>
+    </Group>
+  );
+}
+
+/** Shared Local → UTC → Manual order for display prefs and cron timezone. */
+export const TIMEZONE_MODE_OPTIONS = [
+  {
+    value: "local",
+    label: modeLabel(<MapPinIcon size={14} />, "Local", "Uses your device timezone"),
+  },
+  {
+    value: "utc",
+    label: modeLabel(<GlobeIcon size={14} />, "UTC", "Coordinated Universal Time"),
+  },
+  {
+    value: "manual",
+    label: modeLabel(<ClockIcon size={14} />, "Manual", "Pick a specific timezone"),
+  },
+];
 
 const TIMEZONE_SELECT_STYLES = {
   input: { cursor: "pointer" },
@@ -27,7 +50,7 @@ type TimezonePreferenceControlsProps = {
 export function TimezonePreferenceControls({ compact = false }: TimezonePreferenceControlsProps) {
   const { preferences, setTimezone } = useDisplayPreferences();
   const timezoneMode = getTimezoneMode(preferences.timezone);
-  const fixedTimezone = getFixedTimezone(preferences.timezone);
+  const manualTimezone = getManualTimezone(preferences.timezone);
   const browserTimezone = getBrowserTimezone();
 
   const timezoneOptions = useMemo(
@@ -48,17 +71,17 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
       setTimezone("utc");
       return;
     }
-    setTimezone(fixedTimezone);
+    setTimezone(manualTimezone);
   };
 
-  const fixedTimezoneSelect = (
+  const manualTimezoneSelect = (
     <Select
       searchable
-      label={compact ? undefined : "Fixed timezone"}
+      label={compact ? undefined : "Manual timezone"}
       placeholder="Select a timezone"
       nothingFoundMessage="No timezones found"
       data={timezoneOptions}
-      value={fixedTimezone}
+      value={manualTimezone}
       onChange={(value) => value && setTimezone(value)}
       w={compact ? 220 : undefined}
       styles={TIMEZONE_SELECT_STYLES}
@@ -77,7 +100,7 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
             onChange={handleModeChange}
             data={[...TIMEZONE_MODE_OPTIONS]}
           />
-          {timezoneMode === "fixed" ? fixedTimezoneSelect : null}
+          {timezoneMode === "manual" ? manualTimezoneSelect : null}
         </Group>
       </Stack>
     );
@@ -87,8 +110,8 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
     <Stack gap="xs">
       <Text fw={500}>Timezone</Text>
       <Text size="sm" c="dimmed">
-        Use your browser timezone, UTC, or pick a specific IANA timezone. Changes here and in
-        the log viewer use the same saved preference.
+        Use your browser timezone, UTC, or pick a specific IANA timezone for displaying
+        timestamps. Job cron schedules use the separate Cron timezone under Sync defaults.
       </Text>
       <SegmentedControl
         value={timezoneMode}
@@ -103,7 +126,7 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
           {formatTimezoneLabel(browserTimezone)}
         </Text>
       ) : null}
-      {timezoneMode === "fixed" ? fixedTimezoneSelect : null}
+      {timezoneMode === "manual" ? manualTimezoneSelect : null}
     </Stack>
   );
 }

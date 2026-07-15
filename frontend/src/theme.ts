@@ -109,7 +109,18 @@ export const theme = createTheme({
     Alert: { defaultProps: { radius: "lg" } },
     Modal: { defaultProps: { radius: "lg" } },
     Popover: { defaultProps: { radius: "lg" } },
-    Notification: { defaultProps: { radius: "lg" } },
+    Notification: {
+      defaultProps: { radius: "lg" },
+      styles: {
+        root: {
+          // Tinted surface so status color reads on dark cinema-night chrome
+          // even when only the accent bar / icon carries the hue.
+          backgroundColor:
+            "color-mix(in srgb, var(--notification-color) 16%, var(--mantine-color-dark-6))",
+          border: "1px solid color-mix(in srgb, var(--notification-color) 38%, transparent)",
+        },
+      },
+    },
     Accordion: {
       defaultProps: { radius: "lg" },
       styles: {

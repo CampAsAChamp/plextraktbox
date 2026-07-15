@@ -6,7 +6,6 @@ import {
   Group,
   Menu,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -109,34 +108,38 @@ export function AppLayout({
         <Group h="100%" px="md" justify="space-between">
           <Group gap="md">
             {showHome ? (
-              <Tooltip label="Dashboard">
-                {isHome ? (
-                  <ActionIcon
-                    component="span"
-                    variant="light"
-                    color="amber"
-                    size="lg"
-                    aria-label="Dashboard"
-                    aria-current="page"
-                  >
-                    <HomeIcon size={18} />
-                  </ActionIcon>
-                ) : (
-                  <ActionIcon
-                    component={Link}
-                    to="/"
-                    variant="subtle"
-                    size="lg"
-                    aria-label="Go to dashboard"
-                  >
-                    <HomeIcon size={18} />
-                  </ActionIcon>
-                )}
-              </Tooltip>
-            ) : null}
-            <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
-              plextraktbox
-            </Title>
+              <Group
+                gap="sm"
+                wrap="nowrap"
+                component={Link}
+                to="/"
+                aria-label="Go to dashboard"
+                aria-current={isHome ? "page" : undefined}
+                style={{
+                  color: "inherit",
+                  textDecoration: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
+                  plextraktbox
+                </Title>
+                <ActionIcon
+                  component="span"
+                  variant={isHome ? "light" : "subtle"}
+                  color={isHome ? "amber" : "gray"}
+                  size="lg"
+                  aria-hidden
+                  tabIndex={-1}
+                >
+                  <HomeIcon size={18} />
+                </ActionIcon>
+              </Group>
+            ) : (
+              <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
+                plextraktbox
+              </Title>
+            )}
             {showLogout ? (
               <Group gap={4}>
                 <Button

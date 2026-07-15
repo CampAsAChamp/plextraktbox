@@ -1,7 +1,7 @@
 export type TimezonePreference = "local" | "utc" | (string & {});
 export type TimeFormatPreference = "12h" | "24h";
 export type DateFormatPreference = "mdy" | "dmy";
-export type TimezoneMode = "local" | "utc" | "fixed";
+export type TimezoneMode = "local" | "utc" | "manual";
 
 export type DisplayPreferences = {
   timezone: TimezonePreference;
@@ -77,10 +77,10 @@ export function listIanaTimezones(): string[] {
 export function getTimezoneMode(timezone: TimezonePreference): TimezoneMode {
   if (timezone === "local") return "local";
   if (timezone === "utc") return "utc";
-  return "fixed";
+  return "manual";
 }
 
-export function getFixedTimezone(timezone: TimezonePreference): string {
+export function getManualTimezone(timezone: TimezonePreference): string {
   if (timezone !== "local" && timezone !== "utc") return timezone;
   return getBrowserTimezone();
 }
@@ -91,8 +91,39 @@ export function resolveTimeZone(timezone: TimezonePreference): string | undefine
   return timezone;
 }
 
-export function formatTimezoneLabel(timezone: string): string {
-  return timezone.replace(/_/g, " ");
+/** Current UTC offset for an IANA zone, e.g. "UTC-07:00" or "UTC+05:30". */
+export function formatTimezoneOffset(timezone: string, at: Date = new Date()): string {
+  try {
+    const offsetPart = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      timeZoneName: "longOffset",
+    })
+      .formatToParts(at)
+      .find((part) => part.type === "timeZoneName")?.value;
+
+    if (!offsetPart || offsetPart === "GMT" || offsetPart === "UTC") {
+      return "UTC+00:00";
+    }
+
+    // longOffset yields "GMT±HH:mm" (or "GMT±H:mm"); normalize to UTC…
+    const match = /^GMT([+-])(\d{1,2})(?::?(\d{2}))?$/.exec(offsetPart);
+    if (!match) {
+      return offsetPart.replace(/^GMT/, "UTC");
+    }
+
+    const sign = match[1];
+    const hours = match[2].padStart(2, "0");
+    const minutes = match[3] ?? "00";
+    return `UTC${sign}${hours}:${minutes}`;
+  } catch {
+    return "";
+  }
+}
+
+export function formatTimezoneLabel(timezone: string, at: Date = new Date()): string {
+  const name = timezone.replace(/_/g, " ");
+  const offset = formatTimezoneOffset(timezone, at);
+  return offset ? `${name} (${offset})` : name;
 }
 
 export function normalizeDisplayPreferences(value: unknown): DisplayPreferences {

@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_DISPLAY_PREFERENCES,
+  formatTimezoneLabel,
+  formatTimezoneOffset,
   getTimezoneMode,
   loadDisplayPreferences,
   normalizeDisplayPreferences,
@@ -61,10 +63,22 @@ describe("timezone helpers", () => {
   it("resolves timezone modes", () => {
     expect(getTimezoneMode("local")).toBe("local");
     expect(getTimezoneMode("utc")).toBe("utc");
-    expect(getTimezoneMode("America/Chicago")).toBe("fixed");
+    expect(getTimezoneMode("America/Chicago")).toBe("manual");
     expect(resolveTimeZone("local")).toBeUndefined();
     expect(resolveTimeZone("utc")).toBe("UTC");
     expect(resolveTimeZone("America/Chicago")).toBe("America/Chicago");
+  });
+
+  it("formats UTC offsets for labels", () => {
+    // Mid-January avoids DST ambiguity for common zones.
+    const winter = new Date("2026-01-15T12:00:00.000Z");
+    expect(formatTimezoneOffset("UTC", winter)).toBe("UTC+00:00");
+    expect(formatTimezoneOffset("America/Chicago", winter)).toBe("UTC-06:00");
+    expect(formatTimezoneOffset("Asia/Kolkata", winter)).toBe("UTC+05:30");
+    expect(formatTimezoneLabel("America/Los_Angeles", winter)).toBe(
+      "America/Los Angeles (UTC-08:00)",
+    );
+    expect(formatTimezoneLabel("UTC", winter)).toBe("UTC (UTC+00:00)");
   });
 });
 

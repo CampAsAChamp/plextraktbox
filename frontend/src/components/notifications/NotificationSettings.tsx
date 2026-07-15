@@ -9,9 +9,8 @@ import {
   Switch,
   Text,
   TextInput,
-  Title,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { showToast } from "../../toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +24,8 @@ import {
   type NotificationConfig,
 } from "../../api/notifications";
 import { ApiError } from "../../api/client";
+import { SettingsSectionTitle } from "../SettingsSectionTitle";
+import { BellIcon } from "../icons/BellIcon";
 import { DiscordIcon } from "../icons/DiscordIcon";
 import { SaveIcon } from "../icons/SaveIcon";
 
@@ -97,19 +98,19 @@ function ChannelSettings({
       });
     },
     onSuccess: () => {
-      notifications.show({ color: "green", message: `${CHANNEL_LABELS[channel]} settings saved` });
+      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} settings saved` });
       onSaved();
     },
     onError: (error) => {
       const message = error instanceof ApiError ? error.message : "Save failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 
   const remove = useMutation({
     mutationFn: () => deleteNotificationConfig(config!.id),
     onSuccess: () => {
-      notifications.show({ color: "green", message: `${CHANNEL_LABELS[channel]} removed` });
+      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} removed` });
       onSaved();
     },
   });
@@ -117,12 +118,12 @@ function ChannelSettings({
   const test = useMutation({
     mutationFn: () => testNotificationConfig(config!.id),
     onSuccess: () => {
-      notifications.show({ color: "green", message: "Test notification sent" });
+      showToast({ color: "green", message: "Test notification sent" });
       onSaved();
     },
     onError: (error) => {
       const message = error instanceof ApiError ? error.message : "Test failed";
-      notifications.show({ color: "red", message });
+      showToast({ color: "red", message });
     },
   });
 
@@ -236,10 +237,16 @@ export function NotificationSettings() {
   }
 
   return (
-    <Paper withBorder p="md">
+    <Paper
+      id="settings-notifications"
+      withBorder
+      p="md"
+      data-settings-section="Notifications"
+      style={{ scrollMarginTop: 80 }}
+    >
       <Stack gap="md">
         <Stack gap={4}>
-          <Title order={4}>Notifications</Title>
+          <SettingsSectionTitle icon={<BellIcon size={18} />}>Notifications</SettingsSectionTitle>
           <Text size="sm" c="dimmed">
             Configure global alerts for completed job runs. Jobs can inherit these settings or use
             custom per-job channels.
