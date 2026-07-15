@@ -6,7 +6,7 @@ without rework.
 
 **Status:** Not wired up yet — personal install is [Phase 22](../phases/phase-22.md); catalog
 publication is [Phase 23](../phases/phase-23.md). Both come after product, ops, CI, and release
-pipeline phases ([Phase 24](../phases/phase-24.md) UI themes follows).
+pipeline phases. [Phase 24](../phases/phase-24.md) (UI themes) is done — optional themes volume below.
 
 ## Design constraints (all environments)
 
@@ -64,6 +64,21 @@ When Phase 22 lands, expect roughly:
 | Port | 8000 → app HTTP |
 | Volume | Host path → `/data` (ZFS dataset) |
 | Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PUID`/`PGID` |
+
+### Optional UI themes volume ([Phase 24](../phases/phase-24.md))
+
+Custom theme CSS files are discovered from `{DATA_DIR}/themes/*.css` (same path as Settings
+upload). With the usual `/data` mount that is already `/data/themes` inside the container — no
+extra mount required. If you prefer a separate host folder:
+
+```yaml
+volumes:
+  - /mnt/tank/apps/plextraktbox/data:/data
+  # Optional second path only if themes live outside the main dataset:
+  # - /mnt/tank/apps/plextraktbox/themes:/data/themes
+```
+
+Format notes: [phase-24.md](../phases/phase-24.md) and `frontend/src/themes/README.md`.
 
 ### GHCR image ([Phase 19](../phases/phase-19.md))
 

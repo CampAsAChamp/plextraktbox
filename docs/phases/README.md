@@ -30,13 +30,13 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
 | 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
-| 24 | [UI themes](phase-24.md) | Planned | Built-ins + custom upload/volume | TBD |
+| 24 | [UI themes](phase-24.md) | Done | Built-ins + custom upload/volume | [phase-24](test-plans/phase-24-test-plan.md) |
 
-**Current focus:** Phase 21 (sync caches) or TrueNAS (22); Phases 0–8, 11–15, and 18–20 are complete.
+**Current focus:** Phase 21 (sync caches) or TrueNAS (22–23); Phases 0–8, 11–15, 18–20, and **24** are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
-retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is last on the roadmap;
-can ship anytime after Phase 13.
+retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is done — factory default
+is Atom One Dark Pro.
 
 ## Delivery order
 
@@ -51,7 +51,7 @@ Release                18 ✓ → 12 ✓ → 19 ✓
 
 TrueNAS                22 → 23 — after product + GHCR releases
 
-Themes (last)          24 — after TrueNAS (or anytime after 13)
+Themes (last)          24 ✓ — Atom One Dark Pro default + custom upload/volume
 
 Maintainer (optional)  15 ✓ — Doppler
 ```
@@ -63,7 +63,7 @@ Maintainer (optional)  15 ✓ — Doppler
 | **Ops** | 13 ✓ → 14 ✓ → 20 ✓ | Settings + dashboard + mobile done |
 | **Release** | 12 ✓ → 19 ✓ | CI + automated releases / GHCR done |
 | **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 ✓ |
-| **Themes** | **24** | After TrueNAS (or anytime after 13); Mantine palettes + custom CSS |
+| **Themes** | **24** ✓ | Mantine palettes + custom CSS; default Atom One Dark Pro |
 | **Maintainer** | 15 ✓ | Doppler optional for local/CI secrets |
 
 When a phase lands: update its scope doc (mark done), copy

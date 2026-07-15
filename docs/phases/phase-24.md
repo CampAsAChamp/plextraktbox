@@ -1,25 +1,25 @@
 # Phase 24 — UI themes
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
-Add selectable UI themes on top of Mantine — built-in Atom One Dark, Nord, and Dracula palettes,
-plus user-defined themes via Settings upload/paste **or** a Docker volume under
-`{DATA_DIR}/themes/`. Last on the roadmap so product, ops, and TrueNAS settle first; can ship
-anytime after [Phase 13](phase-13.md) if themes are needed earlier.
+Add selectable UI themes on top of Mantine — built-in Atom One Dark Pro (factory default),
+Cinema Night, Nord, and Dracula palettes, plus user-defined themes via Settings upload/paste
+**or** a Docker volume under `{DATA_DIR}/themes/`.
 
 Stay on **Mantine** (no redesign). Themes are palettes applied through `MantineProvider` + CSS
 variables, not a new UI kit.
 
 ## Decisions locked
 
-- **Built-ins:** `default` (current Mantine dark), `one-dark`, `nord`, `dracula`
+- **Built-ins:** `one-dark-pro` (factory default), `cinema-night`, `nord`, `dracula`
 - **Custom themes:** Settings upload/paste **and** optional host volume at `/data/themes`
 - **Persistence:** Active theme id in Phase 13 `setting` table (`ui_theme`); fall back to
-  `default` if a custom file is missing
+  `one-dark-pro` if unset or a custom file is missing
 - First-party theme definitions (credit/license in file headers where relevant) — not scraped from
   external repos
+- Dark-only for v1 (no light-mode toggle)
 
 ## Deliverables
 
@@ -27,13 +27,12 @@ variables, not a new UI kit.
 
 | Id | Name | Notes |
 | -- | ---- | ----- |
-| `default` | Default | Keep today’s Mantine dark (enable light if schema supports both) |
-| `one-dark` | Atom One Dark | Classic Atom palette |
+| `one-dark-pro` | Atom One Dark Pro | Factory default — Binaryify/One Dark Pro palette |
+| `cinema-night` | Cinema Night | Amber + charcoal “cinema night” look |
 | `nord` | Nord | Nord polar night / frost accents |
 | `dracula` | Dracula | Dracula purple/pink accents |
 
-Ship as CSS variable maps and/or `createTheme()` configs under something like
-`frontend/src/themes/`.
+Ship as `createTheme()` configs under `frontend/src/themes/`.
 
 ### Custom themes (upload + volume)
 
@@ -48,44 +47,52 @@ flowchart LR
   activeId --> provider
 ```
 
-- **Format:** CSS files with metadata + token variables (qui-inspired `:root` / `.dark` style),
-  documented in this phase doc and a short README note
-- **Discovery:** On startup (and optional “Refresh themes” in Settings), scan
-  `{DATA_DIR}/themes/*.css`. Uploaded files land in the same directory so both paths share one
-  registry
+- **Format:** CSS files with metadata headers + Mantine CSS variable overrides:
+
+  ```css
+  /* @name: My Theme */
+  /* @id: my-theme */
+  :root[data-ptb-theme="my-theme"] {
+    --mantine-color-dark-0: #abb2bf;
+    /* dark-0..9, optional primary scale, optional --ptb-body-gradient */
+  }
+  ```
+
+  Id from `@id` (else sanitized filename); built-in ids are reserved.
+
+- **Discovery:** Scan `{DATA_DIR}/themes/*.css` on each list request. Uploaded files land in the
+  same directory so both paths share one registry.
 - **API:**
   - `GET /api/themes` — list id / name / source (`builtin` \| `custom`)
   - `PUT /api/settings/theme` — set active id
   - `POST /api/themes` — upload body
   - `DELETE /api/themes/{id}` — custom only (never delete built-ins)
-- **Safety:** Cap file size; reject path traversal; only allow registered custom ids; inject as a
-  scoped stylesheet (not eval)
+  - `GET /api/themes/{id}/css` — serve custom CSS for SPA inject
+- **Safety:** Cap file size (64KB); reject path traversal; only allow registered custom ids; inject
+  as a scoped stylesheet (not eval)
 
 ### UI
 
-- Theme section on Settings (after Phase 13): swatches/list for built-ins + custom, preview,
-  upload, delete custom, link to volume path docs
-- Wire `MantineProvider` in `frontend/src/main.tsx` from registry + preferred id (replace bare
-  `defaultColorScheme="dark"`)
+- Theme section on Settings: swatches for built-ins + custom, upload, delete custom, refresh
+- `MantineProvider` wired from registry + preferred id (`forceColorScheme="dark"`)
+- Body gradient via `--ptb-body-gradient` so each theme can override atmosphere
 
 ### Deploy docs
 
-- Optional TrueNAS / compose volume example for `/data/themes` in [deploy/truenas.md](../deploy/truenas.md)
-  ([Phase 22](phase-22.md) doc touch-up when that phase lands, or here)
+- TrueNAS / compose volume example for `/data/themes` in [deploy/truenas.md](../deploy/truenas.md)
 
-## Key files (expected)
+## Key files
 
 - `frontend/src/themes/` — built-in definitions + registry
-- `frontend/src/pages/SettingsPage.tsx` — theme picker section
-- `frontend/src/main.tsx` — `MantineProvider` wiring
-- `backend/plextraktbox/api/themes.py` — list / upload / delete
-- `backend/plextraktbox/api/settings.py` — `ui_theme` get/set (with Phase 13 settings)
+- `frontend/src/pages/Settings/ThemeSection.tsx` — theme picker
+- `frontend/src/themes/ThemeProvider.tsx` — `MantineProvider` wiring
+- `backend/plextraktbox/api/themes.py` — list / upload / delete / css
+- `backend/plextraktbox/api/settings.py` — `ui_theme` get/set
 - `{DATA_DIR}/themes/*.css` — custom theme files
 
 ## Prerequisites
 
 - [Phase 13](phase-13.md) — Settings page + `setting` table for `ui_theme`
-- [Phase 22](phase-22.md) (docs only) — optional volume example for `/data/themes`
 
 ## Out of scope
 
@@ -93,9 +100,10 @@ flowchart LR
 - Community theme catalog / marketplace
 - Per-job or per-page themes
 - Accent-color variation pickers (Material-style) for v1
+- Light color scheme toggle
 
 ## Verification
 
-Test plan TBD when phase lands — copy [phase-test-plan-template.md](test-plans/phase-test-plan-template.md).
+[test-plans/phase-24-test-plan.md](test-plans/phase-24-test-plan.md)
 
-**Next:** [Phase index](README.md) — end of the planned roadmap.
+**Next:** [Phase index](README.md) — TrueNAS (22–23) and sync caches (21) remain planned.

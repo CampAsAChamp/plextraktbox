@@ -11,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** see [phases/README.md](phases/README.md); Doppler maintainer secrets ([Phase 15](phases/phase-15.md)) is done
+- **Current focus:** see [phases/README.md](phases/README.md); Phase 24 (UI themes) is done — next is sync caches (21) or TrueNAS (22–23)
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)
