@@ -115,3 +115,19 @@ export function formatScheduleDateTimeParts(
     time: formatTimeFromParts(parts, { includeSeconds: false }),
   };
 }
+
+/** Formats a millisecond duration as e.g. "7 min 5 s" or "1 hr 30 min 5 s". */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return "<1 s";
+
+  const totalSeconds = Math.round(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours} hr`);
+  if (minutes > 0) parts.push(`${minutes} min`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds} s`);
+  return parts.join(" ");
+}

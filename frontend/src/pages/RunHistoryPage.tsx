@@ -35,7 +35,7 @@ import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
-import { formatDateTime } from "../utils/dateTimeFormat";
+import { formatDateTime, formatDuration } from "../utils/dateTimeFormat";
 import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 import classes from "./RunHistoryPage.module.css";
@@ -290,8 +290,7 @@ export function RunHistoryPage() {
           <Table.Tbody>
             {runs.map((run) => {
               const durationMs = runDurationMs(run);
-              const duration =
-                durationMs === null ? "running…" : durationMs < 1000 ? "<1s" : `${Math.round(durationMs / 1000)}s`;
+              const duration = durationMs === null ? "running…" : formatDuration(durationMs);
 
               const runsListPath = `${location.pathname}${location.search}`;
 

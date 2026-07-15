@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDateTime,
+  formatDuration,
   formatScheduleDateTime,
   formatScheduleDateTimeParts,
   formatTimestamp,
@@ -117,5 +118,28 @@ describe("formatScheduleDateTimeParts", () => {
       dateFormat: "dmy",
     });
     expect(parts.date).toBe("11/7/2026");
+  });
+});
+
+describe("formatDuration", () => {
+  it("returns under one second for short durations", () => {
+    expect(formatDuration(0)).toBe("<1 s");
+    expect(formatDuration(499)).toBe("<1 s");
+  });
+
+  it("formats seconds only", () => {
+    expect(formatDuration(1000)).toBe("1 s");
+    expect(formatDuration(5000)).toBe("5 s");
+  });
+
+  it("formats minutes and seconds", () => {
+    expect(formatDuration(7 * 60_000 + 5_000)).toBe("7 min 5 s");
+    expect(formatDuration(30 * 60_000)).toBe("30 min");
+  });
+
+  it("formats hours, minutes, and seconds", () => {
+    expect(formatDuration(3600_000 + 30 * 60_000 + 5_000)).toBe("1 hr 30 min 5 s");
+    expect(formatDuration(2 * 3600_000 + 39 * 60_000 + 10_000)).toBe("2 hr 39 min 10 s");
+    expect(formatDuration(2 * 3600_000)).toBe("2 hr");
   });
 });
