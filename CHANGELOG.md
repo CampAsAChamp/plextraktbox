@@ -1,3 +1,18 @@
+# [0.5.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.4.0...v0.5.0) (2026-07-15)
+
+
+### Bug Fixes
+
+* restore APScheduler import-untyped ignores ([9541f75](https://github.com/CampAsAChamp/plextraktbox/commit/9541f75b857122d30b8870e7527109fa6c7fcf73))
+
+
+### Features
+
+* add sync cache models and migration ([b61ca17](https://github.com/CampAsAChamp/plextraktbox/commit/b61ca17325731b40af259f8fef9df2c5f3ff708e))
+* add Sync caches settings UI ([686a2ce](https://github.com/CampAsAChamp/plextraktbox/commit/686a2ce4fbff689d4725d5e4d9db799ba4f60019))
+* implement sync cache services ([2b65b00](https://github.com/CampAsAChamp/plextraktbox/commit/2b65b00b0b4865e2fbd4be1dd273484d824e7f97))
+* wire sync caches into sources and settings API ([55d482b](https://github.com/CampAsAChamp/plextraktbox/commit/55d482bce4a06d75e00b42974d5a51cdc9d6695c))
+
 # [0.4.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.3.1...v0.4.0) (2026-07-15)
 
 
