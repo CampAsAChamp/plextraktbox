@@ -67,16 +67,24 @@ async def test_dry_run_makes_no_writes() -> None:
 
 
 @pytest.mark.asyncio
-async def test_letterboxd_watchlist_is_read_only_input() -> None:
+async def test_letterboxd_watchlist_never_drives_plan() -> None:
+    """Even if Letterboxd is present in context, its watchlist is ignored."""
     plex, trakt, lb = FakePlex(), FakeTrakt(), FakeLetterboxd()
     plex.seed_watchlist([movie(title="Plex pick", tmdb="1", watchlisted=True, source="plex")])
-    lb.seed_watchlist([movie(title="LB pick", tmdb="2", watchlisted=True, source="letterboxd")])
+    lb.seed_watchlist([movie(title="LB-only", tmdb="2", watchlisted=True, source="letterboxd")])
 
     ctx = make_context(
         sources={"plex": plex, "trakt": trakt, "letterboxd": lb},
         data_types={DataType.WATCHLIST},
         dry_run=False,
     )
+    plan = await WatchlistReconciler().plan(ctx)
+    assert len(plan.changes) == 1
+    assert plan.changes[0].item.identifiers["tmdb"] == "1"
+
     summary = await run_sync(ctx)
     assert summary.added == 1
+    trakt_items = await trakt.fetch_watchlist()
+    assert len(trakt_items) == 1
+    assert trakt_items[0].identifiers["tmdb"] == "1"
     assert len(await lb.fetch_watchlist()) == 1

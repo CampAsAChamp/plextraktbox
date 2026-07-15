@@ -21,14 +21,7 @@ class WatchlistReconciler(Reconciler):
         truth_items = [item for item in await ctx.fetch(TRUTH_SOURCE, self.data_type) if item.watchlisted]
         changes: list[PlannedChange] = []
 
-        if "letterboxd" in ctx.sources:
-            lb_items = await ctx.fetch("letterboxd", self.data_type)
-            lb_count = sum(1 for item in lb_items if item.watchlisted)
-            ctx.log.info(
-                "sync.watchlist.letterboxd_input",
-                count=lb_count,
-                note="read-only input; Plex remains source of truth",
-            )
+        # Letterboxd watchlist is ignored (Plex is truth; LB has no write API).
 
         for target_name in TARGET_SOURCES:
             if target_name not in ctx.sources:

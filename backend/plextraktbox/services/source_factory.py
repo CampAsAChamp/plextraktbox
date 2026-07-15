@@ -108,20 +108,4 @@ def build_sources(
             log=run_log,
         )
 
-    if (
-        job.source_pair.value == "plex_trakt"
-        and _connection_ok(session, Service.LETTERBOXD)
-        and "letterboxd" not in sources
-    ):
-        letterboxd = conn_svc.get_connection(session, Service.LETTERBOXD)
-        if letterboxd is not None:
-            config = letterboxd.public_config()
-            secrets = conn_svc.load_secrets(letterboxd)
-            sources["letterboxd"] = LetterboxdSource(
-                username=str(config.get("username", "")),
-                password=str(secrets.get("password", "")),
-                resolve_identifiers=letterboxd_resolver,
-                log=run_log,
-            )
-
     return sources

@@ -5,19 +5,13 @@ from __future__ import annotations
 from sqlmodel import Session
 
 from plextraktbox.models.connection import ConnectionStatus, Service
-from plextraktbox.models.job import Job, SourcePair
+from plextraktbox.models.job import Job
 from plextraktbox.services import connections as conn_svc
 
 
-def _connection_ok(session: Session, service: Service) -> bool:
-    connection = conn_svc.get_connection(session, service)
-    return connection is not None and connection.status == ConnectionStatus.OK
-
-
-def _needs_tmdb(session: Session, job: Job) -> bool:
-    if "letterboxd" in job.services_for_pair():
-        return True
-    return job.source_pair == SourcePair.PLEX_TRAKT and _connection_ok(session, Service.LETTERBOXD)
+def _needs_tmdb(job: Job) -> bool:
+    # TMDB is only required to resolve Letterboxd film URLs for ratings jobs.
+    return "letterboxd" in job.services_for_pair()
 
 
 def validate_job_connections(session: Session, job: Job) -> None:
@@ -26,7 +20,7 @@ def validate_job_connections(session: Session, job: Job) -> None:
     Raises ``ValueError`` with a user-facing message when validation fails.
     """
     required = set(job.services_for_pair())
-    if _needs_tmdb(session, job):
+    if _needs_tmdb(job):
         required.add(Service.TMDB.value)
 
     missing: list[str] = []
