@@ -24,3 +24,13 @@ body {
 .mantine-ActionIcon-root[data-variant="filled"]:hover:not([data-disabled]) {
   filter: brightness(1.08);
 }
+
+/* Alert X is transparent by default — readable hover tint + a small spin. */
+.mantine-Alert-closeButton {
+  transition: background-color 160ms ease, color 160ms ease, transform 220ms ease;
+}
+
+.mantine-Alert-closeButton:hover:not([data-disabled]) {
+  background-color: color-mix(in srgb, currentColor 18%, transparent);
+  transform: rotate(90deg);
+}

@@ -6,7 +6,7 @@ import type { SetupStatus, User } from "./api/auth";
 import type { ConnectionsStatus } from "./api/connections";
 import { ApiError } from "./api/client";
 import { AppLayout } from "./components/layout/AppLayout";
-import { DashboardPage } from "./pages/DashboardPage";
+import { DashboardPage } from "./pages/Dashboard";
 import { JobCreatePage } from "./pages/JobCreatePage";
 import { JobEditPage } from "./pages/JobEditPage";
 import { JobsPage } from "./pages/JobsPage";
