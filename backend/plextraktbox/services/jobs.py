@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from plextraktbox.models.job import Job, NotifyMode, SourcePair
 from plextraktbox.scheduler import get_scheduler_manager
 from plextraktbox.services import settings as settings_svc
+from plextraktbox.sync.excludes import dump_exclude_ids
 from plextraktbox.sync.plans import DataType
 
 
@@ -94,3 +95,31 @@ def delete_job(session: Session, job: Job) -> None:
         get_scheduler_manager().remove_job(job_id)
     session.delete(job)
     session.commit()
+
+
+def _unique_clone_name(session: Session, base_name: str) -> str:
+    """Return ``"{base} (copy)"`` or ``"{base} (copy N)"`` if names collide."""
+    candidate = f"{base_name} (copy)"
+    existing = {job.name for job in list_jobs(session)}
+    if candidate not in existing:
+        return candidate
+    n = 2
+    while f"{base_name} (copy {n})" in existing:
+        n += 1
+    return f"{base_name} (copy {n})"
+
+
+def clone_job(session: Session, job: Job) -> Job:
+    """Duplicate a job's config. Clones start disabled (safe default)."""
+    return create_job(
+        session,
+        name=_unique_clone_name(session, job.name),
+        source_pair=job.source_pair,
+        enabled=False,
+        cron=job.cron,
+        dry_run=job.dry_run,
+        data_types=job.data_types(),
+        notify_mode=job.notify_mode(),
+        require_dry_run_first=job.require_dry_run_first,
+        exclude_ids=dump_exclude_ids(job.exclude_ids()),
+    )

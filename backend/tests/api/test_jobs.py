@@ -316,6 +316,92 @@ def test_job_crud(client: TestClient) -> None:
     assert missing.status_code == 404
 
 
+def test_clone_job(client: TestClient) -> None:
+    _create_user_and_login(client)
+
+    create = client.post(
+        "/api/jobs",
+        json={
+            "name": "Original",
+            "source_pair": "letterboxd_plex",
+            "data_types": ["ratings"],
+            "enabled": True,
+            "cron": "0 4 * * *",
+            "dry_run": True,
+            "require_dry_run_first": False,
+        },
+        headers=HEADERS,
+    )
+    assert create.status_code == 200
+    job_id = create.json()["id"]
+
+    clone = client.post(f"/api/jobs/{job_id}/clone", headers=HEADERS)
+    assert clone.status_code == 200
+    body = clone.json()
+    assert body["id"] != job_id
+    assert body["name"] == "Original (copy)"
+    assert body["enabled"] is False
+    assert body["source_pair"] == "letterboxd_plex"
+    assert body["data_types"] == ["ratings"]
+    assert body["cron"] == "0 4 * * *"
+    assert body["dry_run"] is True
+    assert body["last_run"] is None
+    assert body["next_run_at"] is None
+
+    again = client.post(f"/api/jobs/{job_id}/clone", headers=HEADERS)
+    assert again.status_code == 200
+    assert again.json()["name"] == "Original (copy 2)"
+
+    missing = client.post("/api/jobs/999/clone", headers=HEADERS)
+    assert missing.status_code == 404
+
+
+def test_job_list_includes_last_run(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    _create_user_and_login(client)
+    _configure_connections(client)
+    _mock_live_fetch(monkeypatch)
+
+    create = client.post(
+        "/api/jobs",
+        json={
+            "name": "Watchlist sync",
+            "source_pair": "plex_trakt",
+            "data_types": ["watchlist"],
+            "enabled": True,
+            "cron": "0 3 * * *",
+            "dry_run": True,
+            "require_dry_run_first": False,
+        },
+        headers=HEADERS,
+    )
+    assert create.status_code == 200
+    job_id = create.json()["id"]
+    assert create.json()["last_run"] is None
+
+    listed = client.get("/api/jobs")
+    assert listed.status_code == 200
+    assert listed.json()[0]["last_run"] is None
+
+    run = client.post(f"/api/jobs/{job_id}/run", headers=HEADERS)
+    assert run.status_code == 200
+    run_body = run.json()
+
+    listed = client.get("/api/jobs")
+    assert listed.status_code == 200
+    last_run = listed.json()[0]["last_run"]
+    assert last_run is not None
+    assert last_run["id"] == run_body["id"]
+    assert last_run["status"] == run_body["status"]
+    assert last_run["dry_run"] is True
+    assert "matched" in last_run
+    assert "added" in last_run
+    assert "errors" in last_run
+
+    get_resp = client.get(f"/api/jobs/{job_id}")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["last_run"]["id"] == run_body["id"]
+
+
 def test_schedule_preview(client: TestClient) -> None:
     _create_user_and_login(client)
     resp = client.post(

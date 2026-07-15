@@ -63,6 +63,33 @@ class SchedulePreviewResponse(BaseModel):
     times: list[UtcDatetime]
 
 
+class JobLastRun(BaseModel):
+    """Compact latest-run snapshot for job list / dashboard ops."""
+
+    id: int
+    status: JobRunStatus
+    dry_run: bool
+    started_at: UtcDatetime
+    finished_at: UtcDatetime | None
+    matched: int
+    added: int
+    errors: int
+
+    @classmethod
+    def from_model(cls, run: JobRun) -> JobLastRun:
+        summary = run.summary()
+        return cls(
+            id=run.id or 0,
+            status=run.status,
+            dry_run=run.dry_run,
+            started_at=run.started_at,
+            finished_at=run.finished_at,
+            matched=summary.matched,
+            added=summary.added,
+            errors=summary.errors,
+        )
+
+
 class JobResponse(BaseModel):
     id: int
     name: str
@@ -75,9 +102,16 @@ class JobResponse(BaseModel):
     notify_mode: NotifyMode
     exclude_ids: ExcludeIds
     next_run_at: UtcDatetime | None = None
+    last_run: JobLastRun | None = None
 
     @classmethod
-    def from_model(cls, job: Job, *, next_run_at: UtcDatetime | None = None) -> JobResponse:
+    def from_model(
+        cls,
+        job: Job,
+        *,
+        next_run_at: UtcDatetime | None = None,
+        last_run: JobLastRun | None = None,
+    ) -> JobResponse:
         normalized = dump_exclude_ids(job.exclude_ids())
         return cls(
             id=job.id or 0,
@@ -95,6 +129,7 @@ class JobResponse(BaseModel):
                 tvdb=normalized.get("tvdb", []),
             ),
             next_run_at=next_run_at,
+            last_run=last_run,
         )
 
 

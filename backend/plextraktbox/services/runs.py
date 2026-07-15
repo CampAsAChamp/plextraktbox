@@ -30,6 +30,24 @@ def list_runs(
     return list(session.exec(stmt).all())
 
 
+def latest_runs_by_job_ids(session: Session, job_ids: list[int]) -> dict[int, JobRun]:
+    """Return the most recent JobRun for each job id (one query, first-per-job)."""
+    if not job_ids:
+        return {}
+    stmt = (
+        select(JobRun)
+        .where(col(JobRun.job_id).in_(job_ids))
+        .order_by(col(JobRun.started_at).desc(), col(JobRun.id).desc())
+    )
+    latest: dict[int, JobRun] = {}
+    for run in session.exec(stmt).all():
+        if run.job_id not in latest:
+            latest[run.job_id] = run
+            if len(latest) == len(job_ids):
+                break
+    return latest
+
+
 def get_run(session: Session, run_id: int) -> JobRun | None:
     return session.get(JobRun, run_id)
 
