@@ -24,6 +24,18 @@ function connectionsPending() {
   });
 }
 
+function connectionsComplete() {
+  return jsonResponse({
+    needs_connections: false,
+    connections: [
+      { service: "plex", status: "ok", config: {}, token_expires_at: null },
+      { service: "trakt", status: "ok", config: {}, token_expires_at: null },
+      { service: "letterboxd", status: "ok", config: {}, token_expires_at: null },
+      { service: "tmdb", status: "ok", config: {}, token_expires_at: null },
+    ],
+  });
+}
+
 function stepIconFor(label: string) {
   const step = screen.getByRole("button", { name: new RegExp(label, "i") });
   const icon = step.querySelector('[class*="stepIcon"]');
@@ -60,5 +72,16 @@ describe("ConnectionsPage stepper", () => {
 
     const plexIcon = stepIconFor("plex");
     expect(plexIcon.className).not.toContain(classes.stepIconConnected);
+  });
+
+  it("shows the all-connections-successful screen when every service is connected", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(connectionsComplete());
+
+    renderWithProviders(<ConnectionsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("All connections successful")).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Go to dashboard" })).toBeInTheDocument();
   });
 });

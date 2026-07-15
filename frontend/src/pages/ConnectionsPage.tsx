@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { api, ApiError } from "../api/client";
@@ -43,11 +43,18 @@ import {
   TestConnectionButton,
   useConnectionTestFeedback,
 } from "../components/connections/connectionTestFeedback";
-import { ConnectionStatusBadge } from "../components/connections/ConnectionStatusBadge";
 import { SERVICE_LABELS } from "../components/connections/connectionStatus";
 import { ServiceLogo } from "../components/connections/ServiceLogo";
 import { ServiceStepLabel } from "../components/connections/ServiceStepLabel";
+import { StatusCheckIcon } from "../components/connections/StatusCheckIcon";
+import { ConnectIcon } from "../components/icons/ConnectIcon";
+import { FilmIcon } from "../components/icons/FilmIcon";
+import { KeyIcon } from "../components/icons/KeyIcon";
+import { LockIcon } from "../components/icons/LockIcon";
+import { SaveIcon } from "../components/icons/SaveIcon";
 import { TrashIcon } from "../components/icons/TrashIcon";
+import { TvIcon } from "../components/icons/TvIcon";
+import { UserIcon } from "../components/icons/UserIcon";
 import classes from "./OnboardingStepper.module.css";
 
 const tmdbSchema = z.object({
@@ -57,6 +64,21 @@ const tmdbSchema = z.object({
 const TMDB_API_SETTINGS_URL = "https://www.themoviedb.org/settings/api";
 
 const SERVICE_ORDER = ["plex", "trakt", "letterboxd", "tmdb"] as const;
+
+function FieldLabel({
+  icon,
+  children,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Group gap={6} wrap="nowrap">
+      <span style={{ display: "inline-flex", color: "var(--mantine-color-dimmed)" }}>{icon}</span>
+      <span>{children}</span>
+    </Group>
+  );
+}
 
 function ClearConnectionButton({
   service,
@@ -102,7 +124,6 @@ function ClearConnectionButton({
     <Button
       variant={variant}
       color="red"
-      size="xs"
       leftSection={<TrashIcon />}
       onClick={handleClear}
       loading={clear.isPending}
@@ -185,7 +206,15 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
             <Checkbox
               key={library.id}
               value={library.id}
-              label={`${library.title} (${library.type})`}
+              label={
+                <Group gap="xs" wrap="nowrap">
+                  {library.type === "show" ? <TvIcon /> : <FilmIcon />}
+                  <span>{library.title}</span>
+                  <Text size="sm" c="dimmed" component="span">
+                    {library.type === "show" ? "TV" : "Movies"}
+                  </Text>
+                </Group>
+              }
             />
           ))}
         </Stack>
@@ -194,6 +223,7 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
         variant="light"
         w="fit-content"
         loading={save.isPending}
+        leftSection={<SaveIcon />}
         onClick={() => save.mutate(selected)}
       >
         Save Plex library selection
@@ -309,6 +339,7 @@ function PlexStep({
           onClick={() => start.mutate()}
           loading={start.isPending}
           disabled={plexConnected || pin !== null}
+          leftSection={<ConnectIcon />}
         >
           Connect Plex
         </Button>
@@ -460,6 +491,7 @@ function TraktStep({
           onClick={() => start.mutate()}
           loading={start.isPending}
           disabled={traktConnected || device !== null}
+          leftSection={<ConnectIcon />}
         >
           Connect Trakt
         </Button>
@@ -470,6 +502,7 @@ function TraktStep({
             loading={testSaved.isPending}
           />
         ) : null}
+        <ClearConnectionButton service="trakt" connection={connection} onCleared={onCleared} />
       </Group>
       {device ? (
         <Alert color="blue" title="Authorize on Trakt">
@@ -487,7 +520,6 @@ function TraktStep({
           </Stack>
         </Alert>
       ) : null}
-      <ClearConnectionButton service="trakt" connection={connection} onCleared={onCleared} />
     </Stack>
   );
 }
@@ -612,13 +644,17 @@ function LetterboxdStep({
           </Alert>
         ) : null}
         <TextInput
-          label="Letterboxd username"
+          label={
+            <FieldLabel icon={<UserIcon />}>Letterboxd username</FieldLabel>
+          }
           value={username}
           onChange={(event) => setUsername(event.currentTarget.value)}
           error={errors.username}
         />
         <PasswordInput
-          label="Letterboxd password"
+          label={
+            <FieldLabel icon={<LockIcon />}>Letterboxd password</FieldLabel>
+          }
           onChange={(event) => setPassword(event.currentTarget.value)}
           error={errors.password}
           {...secretPlaceholderInputProps(
@@ -630,7 +666,7 @@ function LetterboxdStep({
           )}
         />
         <Group>
-          <Button type="submit" loading={save.isPending} disabled={!isDirty}>
+          <Button type="submit" loading={save.isPending} disabled={!isDirty} leftSection={<SaveIcon />}>
             Save Letterboxd connection
           </Button>
           <TestConnectionButton
@@ -639,8 +675,8 @@ function LetterboxdStep({
             loading={testSaved.isPending || testDraft.isPending}
             disabled={!canTest}
           />
+          <ClearConnectionButton service="letterboxd" connection={connection} onCleared={onCleared} />
         </Group>
-        <ClearConnectionButton service="letterboxd" connection={connection} onCleared={onCleared} />
       </Stack>
     </form>
   );
@@ -846,7 +882,7 @@ function TmdbStep({
           onExpandedChange={setShowTmdbHelp}
         />
         <PasswordInput
-          label="TMDB API key"
+          label={<FieldLabel icon={<KeyIcon />}>TMDB API key</FieldLabel>}
           onChange={(event) => setApiKey(event.currentTarget.value)}
           error={errors.api_key}
           {...secretPlaceholderInputProps(
@@ -858,7 +894,7 @@ function TmdbStep({
           )}
         />
         <Group>
-          <Button type="submit" loading={save.isPending} disabled={!isDirty}>
+          <Button type="submit" loading={save.isPending} disabled={!isDirty} leftSection={<SaveIcon />}>
             Save TMDB connection
           </Button>
           <TestConnectionButton
@@ -867,21 +903,27 @@ function TmdbStep({
             loading={testSaved.isPending || testDraft.isPending}
             disabled={!canTest}
           />
+          <ClearConnectionButton service="tmdb" connection={connection} onCleared={onCleared} />
         </Group>
-        <ClearConnectionButton service="tmdb" connection={connection} onCleared={onCleared} />
       </Stack>
     </form>
   );
 }
 
-function resolveActiveStep(connections: ConnectionSummary[], needsConnections: boolean) {
+function resolveActiveStep(connections: ConnectionSummary[]) {
   for (let index = 0; index < SERVICE_ORDER.length; index += 1) {
     const service = SERVICE_ORDER[index];
     const row = connections.find((item) => item.service === service);
     if (!row || row.status !== "ok") return index;
   }
-  if (needsConnections) return SERVICE_ORDER.length;
-  return 0;
+  return SERVICE_ORDER.length;
+}
+
+function allConnectionsOk(connections: ConnectionSummary[]) {
+  return SERVICE_ORDER.every((service) => {
+    const row = connections.find((item) => item.service === service);
+    return row?.status === "ok";
+  });
 }
 
 function stepIconClass(connection: ConnectionSummary | undefined) {
@@ -891,23 +933,37 @@ function stepIconClass(connection: ConnectionSummary | undefined) {
 }
 
 function FinishedStep({
-  connections,
   onGoToDashboard,
 }: {
-  connections: ConnectionSummary[];
   onGoToDashboard: () => void;
 }) {
   return (
     <Stack gap="md">
-      <Alert color="green" title="All services connected">
+      <Alert
+        color="green"
+        title="All connections successful"
+        icon={
+          <span style={{ display: "inline-flex" }}>
+            <StatusCheckIcon size={16} />
+          </span>
+        }
+      >
         <Text size="sm">
-          Plex, Trakt, Letterboxd, and TMDB are configured. You can manage them anytime
-          from Connections in the nav.
+          Plex, Trakt, Letterboxd, and TMDB are configured and ready for sync. Use the steps above
+          anytime to review or update a connection.
         </Text>
       </Alert>
-      <Group gap="xs">
-        {connections.map((item) => (
-          <ConnectionStatusBadge key={item.service} connection={item} />
+      <Group gap="lg">
+        {SERVICE_ORDER.map((service) => (
+          <Group key={service} gap="xs" wrap="nowrap">
+            <ServiceLogo service={service} size={20} />
+            <Text size="sm" fw={500}>
+              {SERVICE_LABELS[service]}
+            </Text>
+            <span style={{ color: "var(--mantine-color-green-6)", display: "inline-flex" }}>
+              <StatusCheckIcon size={14} />
+            </span>
+          </Group>
         ))}
       </Group>
       <Button onClick={onGoToDashboard} w="fit-content">
@@ -934,12 +990,11 @@ export function ConnectionsPage() {
     if (!statusQuery.data) return;
     const needsChanged = prevNeedsConnectionsRef.current !== statusQuery.data.needs_connections;
     prevNeedsConnectionsRef.current = statusQuery.data.needs_connections;
-    const step = resolveActiveStep(
-      statusQuery.data.connections,
-      statusQuery.data.needs_connections,
-    );
+    const step = resolveActiveStep(statusQuery.data.connections);
+    const allOk = allConnectionsOk(statusQuery.data.connections);
     setActive((current) => {
       if (current === SERVICE_ORDER.length) return current;
+      if (allOk) return step;
       if (!statusQuery.data.needs_connections && !needsChanged) return current;
       return step;
     });
@@ -998,12 +1053,6 @@ export function ConnectionsPage() {
           ? "Configure Plex, Trakt, Letterboxd, and TMDB before running sync jobs."
           : "Manage Plex, Trakt, Letterboxd, and TMDB credentials for sync jobs."}
       </Text>
-
-      <Group gap="xs">
-        {connections.map((item) => (
-          <ConnectionStatusBadge key={item.service} connection={item} />
-        ))}
-      </Group>
 
       {!needsConnections && hasConfiguredConnections ? (
         <Group justify="flex-end">
@@ -1088,19 +1137,15 @@ export function ConnectionsPage() {
             connection={connectionFor("tmdb")}
             onSaved={() => {
               refreshStatus();
-              if (needsConnections) {
-                setActive(SERVICE_ORDER.length);
-              }
+              setActive(SERVICE_ORDER.length);
             }}
             onCleared={handleConnectionCleared}
           />
         </Stepper.Step>
 
-        {needsConnections ? (
-          <Stepper.Completed>
-            <FinishedStep connections={connections} onGoToDashboard={handleGoToDashboard} />
-          </Stepper.Completed>
-        ) : null}
+        <Stepper.Completed>
+          <FinishedStep onGoToDashboard={handleGoToDashboard} />
+        </Stepper.Completed>
       </Stepper>
     </Stack>
   );
