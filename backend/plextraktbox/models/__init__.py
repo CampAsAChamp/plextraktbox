@@ -12,9 +12,12 @@ from plextraktbox.models.connection import Connection  # noqa: F401
 from plextraktbox.models.inapp_notification import InAppNotification  # noqa: F401
 from plextraktbox.models.job import Job  # noqa: F401
 from plextraktbox.models.job_run import JobRun  # noqa: F401
+from plextraktbox.models.letterboxd_slug_cache import LetterboxdSlugCache  # noqa: F401
 from plextraktbox.models.log_entry import LogEntry  # noqa: F401
 from plextraktbox.models.notification_config import NotificationConfig  # noqa: F401
+from plextraktbox.models.plex_discover_key_cache import PlexDiscoverKeyCache  # noqa: F401
 from plextraktbox.models.setting import Setting  # noqa: F401
+from plextraktbox.models.trakt_list_cache import TraktListCache  # noqa: F401
 from plextraktbox.models.user import User  # noqa: F401
 
 __all__ = [
@@ -22,8 +25,11 @@ __all__ = [
     "InAppNotification",
     "Job",
     "JobRun",
+    "LetterboxdSlugCache",
     "LogEntry",
     "NotificationConfig",
+    "PlexDiscoverKeyCache",
     "Setting",
+    "TraktListCache",
     "User",
 ]
