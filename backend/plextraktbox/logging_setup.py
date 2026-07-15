@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 from typing import cast
 
@@ -24,6 +25,20 @@ _LEVEL_LABELS = {
     "notset": "NOTSET",
 }
 
+# Longer verbs first so "POST" does not steal a prefix of a future inventively named verb.
+_HTTP_METHOD_RE = re.compile(r"^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)(?=\s|$)")
+
+# Postman / Insomnia-adjacent verb colors (bright ANSI) for terminal access logs.
+_HTTP_METHOD_COLORS = {
+    "GET": "\x1b[94m",
+    "POST": "\x1b[92m",
+    "PUT": "\x1b[93m",
+    "PATCH": "\x1b[95m",
+    "DELETE": "\x1b[91m",
+    "HEAD": "\x1b[96m",
+    "OPTIONS": "\x1b[90m",
+}
+
 
 class _UppercaseLogLevelFormatter:
     """Format log levels as compact uppercase labels ([INFO], [WARN], ...)."""
@@ -37,6 +52,70 @@ class _UppercaseLogLevelFormatter:
         label = _LEVEL_LABELS.get(raw, raw.upper())
         style = self._level_styles.get(raw, "")
         return f"[{style}{label}{self._reset_style}]"
+
+
+class _HttpMethodEventFormatter:
+    """Color the leading HTTP verb in access-log event text (e.g. GET /api/...)."""
+
+    def __init__(
+        self,
+        *,
+        value_style: str,
+        method_styles: dict[str, str],
+        reset_style: str,
+        width: int = 30,
+    ) -> None:
+        self._value_style = value_style
+        self._method_styles = method_styles
+        self._reset_style = reset_style
+        self._width = width
+
+    def __call__(self, key: str, value: object) -> str:
+        text = str(value)
+        pad = max(0, self._width - len(text))
+        padded = text + (" " * pad)
+        match = _HTTP_METHOD_RE.match(padded)
+        if match is None:
+            return f"{self._value_style}{padded}{self._reset_style}"
+
+        method = match.group(1)
+        rest = padded[len(method) :]
+        method_style = self._method_styles.get(method, self._value_style)
+        return (
+            f"{method_style}{method}{self._reset_style}"
+            f"{self._value_style}{rest}{self._reset_style}"
+        )
+
+
+class _HttpMethodValueFormatter:
+    """Color method=GET|PUT|... key/value pairs in console output."""
+
+    def __init__(
+        self,
+        *,
+        key_style: str,
+        method_styles: dict[str, str],
+        fallback_value_style: str,
+        reset_style: str,
+    ) -> None:
+        self._key_style = key_style
+        self._method_styles = method_styles
+        self._fallback_value_style = fallback_value_style
+        self._reset_style = reset_style
+
+    def __call__(self, key: str, value: object) -> str:
+        text = str(value)
+        method_style = self._method_styles.get(text, self._fallback_value_style)
+        return (
+            f"{self._key_style}{key}{self._reset_style}="
+            f"{method_style}{text}{self._reset_style}"
+        )
+
+
+def _http_method_styles(*, colors: bool) -> dict[str, str]:
+    if not colors:
+        return {method: "" for method in _HTTP_METHOD_COLORS}
+    return dict(_HTTP_METHOD_COLORS)
 
 
 def _strip_logger_prefix(
@@ -62,6 +141,7 @@ def _console_renderer(*, colors: bool) -> ConsoleRenderer:
     level_styles = ConsoleRenderer.get_default_level_styles(colors)
     for key in level_styles:
         level_styles[key] += styles.bright
+    method_styles = _http_method_styles(colors=colors)
 
     logger_name_formatter = KeyValueColumnFormatter(
         key_style=None,
@@ -98,16 +178,24 @@ def _console_renderer(*, colors: bool) -> ConsoleRenderer:
             ),
             Column(
                 "event",
-                KeyValueColumnFormatter(
-                    key_style=None,
+                _HttpMethodEventFormatter(
                     value_style=styles.bright,
+                    method_styles=method_styles,
                     reset_style=styles.reset,
-                    value_repr=str,
                     width=30,
                 ),
             ),
             Column("logger", logger_name_formatter),
             Column("logger_name", logger_name_formatter),
+            Column(
+                "method",
+                _HttpMethodValueFormatter(
+                    key_style=styles.kv_key,
+                    method_styles=method_styles,
+                    fallback_value_style=styles.kv_value,
+                    reset_style=styles.reset,
+                ),
+            ),
         ],
     )
 
