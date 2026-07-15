@@ -1,0 +1,17 @@
+import { describe, expect, it } from "vitest";
+import { CRON_PRESETS, matchCronPreset } from "./cronPresets";
+import { isValidCronExpression } from "./cron";
+
+describe("cron presets", () => {
+  it("uses valid cron expressions", () => {
+    for (const preset of CRON_PRESETS) {
+      expect(isValidCronExpression(preset.cron)).toBe(true);
+    }
+  });
+
+  it("matches known presets", () => {
+    expect(matchCronPreset("0 3 * * *")).toBe("daily");
+    expect(matchCronPreset("0 3 * * 0")).toBe("weekly");
+    expect(matchCronPreset("0 4 * * *")).toBeNull();
+  });
+});

@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Job, JobInput, JobRun } from "./jobs";
+import type { Job, JobInput, JobRun, SchedulePreview } from "./jobs";
 
 export function listJobs() {
   return api.get<Job[]>("/jobs");
@@ -23,4 +23,8 @@ export function deleteJob(id: number) {
 
 export function runJob(id: number, dryRun?: boolean) {
   return api.post<JobRun>(`/jobs/${id}/run`, dryRun === undefined ? undefined : { dry_run: dryRun });
+}
+
+export function previewSchedule(cron: string, count = 5) {
+  return api.post<SchedulePreview>("/jobs/schedule-preview", { cron, count });
 }

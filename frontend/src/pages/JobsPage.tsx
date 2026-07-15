@@ -19,6 +19,8 @@ import { ApiError } from "../api/client";
 import { deleteJob, listJobs, runJob } from "../api/jobApi";
 import { DryRunBadge, JobStatusBadge } from "../components/JobForm/JobForm";
 import { TrashIcon } from "../components/icons/TrashIcon";
+import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
+import { formatScheduleDateTime } from "../utils/dateTimeFormat";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 
 function StrokeIcon({ size = 14, children }: { size?: number; children: React.ReactNode }) {
@@ -67,6 +69,33 @@ function HistoryIcon() {
   );
 }
 
+function ScheduleCell({ job }: { job: Job }) {
+  const { preferences } = useDisplayPreferences();
+  const cronText = (
+    <Text
+      size="sm"
+      ff="monospace"
+      component="span"
+      style={{ display: "inline-block", cursor: job.enabled ? "help" : undefined }}
+    >
+      {job.cron}
+    </Text>
+  );
+
+  if (!job.enabled) {
+    return cronText;
+  }
+
+  const label = job.next_run_at
+    ? `Next run: ${formatScheduleDateTime(job.next_run_at, preferences)}`
+    : "Next run unavailable";
+
+  return (
+    <Tooltip label={label} withArrow openDelay={200}>
+      {cronText}
+    </Tooltip>
+  );
+}
 
 export function JobsPage() {
   const queryClient = useQueryClient();
@@ -161,9 +190,7 @@ export function JobsPage() {
                   </Group>
                 </Table.Td>
                 <Table.Td>
-                  <Text size="sm" ff="monospace">
-                    {job.cron}
-                  </Text>
+                  <ScheduleCell job={job} />
                 </Table.Td>
                 <Table.Td>
                   <DryRunBadge dryRun={job.dry_run} compact />

@@ -16,6 +16,12 @@ export interface Job {
   dry_run: boolean;
   data_types: DataType[];
   notify_mode: NotifyMode;
+  /** Next scheduled fire time (ISO UTC), null when disabled or unscheduled. */
+  next_run_at: string | null;
+}
+
+export interface SchedulePreview {
+  times: string[];
 }
 
 export interface JobInput {
