@@ -34,37 +34,33 @@ describe("compareValues", () => {
 });
 
 describe("sortRows", () => {
-  const rows = [
+  type Row = { id: number; name: string; flag: boolean };
+  type Column = "id" | "name" | "flag";
+
+  const rows: Row[] = [
     { id: 2, name: "Beta", flag: false },
     { id: 1, name: "Alpha", flag: true },
     { id: 3, name: "alpha", flag: false },
   ];
+  const getters: Record<Column, (row: Row) => string | number | boolean> = {
+    id: (row) => row.id,
+    name: (row) => row.name,
+    flag: (row) => row.flag,
+  };
 
   it("returns a copy when unsorted", () => {
-    const sorted = sortRows(rows, null, {
-      id: (row) => row.id,
-      name: (row) => row.name,
-      flag: (row) => row.flag,
-    });
+    const sorted = sortRows(rows, null, getters);
     expect(sorted).toEqual(rows);
     expect(sorted).not.toBe(rows);
   });
 
   it("sorts by column and direction", () => {
     expect(
-      sortRows(rows, { column: "name", direction: "asc" }, {
-        id: (row) => row.id,
-        name: (row) => row.name,
-        flag: (row) => row.flag,
-      }).map((row) => row.name),
+      sortRows(rows, { column: "name", direction: "asc" }, getters).map((row) => row.name),
     ).toEqual(["Alpha", "alpha", "Beta"]);
 
-    expect(
-      sortRows(rows, { column: "id", direction: "desc" }, {
-        id: (row) => row.id,
-        name: (row) => row.name,
-        flag: (row) => row.flag,
-      }).map((row) => row.id),
-    ).toEqual([3, 2, 1]);
+    expect(sortRows(rows, { column: "id", direction: "desc" }, getters).map((row) => row.id)).toEqual(
+      [3, 2, 1],
+    );
   });
 });
