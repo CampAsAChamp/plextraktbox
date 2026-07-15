@@ -29,7 +29,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
   const recentRuns = runsQuery.data?.items ?? [];
 
   return (
-    <Stack gap="md">
+    <Stack gap="md" maw="85%" mx="auto">
       <Title order={3}>Dashboard</Title>
       <Text>
         Signed in as <strong>{user.username}</strong> ({user.email}).

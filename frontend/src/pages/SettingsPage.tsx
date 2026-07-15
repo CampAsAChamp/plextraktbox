@@ -25,7 +25,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
   const { preferences, setTimeFormat, setDateFormat } = useDisplayPreferences();
 
   return (
-    <Stack gap="md" maw={560}>
+    <Stack gap="md" maw="85%" mx="auto">
       <Title order={3}>Settings</Title>
 
       <Paper withBorder p="md" radius="md">

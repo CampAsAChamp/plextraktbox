@@ -986,7 +986,7 @@ export function ConnectionsPage() {
   }
 
   return (
-    <Stack gap="md" maw={640}>
+    <Stack gap="md" maw="85%" mx="auto">
       <Title order={3}>{needsConnections ? "Connect your services" : "Connections"}</Title>
       <Text c="dimmed" size="sm">
         {needsConnections
