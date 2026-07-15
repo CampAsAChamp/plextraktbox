@@ -151,7 +151,7 @@ export function JobsPage() {
                   <Text fw={500}>{job.name}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <SourcePairLabel sourcePair={job.source_pair} variant="logo" />
+                  <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
                 </Table.Td>
                 <Table.Td>
                   <Group gap={4}>

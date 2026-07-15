@@ -10,6 +10,7 @@ import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
 import { formatDateTime } from "../utils/dateTimeFormat";
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "../components/runs/RunBadges";
 import { UnmatchedItemsSection } from "../components/runs/UnmatchedItemsSection";
+import { SourcePairLabel } from "../components/services/SourcePairLabel";
 
 const SUMMARY_LABELS: Record<string, string> = {
   matched: "Matched",
@@ -130,6 +131,16 @@ export function RunDetailPage() {
         <Text>
           <strong>Job:</strong> {run.job_name ?? `#${run.job_id}`}
         </Text>
+        <Group gap="xs" align="center">
+          <Text>
+            <strong>Job Type:</strong>
+          </Text>
+          {run.source_pair ? (
+            <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
+          ) : (
+            <Text c="dimmed">—</Text>
+          )}
+        </Group>
         <Text>
           <strong>Started:</strong> {formatDateTime(run.started_at, preferences)}
         </Text>
