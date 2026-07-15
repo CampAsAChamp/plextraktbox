@@ -1,3 +1,4 @@
+import { notifications } from "@mantine/notifications";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import {
   DEFAULT_DISPLAY_PREFERENCES,
@@ -18,15 +19,30 @@ type DisplayPreferencesContextValue = {
 
 const DisplayPreferencesContext = createContext<DisplayPreferencesContextValue | null>(null);
 
+function preferencesEqual(a: DisplayPreferences, b: DisplayPreferences): boolean {
+  return a.timezone === b.timezone && a.timeFormat === b.timeFormat && a.dateFormat === b.dateFormat;
+}
+
 export function DisplayPreferencesProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<DisplayPreferences>(() => loadDisplayPreferences());
 
   const updatePreferences = useCallback((patch: Partial<DisplayPreferences>) => {
+    let didChange = false;
     setPreferences((current) => {
       const next = { ...current, ...patch };
+      if (preferencesEqual(current, next)) {
+        return current;
+      }
+      didChange = true;
       saveDisplayPreferences(next);
       return next;
     });
+    if (didChange) {
+      notifications.show({
+        color: "green",
+        message: "Settings saved",
+      });
+    }
   }, []);
 
   const value = useMemo(
