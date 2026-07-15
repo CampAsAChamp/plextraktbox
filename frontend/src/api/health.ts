@@ -1,12 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./client";
+import type { components } from "./generated/schema";
 
-export interface HealthResponse {
-  status: "ok";
-  version: string;
-  git_sha?: string | null;
-  built_at?: string | null;
-}
+export type HealthResponse = components["schemas"]["HealthResponse"];
 
 const HEALTH_QUERY_KEY = ["health"] as const;
 

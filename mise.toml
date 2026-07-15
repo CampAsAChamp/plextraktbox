@@ -29,9 +29,28 @@ DATA_DIR = "{{ config_root }}/data"
 description = "[META] Run linters/typecheck and all tests (CI parity)"
 depends = ["lint", "test"]
 
-[tasks.lint]
-description = "[META] Run ruff, mypy, and frontend typecheck"
+[tasks."generate-api-types"]
+description = "[META] Generate frontend OpenAPI TypeScript types from FastAPI schema"
 depends = ["install-backend", "install-frontend"]
+run = "bash scripts/generate-api-types.sh"
+
+[tasks."check-api-types"]
+description = "[META] Fail if committed OpenAPI TypeScript types are out of date"
+depends = ["generate-api-types"]
+run = '''
+if [[ ! -f frontend/src/api/generated/schema.d.ts ]]; then
+  echo "frontend/src/api/generated/schema.d.ts missing; run: mise run generate-api-types" >&2
+  exit 1
+fi
+if ! git diff --exit-code -- frontend/src/api/generated/schema.d.ts; then
+  echo "frontend/src/api/generated/schema.d.ts is out of date; run: mise run generate-api-types" >&2
+  exit 1
+fi
+'''
+
+[tasks.lint]
+description = "[META] Run ruff, mypy, frontend typecheck, and OpenAPI types drift check"
+depends = ["install-backend", "install-frontend", "check-api-types"]
 run = '''
 backend/.venv/bin/ruff check backend/plextraktbox
 backend/.venv/bin/ruff format --check backend/plextraktbox
