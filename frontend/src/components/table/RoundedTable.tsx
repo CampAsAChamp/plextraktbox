@@ -5,6 +5,11 @@ type RoundedTableProps = TableProps & {
   children: ReactNode;
   /** Shrink the frame to the table width (schedule preview, etc.). */
   fitContent?: boolean;
+  /**
+   * Minimum table width so columns scroll horizontally instead of compressing.
+   * Ignored when `fitContent` is set. Defaults to 720 for list tables.
+   */
+  minWidth?: number | string;
 };
 
 /**
@@ -15,11 +20,20 @@ type RoundedTableProps = TableProps & {
 export function RoundedTable({
   children,
   fitContent = false,
+  minWidth = 720,
   style,
   ...props
 }: RoundedTableProps) {
   const table = (
-    <Table horizontalSpacing="md" verticalSpacing="sm" style={style} {...props}>
+    <Table
+      horizontalSpacing="md"
+      verticalSpacing="sm"
+      style={{
+        ...style,
+        ...(fitContent ? undefined : { minWidth }),
+      }}
+      {...props}
+    >
       {children}
     </Table>
   );

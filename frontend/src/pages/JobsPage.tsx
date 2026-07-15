@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Group,
   Loader,
@@ -15,6 +16,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Job } from "../api/jobs";
 import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "../api/jobs";
+import { JobListCard } from "../components/jobs/JobListCard";
 import { DataTypeBadge } from "../components/services/DataTypeBadge";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { RoundedTable } from "../components/table/RoundedTable";
@@ -212,72 +214,14 @@ export function JobsPage() {
       {jobs.length === 0 ? (
         <Text c="dimmed">No jobs yet. Create one to start syncing on a schedule.</Text>
       ) : (
-        <RoundedTable striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
-              <SortableTh
-                column="source_pair"
-                label="Job Type"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh
-                column="data_types"
-                label="Data"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh column="cron" label="Schedule" sort={sort} onSort={handleSort} />
-              <SortableTh
-                column="dry_run"
-                label="Dry run"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh column="enabled" label="Status" sort={sort} onSort={handleSort} />
-              <Table.Th>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
+        <>
+          <Stack gap="sm" hiddenFrom="sm">
             {jobs.map((job) => (
-              <Table.Tr
+              <JobListCard
                 key={job.id}
-                className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-              >
-                <Table.Td className={sortedColumnCellClass(sort, "name")}>
-                  <Text fw={500}>{job.name}</Text>
-                </Table.Td>
-                <Table.Td
-                  className={sortedColumnCellClass(sort, "source_pair")}
-                  hiddenFrom="sm"
-                >
-                  <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
-                </Table.Td>
-                <Table.Td
-                  className={sortedColumnCellClass(sort, "data_types")}
-                  hiddenFrom="sm"
-                >
-                  <Group gap={4}>
-                    {job.data_types.map((dt) => (
-                      <DataTypeBadge key={dt} dataType={dt} />
-                    ))}
-                  </Group>
-                </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "cron")}>
-                  <ScheduleCell job={job} />
-                </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "dry_run")} hiddenFrom="sm">
-                  <DryRunBadge dryRun={job.dry_run} compact />
-                </Table.Td>
-                <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
-                  <JobStatusBadge enabled={job.enabled} />
-                </Table.Td>
-                <Table.Td>
-                  <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
+                job={job}
+                actions={
+                  <>
                     <Menu.Item
                       disabled={isRunning(job, "run")}
                       onClick={() => runMutation.mutate({ job, mode: "run" })}
@@ -290,12 +234,18 @@ export function JobsPage() {
                     >
                       {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
                     </Menu.Item>
-                    <Menu.Item component={Link} to={`/jobs/${job.id}/edit`} leftSection={<PencilIcon />}>
+                    <Menu.Item
+                      component={Link}
+                      to={`/jobs/${job.id}/edit`}
+                      leftSection={<PencilIcon />}
+                    >
                       Edit
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<CloneIcon />}
-                      disabled={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+                      disabled={
+                        cloneMutation.isPending && cloneMutation.variables?.id === job.id
+                      }
                       onClick={() => cloneMutation.mutate(job)}
                     >
                       Clone
@@ -315,12 +265,121 @@ export function JobsPage() {
                     >
                       Delete
                     </Menu.Item>
-                  </RowActionsMenu>
-                </Table.Td>
-              </Table.Tr>
+                  </>
+                }
+              />
             ))}
-          </Table.Tbody>
-        </RoundedTable>
+          </Stack>
+
+          <Box visibleFrom="sm">
+            <RoundedTable striped highlightOnHover minWidth={900}>
+              <Table.Thead>
+                <Table.Tr>
+                  <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
+                  <SortableTh
+                    column="source_pair"
+                    label="Job Type"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    column="data_types"
+                    label="Data"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh column="cron" label="Schedule" sort={sort} onSort={handleSort} />
+                  <SortableTh
+                    column="dry_run"
+                    label="Dry run"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh column="enabled" label="Status" sort={sort} onSort={handleSort} />
+                  <Table.Th>Actions</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {jobs.map((job) => (
+                  <Table.Tr
+                    key={job.id}
+                    className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
+                  >
+                    <Table.Td className={sortedColumnCellClass(sort, "name")}>
+                      <Text fw={500}>{job.name}</Text>
+                    </Table.Td>
+                    <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
+                      <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
+                    </Table.Td>
+                    <Table.Td className={sortedColumnCellClass(sort, "data_types")}>
+                      <Group gap={4}>
+                        {job.data_types.map((dt) => (
+                          <DataTypeBadge key={dt} dataType={dt} />
+                        ))}
+                      </Group>
+                    </Table.Td>
+                    <Table.Td className={sortedColumnCellClass(sort, "cron")}>
+                      <ScheduleCell job={job} />
+                    </Table.Td>
+                    <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
+                      <DryRunBadge dryRun={job.dry_run} compact />
+                    </Table.Td>
+                    <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
+                      <JobStatusBadge enabled={job.enabled} />
+                    </Table.Td>
+                    <Table.Td>
+                      <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
+                        <Menu.Item
+                          disabled={isRunning(job, "run")}
+                          onClick={() => runMutation.mutate({ job, mode: "run" })}
+                        >
+                          {isRunning(job, "run") ? "Running…" : "Run now"}
+                        </Menu.Item>
+                        <Menu.Item
+                          disabled={isRunning(job, "dry-run")}
+                          onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
+                        >
+                          {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
+                        </Menu.Item>
+                        <Menu.Item
+                          component={Link}
+                          to={`/jobs/${job.id}/edit`}
+                          leftSection={<PencilIcon />}
+                        >
+                          Edit
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<CloneIcon />}
+                          disabled={
+                            cloneMutation.isPending && cloneMutation.variables?.id === job.id
+                          }
+                          onClick={() => cloneMutation.mutate(job)}
+                        >
+                          Clone
+                        </Menu.Item>
+                        <Menu.Item
+                          component={Link}
+                          to={`/runs?job_id=${job.id}`}
+                          leftSection={<HistoryIcon />}
+                        >
+                          History
+                        </Menu.Item>
+                        <Menu.Divider />
+                        <Menu.Item
+                          color="red"
+                          leftSection={<TrashIcon />}
+                          onClick={() => setJobPendingDelete(job)}
+                        >
+                          Delete
+                        </Menu.Item>
+                      </RowActionsMenu>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </RoundedTable>
+          </Box>
+        </>
       )}
 
       <Modal

@@ -1,6 +1,7 @@
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Group,
   Loader,
@@ -19,8 +20,10 @@ import { ApiError } from "../../api/client";
 import type { Job } from "../../api/jobs";
 import { listJobs, runJob } from "../../api/jobApi";
 import { ConnectionStatusBadge } from "../../components/connections/ConnectionStatusBadge";
+import { JobListCard } from "../../components/jobs/JobListCard";
 import { DryRunBadge, JobStatusBadge } from "../../components/JobForm/JobForm";
 import { RunStatusBadge } from "../../components/runs/RunBadges";
+import { RunSummaryStats } from "../../components/runs/RunSummaryStats";
 import { SourcePairLabel } from "../../components/services/SourcePairLabel";
 import { RoundedTable } from "../../components/table/RoundedTable";
 import { RowActionsMenu } from "../../components/table/RowActionsMenu";
@@ -87,10 +90,38 @@ function LastRunCell({ job }: { job: Job }) {
       <Text size="xs" c="dimmed">
         {formatDateTime(last.finished_at ?? last.started_at, preferences)}
       </Text>
-      <Text size="xs">
-        matched {last.matched} · added {last.added} · errors {last.errors}
-      </Text>
+      <RunSummaryStats
+        matched={last.matched}
+        added={last.added}
+        errors={last.errors}
+      />
     </Stack>
+  );
+}
+
+function jobActions(
+  job: Job,
+  isRunning: (job: Job, mode: RunMode) => boolean,
+  onRun: (job: Job, mode: RunMode) => void,
+) {
+  return (
+    <>
+      <Menu.Item
+        disabled={isRunning(job, "run")}
+        onClick={() => onRun(job, "run")}
+      >
+        {isRunning(job, "run") ? "Running…" : "Run now"}
+      </Menu.Item>
+      <Menu.Item
+        disabled={isRunning(job, "dry-run")}
+        onClick={() => onRun(job, "dry-run")}
+      >
+        {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
+      </Menu.Item>
+      <Menu.Item component={Link} to={`/jobs/${job.id}/edit`}>
+        Edit
+      </Menu.Item>
+    </>
   );
 }
 
@@ -137,8 +168,12 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
     );
   }
 
+  function onRun(job: Job, mode: RunMode) {
+    runMutation.mutate({ job, mode });
+  }
+
   return (
-    <Stack gap="md" maw={{ base: "100%", lg: "85%" }} mx="auto">
+    <Stack gap="lg" maw={{ base: "100%", lg: "85%" }} mx="auto">
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
         <Stack gap={4}>
           <Title order={3}>Dashboard</Title>
@@ -172,9 +207,9 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
           closeButtonLabel="Dismiss attention banner"
           onClose={() => setDismissedProblemsKey(problemsKey)}
         >
-          <Stack gap={4}>
+          <Stack gap="sm">
             {problemJobs.map((job) => (
-              <Group key={job.id} gap="sm">
+              <Group key={job.id} gap="sm" wrap="wrap">
                 <Text size="sm" fw={500}>
                   {job.name}
                 </Text>
@@ -209,8 +244,8 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
         </Button>
       </Stack>
 
-      <Stack gap="xs">
-        <Group justify="space-between">
+      <Stack gap="sm">
+        <Group justify="space-between" wrap="wrap" gap="sm">
           <Group gap="sm">
             <Text fw={500}>Jobs</Text>
             <Badge color="blue" variant="light">
@@ -240,65 +275,66 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
             .
           </Text>
         ) : (
-          <RoundedTable striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th hiddenFrom="sm">Job Type</Table.Th>
-                <Table.Th>Schedule</Table.Th>
-                <Table.Th hiddenFrom="sm">Dry run</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Last run</Table.Th>
-                <Table.Th>Actions</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
+          <>
+            <Stack gap="sm" hiddenFrom="sm">
               {jobs.map((job) => (
-                <Table.Tr
+                <JobListCard
                   key={job.id}
-                  className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-                >
-                  <Table.Td>
-                    <Text fw={500}>{job.name}</Text>
-                  </Table.Td>
-                  <Table.Td hiddenFrom="sm">
-                    <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
-                  </Table.Td>
-                  <Table.Td>
-                    <ScheduleCell job={job} />
-                  </Table.Td>
-                  <Table.Td hiddenFrom="sm">
-                    <DryRunBadge dryRun={job.dry_run} compact />
-                  </Table.Td>
-                  <Table.Td>
-                    <JobStatusBadge enabled={job.enabled} />
-                  </Table.Td>
-                  <Table.Td>
-                    <LastRunCell job={job} />
-                  </Table.Td>
-                  <Table.Td>
-                    <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
-                      <Menu.Item
-                        disabled={isRunning(job, "run")}
-                        onClick={() => runMutation.mutate({ job, mode: "run" })}
-                      >
-                        {isRunning(job, "run") ? "Running…" : "Run now"}
-                      </Menu.Item>
-                      <Menu.Item
-                        disabled={isRunning(job, "dry-run")}
-                        onClick={() => runMutation.mutate({ job, mode: "dry-run" })}
-                      >
-                        {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
-                      </Menu.Item>
-                      <Menu.Item component={Link} to={`/jobs/${job.id}/edit`}>
-                        Edit
-                      </Menu.Item>
-                    </RowActionsMenu>
-                  </Table.Td>
-                </Table.Tr>
+                  job={job}
+                  showLastRun
+                  actions={jobActions(job, isRunning, onRun)}
+                />
               ))}
-            </Table.Tbody>
-          </RoundedTable>
+            </Stack>
+
+            <Box visibleFrom="sm">
+              <RoundedTable striped highlightOnHover minWidth={960}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Job Type</Table.Th>
+                    <Table.Th>Schedule</Table.Th>
+                    <Table.Th>Dry run</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th>Last run</Table.Th>
+                    <Table.Th>Actions</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {jobs.map((job) => (
+                    <Table.Tr
+                      key={job.id}
+                      className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
+                    >
+                      <Table.Td>
+                        <Text fw={500}>{job.name}</Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
+                      </Table.Td>
+                      <Table.Td>
+                        <ScheduleCell job={job} />
+                      </Table.Td>
+                      <Table.Td>
+                        <DryRunBadge dryRun={job.dry_run} compact />
+                      </Table.Td>
+                      <Table.Td>
+                        <JobStatusBadge enabled={job.enabled} />
+                      </Table.Td>
+                      <Table.Td>
+                        <LastRunCell job={job} />
+                      </Table.Td>
+                      <Table.Td>
+                        <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
+                          {jobActions(job, isRunning, onRun)}
+                        </RowActionsMenu>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </RoundedTable>
+            </Box>
+          </>
         )}
       </Stack>
     </Stack>

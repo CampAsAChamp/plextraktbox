@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Alert,
+  Box,
   Button,
   Group,
   Loader,
@@ -30,6 +31,7 @@ import {
   RunStatusBadge,
   RunTriggerBadge,
 } from "../components/runs/RunBadges";
+import { RunListCard } from "../components/runs/RunListCard";
 import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
 import { SourcePairLabel } from "../components/services/SourcePairLabel";
 import { RoundedTable } from "../components/table/RoundedTable";
@@ -290,101 +292,121 @@ export function RunHistoryPage() {
             : "No runs match the current filters."}
         </Text>
       ) : (
-        <RoundedTable striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
-              <SortableTh column="job_name" label="Job" sort={sort} onSort={handleSort} />
-              <SortableTh
-                column="source_pair"
-                label="Job Type"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh
-                column="trigger"
-                label="Trigger"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh
-                column="dry_run"
-                label="Dry run"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-              <SortableTh column="status" label="Status" sort={sort} onSort={handleSort} />
-              <SortableTh column="started_at" label="Started" sort={sort} onSort={handleSort} />
-              <SortableTh
-                column="duration"
-                label="Duration"
-                sort={sort}
-                onSort={handleSort}
-                hiddenFrom="sm"
-              />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
+        <>
+          <Stack gap="sm" hiddenFrom="sm">
             {runs.map((run) => {
-              const durationMs = runDurationMs(run);
-              const duration = durationMs === null ? "running…" : formatDuration(durationMs);
-
               const runsListPath = `${location.pathname}${location.search}`;
-
               return (
-                <Table.Tr
+                <RunListCard
                   key={run.id}
-                  className={run.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-                  tabIndex={0}
-                  aria-label={`Run #${run.id} for ${run.job_name ?? `job #${run.job_id}`}`}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate(`/runs/${run.id}`, { state: { from: runsListPath } })}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      navigate(`/runs/${run.id}`, { state: { from: runsListPath } });
-                    }
-                  }}
-                >
-                  <Table.Td className={sortedColumnCellClass(sort, "id")}>
-                    <Text fw={500}>#{run.id}</Text>
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "job_name")}>
-                    {run.job_name ?? `Job #${run.job_id}`}
-                  </Table.Td>
-                  <Table.Td
-                    className={sortedColumnCellClass(sort, "source_pair")}
-                    hiddenFrom="sm"
-                  >
-                    {run.source_pair ? (
-                      <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
-                    ) : (
-                      <Text c="dimmed">—</Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "trigger")} hiddenFrom="sm">
-                    <RunTriggerBadge trigger={run.trigger} />
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "dry_run")} hiddenFrom="sm">
-                    <DryRunBadge dryRun={run.dry_run} compact />
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "status")}>
-                    <RunStatusBadge status={run.status} />
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
-                    {formatDateTime(run.started_at, preferences)}
-                  </Table.Td>
-                  <Table.Td className={sortedColumnCellClass(sort, "duration")} hiddenFrom="sm">
-                    {duration}
-                  </Table.Td>
-                </Table.Tr>
+                  run={run}
+                  onOpen={() =>
+                    navigate(`/runs/${run.id}`, { state: { from: runsListPath } })
+                  }
+                />
               );
             })}
-          </Table.Tbody>
-        </RoundedTable>
+          </Stack>
+
+          <Box visibleFrom="sm">
+            <RoundedTable striped highlightOnHover minWidth={900}>
+              <Table.Thead>
+                <Table.Tr>
+                  <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
+                  <SortableTh column="job_name" label="Job" sort={sort} onSort={handleSort} />
+                  <SortableTh
+                    column="source_pair"
+                    label="Job Type"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    column="trigger"
+                    label="Trigger"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    column="dry_run"
+                    label="Dry run"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh column="status" label="Status" sort={sort} onSort={handleSort} />
+                  <SortableTh
+                    column="started_at"
+                    label="Started"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                  <SortableTh
+                    column="duration"
+                    label="Duration"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {runs.map((run) => {
+                  const durationMs = runDurationMs(run);
+                  const duration =
+                    durationMs === null ? "running…" : formatDuration(durationMs);
+
+                  const runsListPath = `${location.pathname}${location.search}`;
+
+                  return (
+                    <Table.Tr
+                      key={run.id}
+                      className={run.dry_run ? dryRunRowClasses.dryRunRow : undefined}
+                      tabIndex={0}
+                      aria-label={`Run #${run.id} for ${run.job_name ?? `job #${run.job_id}`}`}
+                      style={{ cursor: "pointer" }}
+                      onClick={() =>
+                        navigate(`/runs/${run.id}`, { state: { from: runsListPath } })
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/runs/${run.id}`, { state: { from: runsListPath } });
+                        }
+                      }}
+                    >
+                      <Table.Td className={sortedColumnCellClass(sort, "id")}>
+                        <Text fw={500}>#{run.id}</Text>
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "job_name")}>
+                        {run.job_name ?? `Job #${run.job_id}`}
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
+                        {run.source_pair ? (
+                          <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
+                        ) : (
+                          <Text c="dimmed">—</Text>
+                        )}
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "trigger")}>
+                        <RunTriggerBadge trigger={run.trigger} />
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
+                        <DryRunBadge dryRun={run.dry_run} compact />
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "status")}>
+                        <RunStatusBadge status={run.status} />
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
+                        {formatDateTime(run.started_at, preferences)}
+                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "duration")}>
+                        {duration}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </RoundedTable>
+          </Box>
+        </>
       )}
     </Stack>
   );

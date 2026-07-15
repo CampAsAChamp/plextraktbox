@@ -1,0 +1,141 @@
+import { Group, Paper, Stack, Text } from "@mantine/core";
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import type { Job } from "../../api/jobs";
+import { DryRunBadge, JobStatusBadge } from "../JobForm/JobForm";
+import { RunStatusBadge } from "../runs/RunBadges";
+import { RunSummaryStats } from "../runs/RunSummaryStats";
+import { DataTypeBadge } from "../services/DataTypeBadge";
+import { SourcePairLabel } from "../services/SourcePairLabel";
+import { RowActionsMenu } from "../table/RowActionsMenu";
+import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
+import { formatDateTime, formatScheduleDateTime } from "../../utils/dateTimeFormat";
+import dryRunRowClasses from "../../styles/dryRunRow.module.css";
+
+type JobListCardProps = {
+  job: Job;
+  /** Labeled menu actions (Run, Edit, …). */
+  actions: ReactNode;
+  /** When true, show last-run summary (Dashboard). */
+  showLastRun?: boolean;
+};
+
+function ScheduleSummary({ job }: { job: Job }) {
+  const { preferences } = useDisplayPreferences();
+  const nextLabel = !job.enabled
+    ? "Disabled — no next run"
+    : job.next_run_at
+      ? formatScheduleDateTime(job.next_run_at, preferences)
+      : "Next run unavailable";
+
+  return (
+    <Stack gap={2}>
+      <Text size="sm" ff="monospace">
+        {job.cron}
+      </Text>
+      <Text size="xs" c="dimmed">
+        {nextLabel}
+      </Text>
+    </Stack>
+  );
+}
+
+function LastRunSummary({ job }: { job: Job }) {
+  const { preferences } = useDisplayPreferences();
+  const last = job.last_run;
+  if (!last) {
+    return (
+      <Text size="sm" c="dimmed">
+        Never run
+      </Text>
+    );
+  }
+
+  return (
+    <Stack gap={4}>
+      <Group gap="xs" wrap="wrap">
+        <Text
+          component={Link}
+          to={`/runs/${last.id}`}
+          size="sm"
+          fw={500}
+          c="amber.4"
+          style={{ textDecoration: "none" }}
+        >
+          Run #{last.id}
+        </Text>
+        <RunStatusBadge status={last.status} />
+        <DryRunBadge dryRun={last.dry_run} />
+      </Group>
+      <Text size="xs" c="dimmed">
+        {formatDateTime(last.finished_at ?? last.started_at, preferences)}
+      </Text>
+      <RunSummaryStats
+        matched={last.matched}
+        added={last.added}
+        errors={last.errors}
+      />
+    </Stack>
+  );
+}
+
+/** Mobile job card — used below `sm` on Jobs and Dashboard. */
+export function JobListCard({ job, actions, showLastRun = false }: JobListCardProps) {
+  return (
+    <Paper
+      withBorder
+      radius="lg"
+      p="md"
+      className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
+    >
+      <Stack gap="sm">
+        <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
+          <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
+            <Text fw={600} size="md" style={{ wordBreak: "break-word" }}>
+              {job.name}
+            </Text>
+            <Group gap="xs" wrap="wrap">
+              <JobStatusBadge enabled={job.enabled} />
+              <DryRunBadge dryRun={job.dry_run} />
+            </Group>
+          </Stack>
+          <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>{actions}</RowActionsMenu>
+        </Group>
+
+        <Stack gap={4}>
+          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            Job type
+          </Text>
+          <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
+        </Stack>
+
+        <Stack gap={4}>
+          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            Data
+          </Text>
+          <Group gap={4} wrap="wrap">
+            {job.data_types.map((dt) => (
+              <DataTypeBadge key={dt} dataType={dt} />
+            ))}
+          </Group>
+        </Stack>
+
+        <Stack gap={4}>
+          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+            Schedule
+          </Text>
+          <ScheduleSummary job={job} />
+        </Stack>
+
+        {showLastRun ? (
+          <Stack gap={4}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Last run
+            </Text>
+            <LastRunSummary job={job} />
+          </Stack>
+        ) : null}
+      </Stack>
+    </Paper>
+  );
+}

@@ -25,7 +25,7 @@ Use DevTools device emulation (or a real phone) at **~390px** and **~768px**:
 - [ ] **Header:** no horizontal page scroll; health badge compact on narrow; account/notifications usable
 - [ ] **Nav:** hamburger opens drawer; Escape / navigate closes it; desktop links remain at `sm+`
 - [ ] **Login / setup:** full-width card, comfortable padding, no clip
-- [ ] **Dashboard / Jobs / Runs:** tables scroll horizontally if needed; secondary columns hidden below `sm`; row actions via labeled menu (not tooltip-only icons)
+- [ ] **Dashboard / Jobs / Runs:** at ~390px, **card lists** with readable fields (no clipped table cells); at `sm+`, dense tables with horizontal scroll (`minWidth`); row actions via labeled menu
 - [ ] **Run detail + logs:** header actions wrap; log toolbar stacks / full-width filters; virtualized log pane still scrolls
 - [ ] **Connections:** stepper vertical on narrow; Save / Test / Clear wrap
 - [ ] **Job create/edit:** schedule presets grid; switches stacked
@@ -45,4 +45,5 @@ No special DB state. Any account with jobs/runs exercises list pages; an open ru
 ## 5. Notes
 
 - Breakpoint strategy: Mantine defaults (`sm` ≈ 768px). Prefer `visibleFrom` / `hiddenFrom` and `SimpleGrid` cols over ad-hoc media queries.
+- Jobs / Dashboard / Run history use **card lists below `sm`** (`JobListCard`, `RunListCard`); tables keep a `minWidth` so `ScrollArea` scrolls instead of compressing cells.
 - No API or sync behavior changes in this phase.
