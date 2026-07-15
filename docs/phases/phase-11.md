@@ -45,7 +45,7 @@ redesign landed so TV UI is not built on Mantine
 | Global settings, dry-run guards, exclude list | 13 |
 | Dashboard ops view, schedule picker | 14 |
 | Doppler maintainer workflow | 15 |
-| TrueNAS packaging, GHCR, reverse proxy | 16 |
+| TrueNAS packaging, GHCR, reverse proxy | 22 |
 
 ## Verification
 

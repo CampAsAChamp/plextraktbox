@@ -82,7 +82,7 @@ Migrate to new components — behavior unchanged:
 | Dashboard ops view, schedule picker, log export | 14 |
 | Mobile & responsive layout | 20 |
 | Doppler maintainer workflow | 15 |
-| TrueNAS packaging, GHCR, reverse proxy | 16 |
+| TrueNAS packaging, GHCR, reverse proxy | 22 |
 
 ## Out of scope
 

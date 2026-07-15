@@ -40,7 +40,7 @@ required for CI wiring alone.
 | Dashboard ops view, friendly cron picker | 14 |
 | Automated releases / GHCR publish | 19 |
 | Doppler maintainer workflow | 15 |
-| TrueNAS deploy docs | 16 |
+| TrueNAS deploy docs | 22 |
 
 ## Verification
 

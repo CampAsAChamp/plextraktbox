@@ -1,4 +1,4 @@
-# Phase 16 — TrueNAS deployment (personal install)
+# Phase 22 — TrueNAS deployment (personal install)
 
 **Status:** Planned
 
@@ -8,7 +8,8 @@ Run the built image on the user's own **TrueNAS SCALE** box via custom-app / "La
 no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset mount.
 
 This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
-Do not conflate with Phase 17 (catalog publication).
+Do not conflate with Phase 23 (catalog publication). TrueNAS work is intentionally last on the
+roadmap after product, ops, CI, and release pipeline phases.
 
 ## Deliverables
 
@@ -56,10 +57,10 @@ deploy. Phases 13–14 strongly recommended for unattended operation.
 
 | Item | Phase |
 | ---- | ----- |
-| TrueNAS App Catalog listing | 17 |
+| TrueNAS App Catalog listing | 23 |
 
 ## Verification
 
 Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
 
-**Next:** [Phase 17 — TrueNAS catalog](phase-17.md) — only after Phase 16 runs successfully for a while
+**Next:** [Phase 23 — TrueNAS catalog](phase-23.md) — only after Phase 22 runs successfully for a while

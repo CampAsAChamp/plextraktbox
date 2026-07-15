@@ -26,14 +26,16 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 13 | [Settings & operations](phase-13.md) | Planned | Safety guards, health, backup | TBD |
 | 14 | [Dashboard & scheduling UX](phase-14.md) | Planned | Ops view, schedule picker, export | TBD |
 | 15 | [Doppler secrets](phase-15.md) | Planned | Maintainer dev/CI workflow | TBD |
-| 16 | [TrueNAS install](phase-16.md) | Planned | Personal box, GHCR, TLS docs | TBD |
-| 17 | [TrueNAS catalog](phase-17.md) | Planned | App catalog publication | TBD |
 | 18 | [Version & build info](phase-18.md) | Done | Running version in UI, build metadata | [phase-18](test-plans/phase-18-test-plan.md) |
 | 19 | [Automated releases](phase-19.md) | Planned | release-please, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 | 20 | [Mobile & responsive layout](phase-20.md) | Planned | Phone/tablet layouts, touch UX | TBD |
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Planned | LB/Trakt/Discover caches + once-per-run Plex library | TBD |
+| 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
+| 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 
 **Current focus:** Phase 9 — frontend prototype (run detail + logs); Phases 0–8 and 18 are complete.
+
+Phases 16–17 were retired (TrueNAS moved to **22–23** so deploy stays last).
 
 ## Delivery order
 
@@ -44,9 +46,11 @@ use the tracks below when parallel work makes sense.
 Product (primary)     7 ✓ → 8 ✓ → 9–11 (as needed) → 13 → 14 → 20
 Sync performance      21 — anytime after 8 (LB/Trakt/Discover caches + Plex once-per-run)
 
-Release / deploy      18 ✓ → 12 → 19 → 16 → 17
+Release                18 ✓ → 12 → 19
 
-Maintainer (optional) 15 — Doppler; anytime for dev/CI secrets
+TrueNAS (last)         22 → 23 — after product + GHCR releases
+
+Maintainer (optional)  15 — Doppler; anytime for dev/CI secrets
 ```
 
 | Track | Order | Notes |
@@ -54,7 +58,8 @@ Maintainer (optional) 15 — Doppler; anytime for dev/CI secrets
 | **Product** | 9 → 10, 11 | UI spike/redesign and TV can overlap 7–8 or follow |
 | **Sync perf** | **21** | Independent of UI; do when sync fetches/resolve dominate runtime |
 | **Ops** | 13 → 14 → **20** | Settings/safety, dashboard UX, then mobile — after core sync + final UI stack |
-| **Release** | 12 → **19** → **16** → 17 | CI before automated releases; GHCR before TrueNAS install |
+| **Release** | 12 → **19** | CI before automated releases / GHCR |
+| **TrueNAS** | **22** → **23** | Last — personal install then catalog; needs GHCR from 19 |
 | **Maintainer** | 15 | Independent of deploy |
 
 When a phase lands: update its scope doc (mark done), copy

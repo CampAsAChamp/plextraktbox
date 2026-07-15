@@ -73,5 +73,5 @@ Reference for phase test plans and automated tests:
 - **Client-backed apply (Phase 8):** respx for apply payloads; cautious manual live-run verification
 - **Frontend prototype (Phase 9):** run detail + log viewer spike; go/no-go before Phase 10
 - **Frontend redesign (Phase 10):** full Radix + Tailwind migration; manual smoke all flows; update Vitest/RTL tests
-- **TrueNAS (Phases 15–16):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
 - **Doppler (Phase 15):** `doppler run` boot + CI token injection — no committed `.env` required for maintainers
+- **TrueNAS (Phases 22–23):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans

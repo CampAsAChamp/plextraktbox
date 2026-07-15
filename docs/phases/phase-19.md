@@ -45,7 +45,7 @@ build is running?” on TrueNAS.
 
 - Workflow on release tag: build `Dockerfile`, pass `GIT_SHA` + `BUILD_TIME` (Phase 18 build args)
 - Push to **GHCR** as `ghcr.io/<owner>/plextraktbox:vX.Y.Z` (+ `:latest` on stable releases)
-- Document pull/tag usage in [deploy/truenas.md](../deploy/truenas.md) (feeds [Phase 16](phase-16.md))
+- Document pull/tag usage in [deploy/truenas.md](../deploy/truenas.md) (feeds [Phase 22](phase-22.md))
 
 ### CI integration
 
@@ -64,14 +64,14 @@ build is running?” on TrueNAS.
 
 - [Phase 18](phase-18.md) — runtime version + build metadata in `/health` and UI (**done**)
 - [Phase 12](phase-12.md) — CI workflow; release gates on green check
-- GHCR permissions / `GITHUB_TOKEN` or PAT for package write (documented alongside [Phase 16](phase-16.md))
+- GHCR permissions / `GITHUB_TOKEN` or PAT for package write (documented alongside [Phase 22](phase-22.md))
 
 ## Defers to later phases
 
 | Item | Phase |
 | ---- | ----- |
-| TrueNAS install steps referencing GHCR tags | 16 |
-| Catalog app pointing at published image | 17 |
+| TrueNAS install steps referencing GHCR tags | 22 |
+| Catalog app pointing at published image | 23 |
 | Doppler tokens for CI secrets | 15 (optional) |
 
 ## Verification

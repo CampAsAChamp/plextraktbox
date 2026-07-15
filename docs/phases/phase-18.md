@@ -32,7 +32,7 @@ None — independent of Phase 7; can ship anytime after Phase 0.
 | Item | Phase |
 | ---- | ----- |
 | Richer health (scheduler alive, DB writable, connection summary) | 13 |
-| Versioned GHCR tags in deploy docs | 16–17 |
+| Versioned GHCR tags in deploy docs | 22–23 |
 | Automated semver bumps + GitHub Releases + GHCR publish | 19 |
 
 ## Verification

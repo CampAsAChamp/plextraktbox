@@ -4,8 +4,9 @@ The intended install target is **TrueNAS SCALE**, not just any Docker host. The 
 kept dependency-free (single image, SQLite, one HTTP port) from Phase 0 so it drops into TrueNAS
 without rework.
 
-**Status:** Not wired up yet — personal install is [Phase 16](../phases/phase-16.md); catalog
-publication is [Phase 17](../phases/phase-17.md).
+**Status:** Not wired up yet — personal install is [Phase 22](../phases/phase-22.md); catalog
+publication is [Phase 23](../phases/phase-23.md). Both are last on the roadmap (after product, ops,
+and GHCR releases).
 
 ## Design constraints (all environments)
 
@@ -21,12 +22,12 @@ These apply whenever touching Dockerfile, compose, or entrypoint — not only at
 
 See [architecture.md](../architecture.md) for full stack context.
 
-## Milestone 1 — Personal install (Phase 16)
+## Milestone 1 — Personal install (Phase 22)
 
 Run the built image on your own TrueNAS box via **custom app** / "Launch Docker Image". No catalog
 involvement — a working container + dataset mount on one machine.
 
-**Near-term deliverables** (see [phase-16](../phases/phase-16.md)):
+**Near-term deliverables** (see [phase-22](../phases/phase-22.md)):
 
 - Confirm `PUID`/`PGID` against a real ZFS dataset mount
 - Publish versioned image to GHCR (pull without local build) — [Phase 19](../phases/phase-19.md)
@@ -34,12 +35,12 @@ involvement — a working container + dataset mount on one machine.
 - Step-by-step custom-app setup: env vars, port, dataset path
 - End-to-end proof: wizard → connections → job → scheduled run → notification
 
-## Milestone 2 — App Catalog (Phase 17)
+## Milestone 2 — App Catalog (Phase 23)
 
 Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, heavier effort. Do
-**not** start until Phase 16 has run successfully on real hardware for a while.
+**not** start until Phase 22 has run successfully on real hardware for a while.
 
-**Catalog deliverables** (see [phase-17](../phases/phase-17.md)):
+**Catalog deliverables** (see [phase-23](../phases/phase-23.md)):
 
 1. Package per current TrueNAS SCALE app spec (chart / `app.yaml`-style definition with config
    schema) — verify format at phase start; it changes across SCALE releases
@@ -50,9 +51,9 @@ Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, he
    current submission/review requirements at the time
 5. Verify catalog install on a clean TrueNAS instance
 
-## Quick reference (Phase 16 install shape)
+## Quick reference (Phase 22 install shape)
 
-When Phase 16 lands, expect roughly:
+When Phase 22 lands, expect roughly:
 
 | Setting | Value |
 | ------- | ----- |
@@ -61,4 +62,4 @@ When Phase 16 lands, expect roughly:
 | Volume | Host path → `/data` (ZFS dataset) |
 | Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PUID`/`PGID` |
 
-Detailed install steps will be added here as Phase 16 is implemented.
+Detailed install steps will be added here as Phase 22 is implemented.

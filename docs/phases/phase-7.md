@@ -66,7 +66,7 @@ plans against live data. `apply_*` stays stubbed until [Phase 8](phase-8.md).
 | Global settings, dry-run guards, exclude list | 13 |
 | Connection health monitoring job | 13 |
 | Dashboard ops view, schedule picker | 14 |
-| TrueNAS packaging, GHCR, reverse proxy | 16 |
+| TrueNAS packaging, GHCR, reverse proxy | 22 |
 | Sync fetch/resolve caches (LB, Trakt, Discover, Plex once-per-run) | 21 |
 
 ## Verification

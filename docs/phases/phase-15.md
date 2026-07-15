@@ -44,4 +44,4 @@ Test plan TBD:
 - Fresh clone with Doppler CLI → `doppler run mise run up` → health OK
 - `doppler run mise run check` passes without hand-edited `.env`
 
-**Next:** [Phase 16 — TrueNAS install](phase-16.md)
+**Next:** [Phase index](README.md) — Doppler is optional anytime; TrueNAS is phases 22–23 (last)
