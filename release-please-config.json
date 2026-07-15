@@ -5,15 +5,7 @@
   "packages": {
     "backend": {
       "release-type": "python",
-      "package-name": "plextraktbox",
-      "changelog-path": "../CHANGELOG.md",
-      "extra-files": [
-        {
-          "type": "json",
-          "path": "../frontend/package.json",
-          "jsonpath": "$.version"
-        }
-      ]
+      "package-name": "plextraktbox"
     }
   }
 }

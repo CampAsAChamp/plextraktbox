@@ -173,7 +173,7 @@ images publish to GHCR on each GitHub Release.
 1. Squash-merge PRs to `main` with a [Conventional Commit](https://www.conventionalcommits.org/)
    title (`feat: …`, `fix: …`, `feat!: …`). Local commit subjects can stay plain imperative.
 2. [Release Please](https://github.com/googleapis/release-please) opens or updates a Release PR
-   (bumps version + `CHANGELOG.md`).
+   (bumps `backend/pyproject.toml` + `backend/CHANGELOG.md`).
 3. Merge the Release PR → git tag `vX.Y.Z`, GitHub Release, and
    `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (+ `:latest`).
 

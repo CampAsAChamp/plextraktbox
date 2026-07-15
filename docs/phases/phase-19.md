@@ -17,7 +17,7 @@ plextraktbox ships as a **single Docker image** (FastAPI + baked-in SPA). There 
 | ---- | ---- |
 | `backend/pyproject.toml` `[project].version` | **Source of truth** — read at runtime via `version_info.py` |
 | `GET /api/health` → `version` | What the navbar badge and account menu display |
-| `frontend/package.json` `version` | Synced by release-please (cosmetic); UI never reads it |
+| `frontend/package.json` `version` | Cosmetic npm metadata only; not bumped by release-please |
 
 The badge label says “API” because it confirms the backend is reachable, but the **version string is
 the whole app** (backend + bundled frontend from the same image). In dev with split Vite + uvicorn,
@@ -32,7 +32,8 @@ build is running?” on TrueNAS.
 ### Version bump automation
 
 - **release-please** manifest: package path `backend`, `release-type: python`
-- Release PR bumps `backend/pyproject.toml`, root `CHANGELOG.md`, and `frontend/package.json`
+- Release PR bumps `backend/pyproject.toml` and `backend/CHANGELOG.md`
+  (`frontend/package.json` is not synced — release-please forbids `..` paths outside the package)
 - Tag format: `vX.Y.Z` (`include-component-in-tag: false`)
 - **Squash-merge with Conventional Commit PR titles** (`feat:` / `fix:` / `feat!:`) when landing on
   `main` — local day-to-day subjects stay plain; release-please parses the squash commit
@@ -60,7 +61,7 @@ build is running?” on TrueNAS.
 - `.github/workflows/release.yml` — publish on manual `v*` tags
 - `release-please-config.json` / `.release-please-manifest.json`
 - `backend/pyproject.toml` — bumped version field
-- `CHANGELOG.md` — maintained by release-please
+- `backend/CHANGELOG.md` — maintained by release-please
 
 ## Defers to later phases
 
