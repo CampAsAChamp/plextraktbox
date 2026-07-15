@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   Divider,
@@ -24,8 +25,10 @@ import {
   type NotificationConfig,
 } from "../../api/notifications";
 import { ApiError } from "../../api/client";
+import { DiscordIcon } from "../icons/DiscordIcon";
 
 const CHANNELS: NotificationChannel[] = ["discord", "inapp"];
+const DISCORD_BLURPLE = "#5865F2";
 
 interface ChannelFormState {
   enabled: boolean;
@@ -122,10 +125,15 @@ function ChannelSettings({
     },
   });
 
-  return (
+  const body = (
     <Stack gap="sm">
       <Group justify="space-between">
-        <Text fw={600}>{CHANNEL_LABELS[channel]}</Text>
+        <Group gap="sm">
+          {channel === "discord" ? <DiscordIcon size={22} /> : null}
+          <Text fw={600} c={channel === "discord" ? DISCORD_BLURPLE : undefined}>
+            {CHANNEL_LABELS[channel]}
+          </Text>
+        </Group>
         <Switch
           label="Enabled"
           checked={form.enabled}
@@ -190,6 +198,24 @@ function ChannelSettings({
       </Group>
     </Stack>
   );
+
+  if (channel === "discord") {
+    return (
+      <Box
+        p="sm"
+        style={{
+          borderLeft: `3px solid ${DISCORD_BLURPLE}`,
+          borderRadius: "var(--mantine-radius-sm)",
+          background:
+            "color-mix(in srgb, var(--mantine-color-body) 92%, #5865F2 8%)",
+        }}
+      >
+        {body}
+      </Box>
+    );
+  }
+
+  return body;
 }
 
 export function NotificationSettings() {
