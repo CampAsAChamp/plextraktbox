@@ -10,7 +10,8 @@ describe("cron presets", () => {
   });
 
   it("matches known presets", () => {
-    expect(matchCronPreset("0 3 * * *")).toBe("daily");
+    expect(matchCronPreset("0 3 * * *")).toBe("daily-3am");
+    expect(matchCronPreset("0 */6 * * *")).toBe("every-6h");
     expect(matchCronPreset("0 3 * * 0")).toBe("weekly");
     expect(matchCronPreset("0 4 * * *")).toBeNull();
   });

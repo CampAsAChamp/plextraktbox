@@ -10,10 +10,16 @@ export interface CronPreset {
 
 export const CRON_PRESETS: CronPreset[] = [
   {
-    id: "daily",
-    label: "Daily",
+    id: "daily-3am",
+    label: "Daily 3am",
     cron: "0 3 * * *",
     description: "Every day at 03:00",
+  },
+  {
+    id: "every-6h",
+    label: "Every 6 hours",
+    cron: "0 */6 * * *",
+    description: "Every 6 hours on the hour",
   },
   {
     id: "weekly",
