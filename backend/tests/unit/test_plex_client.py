@@ -41,9 +41,13 @@ def test_list_libraries_reads_sections_xml() -> None:
         "plex-token",
     )
 
-    assert len(libraries) == 1
+    assert len(libraries) == 2
     assert libraries[0].id == "1"
     assert libraries[0].title == "Movies"
+    assert libraries[0].library_type == "movie"
+    assert libraries[1].id == "2"
+    assert libraries[1].title == "TV Shows"
+    assert libraries[1].library_type == "show"
 
 
 @respx.mock

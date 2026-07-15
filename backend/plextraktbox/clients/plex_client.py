@@ -14,9 +14,12 @@ from plexapi.server import PlexServer
 
 from plextraktbox.clients.base import ConnectionTestResult
 from plextraktbox.clients.http_cache import get_cached_requests_session, get_plex_server_requests_session
-from plextraktbox.clients.media_mappers import media_item_from_plex_video
+from plextraktbox.clients.media_mappers import (
+    media_item_from_plex_episode,
+    media_item_from_plex_video,
+)
 from plextraktbox.logging_setup import get_logger
-from plextraktbox.sync.media_item import MediaItem
+from plextraktbox.sync.media_item import MediaItem, MediaType
 
 log = get_logger(__name__)
 
@@ -311,7 +314,8 @@ def list_libraries(url: str, token: str) -> list[PlexLibraryInfo]:
 
     libraries: list[PlexLibraryInfo] = []
     for directory in root.findall(".//Directory"):
-        if str(directory.attrib.get("type", "")).lower() != "movie":
+        library_type = str(directory.attrib.get("type", "")).lower()
+        if library_type not in {"movie", "show"}:
             continue
         section_id = directory.attrib.get("key")
         title = directory.attrib.get("title")
@@ -321,7 +325,7 @@ def list_libraries(url: str, token: str) -> list[PlexLibraryInfo]:
             PlexLibraryInfo(
                 id=str(section_id),
                 title=str(title),
-                library_type="movie",
+                library_type=library_type,
             )
         )
     libraries.sort(key=lambda lib: lib.title.casefold())
@@ -330,11 +334,17 @@ def list_libraries(url: str, token: str) -> list[PlexLibraryInfo]:
 
 def fetch_watchlist_movies(token: str) -> list[MediaItem]:
     """Fetch account-level Plex watchlist movies."""
+    return [item for item in fetch_watchlist(token) if item.media_type == MediaType.MOVIE]
+
+
+def fetch_watchlist(token: str) -> list[MediaItem]:
+    """Fetch account-level Plex watchlist movies and shows."""
     session = get_cached_requests_session()
     account = MyPlexAccount(token=token, session=session)
     items: list[MediaItem] = []
     for entry in account.watchlist():
-        if str(getattr(entry, "type", "")).lower() != "movie":
+        entry_type = str(getattr(entry, "type", "")).lower()
+        if entry_type not in {"movie", "show"}:
             continue
         item = media_item_from_plex_video(entry)
         if item is not None:
@@ -350,17 +360,62 @@ def fetch_library_movies(
     library_ids: list[str] | None = None,
 ) -> list[Any]:
     """Return raw plexapi movie objects from selected libraries (all movie libs when unset)."""
+    return _fetch_library_entries(url, token, library_type="movie", library_ids=library_ids)
+
+
+def fetch_library_shows(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[Any]:
+    """Return raw plexapi show objects from selected libraries (all show libs when unset)."""
+    return _fetch_library_entries(url, token, library_type="show", library_ids=library_ids)
+
+
+def _fetch_library_entries(
+    url: str,
+    token: str,
+    *,
+    library_type: str,
+    library_ids: list[str] | None = None,
+) -> list[Any]:
     server = _plex_server(url, token)
     selected = {str(value) for value in library_ids or []}
-    movies: list[Any] = []
+    entries: list[Any] = []
     for section in server.library.sections():
-        if str(getattr(section, "type", "")).lower() != "movie":
+        if str(getattr(section, "type", "")).lower() != library_type:
             continue
         section_key = str(section.key)
         if selected and section_key not in selected:
             continue
-        movies.extend(section.all())
-    return movies
+        entries.extend(section.all())
+    return entries
+
+
+def fetch_library_episodes(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[MediaItem]:
+    """Return episode ``MediaItem``s from selected show libraries."""
+    items: list[MediaItem] = []
+    for show_obj in fetch_library_shows(url, token, library_ids=library_ids):
+        show_item = media_item_from_plex_video(show_obj)
+        if show_item is None or not show_item.identifiers:
+            continue
+        show_title = show_item.title
+        show_ids = dict(show_item.identifiers)
+        for episode_obj in show_obj.episodes():
+            item = media_item_from_plex_episode(
+                episode_obj,
+                show_identifiers=show_ids,
+                show_title=show_title,
+            )
+            if item is not None:
+                items.append(item)
+    return items
 
 
 def fetch_ratings_movies(
@@ -388,13 +443,28 @@ def fetch_watched_movies(
     *,
     library_ids: list[str] | None = None,
 ) -> list[MediaItem]:
-    """Fetch watched movies from scoped Plex libraries."""
+    """Fetch scoped Plex library movies for watched reconciliation.
+
+    Includes unwatched library movies so Trakt→Plex can plan mark-watched updates.
+    """
     items: list[MediaItem] = []
     for video in fetch_library_movies(url, token, library_ids=library_ids):
         item = media_item_from_plex_video(video)
-        if item is not None and item.watched:
+        if item is not None:
             items.append(item)
     return items
+
+
+def fetch_watched(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> list[MediaItem]:
+    """Fetch scoped Plex library movies and episodes for watched reconciliation."""
+    return fetch_watched_movies(url, token, library_ids=library_ids) + fetch_library_episodes(
+        url, token, library_ids=library_ids
+    )
 
 
 def _library_videos_by_match_key(
@@ -415,6 +485,34 @@ def _library_videos_by_match_key(
     return index
 
 
+def _library_episodes_by_match_key(
+    url: str,
+    token: str,
+    *,
+    library_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    """Index scoped library episodes by show-id + S/E match key."""
+    index: dict[str, Any] = {}
+    for show_obj in fetch_library_shows(url, token, library_ids=library_ids):
+        show_item = media_item_from_plex_video(show_obj)
+        if show_item is None or not show_item.identifiers:
+            continue
+        show_ids = dict(show_item.identifiers)
+        show_title = show_item.title
+        for episode_obj in show_obj.episodes():
+            item = media_item_from_plex_episode(
+                episode_obj,
+                show_identifiers=show_ids,
+                show_title=show_title,
+            )
+            if item is None:
+                continue
+            match_key = item.match_key()
+            if match_key:
+                index[match_key] = episode_obj
+    return index
+
+
 def _find_library_video(
     index: dict[str, Any],
     item: MediaItem,
@@ -422,7 +520,8 @@ def _find_library_video(
     match_key = item.match_key()
     if match_key and match_key in index:
         return index[match_key]
-    raise ValueError(f"Movie {item.title!r} not found in scoped Plex libraries")
+    kind = "Episode" if item.media_type == MediaType.EPISODE else "Movie"
+    raise ValueError(f"{kind} {item.title!r} not found in scoped Plex libraries")
 
 
 def rate_library_movies(
@@ -500,17 +599,13 @@ def rate_movies_with_discover_fallback(
 
     log.info(
         "sync.apply.plex.index.start",
-        message=(
-            f"Indexing scoped Plex library before applying {len(ratings)} rating(s)"
-        ),
+        message=(f"Indexing scoped Plex library before applying {len(ratings)} rating(s)"),
         count=len(ratings),
     )
     index = _library_videos_by_match_key(url, token, library_ids=library_ids)
     log.info(
         "sync.apply.plex.index.done",
-        message=(
-            f"Indexed {len(index)} library movie(s); applying {len(ratings)} rating(s)"
-        ),
+        message=(f"Indexed {len(index)} library movie(s); applying {len(ratings)} rating(s)"),
         library_count=len(index),
         count=len(ratings),
     )
@@ -580,10 +675,34 @@ def mark_library_movies_watched(
     library_ids: list[str] | None = None,
 ) -> None:
     """Mark movies as watched in scoped Plex libraries."""
-    if not items:
+    movies = [item for item in items if item.media_type == MediaType.MOVIE]
+    if not movies:
         return
     index = _library_videos_by_match_key(url, token, library_ids=library_ids)
-    for item in items:
+    for item in movies:
+        video = _find_library_video(index, item)
+        if not video.isWatched:
+            video.markWatched()
+
+
+def mark_library_items_watched(
+    url: str,
+    token: str,
+    items: list[MediaItem],
+    *,
+    library_ids: list[str] | None = None,
+) -> None:
+    """Mark movies and episodes as watched in scoped Plex libraries."""
+    if not items:
+        return
+    movies = [item for item in items if item.media_type == MediaType.MOVIE]
+    episodes = [item for item in items if item.media_type == MediaType.EPISODE]
+    if movies:
+        mark_library_movies_watched(url, token, movies, library_ids=library_ids)
+    if not episodes:
+        return
+    index = _library_episodes_by_match_key(url, token, library_ids=library_ids)
+    for item in episodes:
         video = _find_library_video(index, item)
         if not video.isWatched:
             video.markWatched()
@@ -594,10 +713,11 @@ def _plex_account(token: str) -> MyPlexAccount:
     return MyPlexAccount(token=token, session=session)
 
 
-def _resolve_discover_movie(account: MyPlexAccount, item: MediaItem) -> Any:
-    """Resolve a Plex Discover movie object for watchlist writes."""
+def _resolve_discover_item(account: MyPlexAccount, item: MediaItem) -> Any:
+    """Resolve a Plex Discover movie or show object for watchlist writes."""
+    libtype = "show" if item.media_type == MediaType.SHOW else "movie"
     target_key = item.match_key()
-    results = account.searchDiscover(item.title, limit=25, libtype="movie")
+    results = account.searchDiscover(item.title, limit=25, libtype=libtype)
     for result in results:
         mapped = media_item_from_plex_video(result)
         if mapped is None:
@@ -607,10 +727,16 @@ def _resolve_discover_movie(account: MyPlexAccount, item: MediaItem) -> Any:
     raise ValueError(f"Could not resolve {item.title!r} on Plex Discover")
 
 
+def _resolve_discover_movie(account: MyPlexAccount, item: MediaItem) -> Any:
+    """Resolve a Plex Discover movie object for watchlist writes."""
+    return _resolve_discover_item(account, item)
+
+
 def _find_watchlist_entry(account: MyPlexAccount, item: MediaItem) -> Any:
     target_key = item.match_key()
+    allowed = {"show"} if item.media_type == MediaType.SHOW else {"movie"}
     for entry in account.watchlist():
-        if str(getattr(entry, "type", "")).lower() != "movie":
+        if str(getattr(entry, "type", "")).lower() not in allowed:
             continue
         mapped = media_item_from_plex_video(entry)
         if mapped is not None and target_key and mapped.match_key() == target_key:
@@ -620,22 +746,36 @@ def _find_watchlist_entry(account: MyPlexAccount, item: MediaItem) -> Any:
 
 def add_watchlist_movies(token: str, items: list[MediaItem]) -> None:
     """Add movies to the Plex account watchlist via Discover."""
+    add_watchlist_items(token, [item for item in items if item.media_type == MediaType.MOVIE])
+
+
+def add_watchlist_items(token: str, items: list[MediaItem]) -> None:
+    """Add movies and shows to the Plex account watchlist via Discover."""
     if not items:
         return
     account = _plex_account(token)
     for item in items:
-        movie = _resolve_discover_movie(account, item)
-        if account.onWatchlist(movie):
+        if item.media_type not in {MediaType.MOVIE, MediaType.SHOW}:
             continue
-        account.addToWatchlist(movie)
+        discover_item = _resolve_discover_item(account, item)
+        if account.onWatchlist(discover_item):
+            continue
+        account.addToWatchlist(discover_item)
 
 
 def remove_watchlist_movies(token: str, items: list[MediaItem]) -> None:
     """Remove movies from the Plex account watchlist."""
+    remove_watchlist_items(token, [item for item in items if item.media_type == MediaType.MOVIE])
+
+
+def remove_watchlist_items(token: str, items: list[MediaItem]) -> None:
+    """Remove movies and shows from the Plex account watchlist."""
     if not items:
         return
     account = _plex_account(token)
     for item in items:
+        if item.media_type not in {MediaType.MOVIE, MediaType.SHOW}:
+            continue
         try:
             entry = _find_watchlist_entry(account, item)
         except ValueError:

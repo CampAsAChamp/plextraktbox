@@ -89,8 +89,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                 )
             else:
                 start_message = (
-                    f"Applying {len(changes)} {data_type.value} "
-                    f"change(s) ({action.value}) to {target_name}"
+                    f"Applying {len(changes)} {data_type.value} change(s) ({action.value}) to {target_name}"
                 )
             log.info(
                 "sync.apply.start",
@@ -108,8 +107,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                 log.warning(
                     "sync.apply.failed",
                     message=(
-                        f"Failed applying {len(changes)} {data_type.value} "
-                        f"change(s) to {target_name}: {exc}"
+                        f"Failed applying {len(changes)} {data_type.value} change(s) to {target_name}: {exc}"
                     ),
                     target=target_name,
                     data_type=data_type.value,
@@ -146,7 +144,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                 dry_run=ctx.dry_run,
             )
 
-            _merge_summary(summary, data_type, action, result)
+            _merge_summary(summary, data_type, action, result, changes)
 
             for change in changes:
                 pm.hook.after_item(
@@ -191,7 +189,10 @@ def _merge_summary(
     data_type: DataType,
     action: ChangeAction,
     result: ApplyResult,
+    changes: list[PlannedChange],
 ) -> None:
+    from plextraktbox.sync.media_item import MediaType
+
     if action == ChangeAction.ADD:
         summary.added += result.applied
     elif action == ChangeAction.REMOVE:
@@ -203,6 +204,17 @@ def _merge_summary(
             summary.watched += result.applied
     summary.skipped += result.skipped
     summary.errors += result.errors
+
+    # TV breakdown — only when the whole batch applied (incl. dry-run).
+    if result.applied == len(changes) and changes:
+        if data_type == DataType.WATCHLIST and action == ChangeAction.ADD:
+            summary.shows_added += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
+        elif data_type == DataType.WATCHLIST and action == ChangeAction.REMOVE:
+            summary.shows_removed += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
+        elif data_type == DataType.WATCHED and action == ChangeAction.UPDATE:
+            summary.episodes_watched += sum(
+                1 for change in changes if change.item.media_type == MediaType.EPISODE
+            )
 
 
 async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: RunSummary) -> None:

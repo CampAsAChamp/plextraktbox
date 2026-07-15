@@ -1,4 +1,4 @@
-"""Plex source adapter — client-backed fetch and apply (movies)."""
+"""Plex source adapter — client-backed fetch and apply (movies + TV)."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class PlexSource(MemorySource):
         self._library_ids = list(library_ids or [])
 
     async def fetch_watchlist(self) -> list[MediaItem]:
-        return await asyncio.to_thread(plex_client.fetch_watchlist_movies, self._token)
+        return await asyncio.to_thread(plex_client.fetch_watchlist, self._token)
 
     async def fetch_ratings(self) -> list[MediaItem]:
         return await asyncio.to_thread(
@@ -37,7 +37,7 @@ class PlexSource(MemorySource):
 
     async def fetch_watched(self) -> list[MediaItem]:
         return await asyncio.to_thread(
-            plex_client.fetch_watched_movies,
+            plex_client.fetch_watched,
             self._url,
             self._token,
             library_ids=self._library_ids,
@@ -57,9 +57,9 @@ class PlexSource(MemorySource):
         def apply_batch(batch: list[PlannedChange]) -> None:
             items = [change.item for change in batch]
             if action == ChangeAction.ADD:
-                plex_client.add_watchlist_movies(self._token, items)
+                plex_client.add_watchlist_items(self._token, items)
             else:
-                plex_client.remove_watchlist_movies(self._token, items)
+                plex_client.remove_watchlist_items(self._token, items)
 
         return await apply_live(changes, dry_run=dry_run, apply_batch=apply_batch)
 
@@ -94,7 +94,7 @@ class PlexSource(MemorySource):
         dry_run: bool,
     ) -> ApplyResult:
         def apply_batch(batch: list[PlannedChange]) -> None:
-            plex_client.mark_library_movies_watched(
+            plex_client.mark_library_items_watched(
                 self._url,
                 self._token,
                 [change.item for change in batch],

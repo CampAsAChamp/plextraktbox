@@ -17,6 +17,14 @@ def _movie(*, tmdb: str = "603", title: str = "The Matrix") -> MediaItem:
     )
 
 
+def _show(*, tmdb: str = "1396", title: str = "Breaking Bad") -> MediaItem:
+    return MediaItem(
+        title=title,
+        media_type=MediaType.SHOW,
+        identifiers={"tmdb": tmdb},
+    )
+
+
 @respx.mock
 def test_add_watchlist_movies_posts_ids() -> None:
     route = respx.post("https://api.trakt.tv/sync/watchlist").mock(
@@ -27,6 +35,26 @@ def test_add_watchlist_movies_posts_ids() -> None:
 
     assert route.called
     assert route.calls.last.request.content == b'{"movies":[{"ids":{"tmdb":603}}]}'
+
+
+@respx.mock
+def test_add_watchlist_items_posts_movies_and_shows() -> None:
+    route = respx.post("https://api.trakt.tv/sync/watchlist").mock(
+        return_value=Response(
+            200,
+            json={
+                "added": {"movies": 1, "shows": 1},
+                "not_found": {"movies": [], "shows": []},
+            },
+        )
+    )
+
+    trakt_client.add_watchlist_items("client-id", "access-token", [_movie(), _show()])
+
+    assert route.called
+    body = route.calls.last.request.content.decode()
+    assert '"movies":[{"ids":{"tmdb":603}}]' in body
+    assert '"shows":[{"ids":{"tmdb":1396}}]' in body
 
 
 @respx.mock

@@ -1,4 +1,4 @@
-"""Trakt source adapter — client-backed fetch and apply (movies)."""
+"""Trakt source adapter — client-backed fetch and apply (movies + TV)."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ class TraktSource(MemorySource):
 
     async def fetch_watchlist(self) -> list[MediaItem]:
         return await asyncio.to_thread(
-            trakt_client.fetch_watchlist_movies,
+            trakt_client.fetch_watchlist,
             self._client_id,
             self._access_token,
         )
@@ -33,7 +33,7 @@ class TraktSource(MemorySource):
 
     async def fetch_watched(self) -> list[MediaItem]:
         return await asyncio.to_thread(
-            trakt_client.fetch_watched_movies,
+            trakt_client.fetch_watched,
             self._client_id,
             self._access_token,
         )
@@ -52,9 +52,9 @@ class TraktSource(MemorySource):
         def apply_batch(batch: list[PlannedChange]) -> None:
             items = [change.item for change in batch]
             if action == ChangeAction.ADD:
-                trakt_client.add_watchlist_movies(self._client_id, self._access_token, items)
+                trakt_client.add_watchlist_items(self._client_id, self._access_token, items)
             else:
-                trakt_client.remove_watchlist_movies(self._client_id, self._access_token, items)
+                trakt_client.remove_watchlist_items(self._client_id, self._access_token, items)
 
         return await apply_live(changes, dry_run=dry_run, apply_batch=apply_batch)
 

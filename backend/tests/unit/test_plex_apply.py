@@ -101,6 +101,44 @@ def test_mark_library_movies_watched_marks_unwatched(monkeypatch: pytest.MonkeyP
     assert mark_calls == 1
 
 
+def test_mark_library_items_watched_marks_episodes(monkeypatch: pytest.MonkeyPatch) -> None:
+    episode_video = SimpleNamespace(isWatched=False)
+    mark_calls = 0
+
+    def nonlocal_mark() -> None:
+        nonlocal mark_calls
+        mark_calls += 1
+
+    episode_video.markWatched = nonlocal_mark  # type: ignore[method-assign]
+
+    monkeypatch.setattr(
+        plex_client,
+        "_library_videos_by_match_key",
+        lambda *_args, **_kwargs: {},
+    )
+    monkeypatch.setattr(
+        plex_client,
+        "_library_episodes_by_match_key",
+        lambda *_args, **_kwargs: {"tmdb:1396:s1e1": episode_video},
+    )
+
+    plex_client.mark_library_items_watched(
+        "http://plex.local:32400",
+        "plex-token",
+        [
+            MediaItem(
+                title="Breaking Bad S01E01",
+                media_type=MediaType.EPISODE,
+                identifiers={"tmdb": "1396"},
+                season=1,
+                episode=1,
+            )
+        ],
+    )
+
+    assert mark_calls == 1
+
+
 def test_add_watchlist_movies_skips_items_already_on_watchlist(monkeypatch: pytest.MonkeyPatch) -> None:
     discover_movie = SimpleNamespace(title="The Matrix", guid="tmdb://603")
     add_calls = 0
@@ -113,7 +151,7 @@ def test_add_watchlist_movies_skips_items_already_on_watchlist(monkeypatch: pyte
     account.addToWatchlist = add_to_watchlist  # type: ignore[attr-defined]
 
     monkeypatch.setattr(plex_client, "_plex_account", lambda _token: account)
-    monkeypatch.setattr(plex_client, "_resolve_discover_movie", lambda _account, _item: discover_movie)
+    monkeypatch.setattr(plex_client, "_resolve_discover_item", lambda _account, _item: discover_movie)
 
     plex_client.add_watchlist_movies("plex-token", [_movie()])
 

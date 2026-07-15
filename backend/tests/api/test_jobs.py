@@ -21,9 +21,9 @@ def _mock_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
         "plextraktbox.services.connections.ensure_trakt_access_token",
         lambda session, connection: "access",
     )
-    monkeypatch.setattr("plextraktbox.clients.plex_client.fetch_watchlist_movies", lambda token: [])
+    monkeypatch.setattr("plextraktbox.clients.plex_client.fetch_watchlist", lambda token: [])
     monkeypatch.setattr(
-        "plextraktbox.clients.plex_client.fetch_watched_movies",
+        "plextraktbox.clients.plex_client.fetch_watched",
         lambda url, token, library_ids=None: [],
     )
     monkeypatch.setattr(
@@ -31,11 +31,11 @@ def _mock_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda url, token, library_ids=None: [],
     )
     monkeypatch.setattr(
-        "plextraktbox.clients.trakt_client.fetch_watchlist_movies",
+        "plextraktbox.clients.trakt_client.fetch_watchlist",
         lambda client_id, access_token: [],
     )
     monkeypatch.setattr(
-        "plextraktbox.clients.trakt_client.fetch_watched_movies",
+        "plextraktbox.clients.trakt_client.fetch_watched",
         lambda client_id, access_token: [],
     )
     monkeypatch.setattr(

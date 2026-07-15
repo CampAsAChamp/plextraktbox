@@ -2,19 +2,30 @@
 
 from __future__ import annotations
 
-from plextraktbox.sync.media_item import IDENTIFIER_PRIORITY, MediaItem
+from plextraktbox.sync.media_item import IDENTIFIER_PRIORITY, MediaItem, MediaType
+
+
+def _index_value(item: MediaItem, value: str) -> str:
+    """Key used inside a per-scheme identifier index."""
+    if item.media_type == MediaType.EPISODE and item.season is not None and item.episode is not None:
+        return f"{value}:s{item.season}e{item.episode}"
+    return value
 
 
 class MediaMatcher:
     """Index items by TMDB → IMDb → TVDB and resolve cross-service matches."""
 
     def __init__(self) -> None:
-        self._index: dict[str, dict[str, MediaItem]] = {key: {} for key in IDENTIFIER_PRIORITY}
+        # scheme → (media_type → (index_value → item))
+        self._index: dict[str, dict[MediaType, dict[str, MediaItem]]] = {
+            key: {} for key in IDENTIFIER_PRIORITY
+        }
 
     def add(self, item: MediaItem) -> None:
         for key in IDENTIFIER_PRIORITY:
             if value := item.identifiers.get(key):
-                self._index[key].setdefault(value, item)
+                by_type = self._index[key].setdefault(item.media_type, {})
+                by_type.setdefault(_index_value(item, value), item)
 
     def add_many(self, items: list[MediaItem]) -> None:
         for item in items:
@@ -22,7 +33,13 @@ class MediaMatcher:
 
     def find(self, item: MediaItem) -> MediaItem | None:
         for key in IDENTIFIER_PRIORITY:
-            if (value := item.identifiers.get(key)) and (match := self._index[key].get(value)):
+            value = item.identifiers.get(key)
+            if not value:
+                continue
+            by_type = self._index[key].get(item.media_type)
+            if by_type is None:
+                continue
+            if match := by_type.get(_index_value(item, value)):
                 return match
         return None
 

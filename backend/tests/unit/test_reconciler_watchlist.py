@@ -7,7 +7,7 @@ import pytest
 from plextraktbox.sync.engine import run_sync
 from plextraktbox.sync.plans import DataType
 from plextraktbox.sync.reconcilers.watchlist import WatchlistReconciler
-from tests.fakes import FakeLetterboxd, FakePlex, FakeTrakt, movie
+from tests.fakes import FakeLetterboxd, FakePlex, FakeTrakt, movie, show
 from tests.sync_helpers import make_context
 
 
@@ -31,6 +31,25 @@ async def test_adds_missing_trakt_watchlist_items() -> None:
     trakt_items = await trakt.fetch_watchlist()
     assert len(trakt_items) == 1
     assert trakt_items[0].identifiers["tmdb"] == "603"
+
+
+@pytest.mark.asyncio
+async def test_adds_missing_trakt_show_watchlist_items() -> None:
+    plex, trakt = FakePlex(), FakeTrakt()
+    plex.seed_watchlist([show(title="Breaking Bad", tmdb="1396", watchlisted=True, source="plex")])
+    trakt.seed_watchlist([])
+
+    ctx = make_context(
+        sources={"plex": plex, "trakt": trakt},
+        data_types={DataType.WATCHLIST},
+        dry_run=False,
+    )
+    summary = await run_sync(ctx)
+    assert summary.added == 1
+    assert summary.shows_added == 1
+    trakt_items = await trakt.fetch_watchlist()
+    assert len(trakt_items) == 1
+    assert trakt_items[0].media_type.value == "show"
 
 
 @pytest.mark.asyncio

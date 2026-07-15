@@ -225,9 +225,7 @@ def test_plex_pin_poll_saves_unverified_server_when_unreachable(client: TestClie
             ],
         )
     )
-    respx.get(url__regex=r"https?://.*/identity").mock(
-        return_value=httpx.Response(503, text="unreachable")
-    )
+    respx.get(url__regex=r"https?://.*/identity").mock(return_value=httpx.Response(503, text="unreachable"))
 
     start = client.post("/api/connections/plex/pin/start", headers=HEADERS).json()
     poll = client.post(
@@ -384,12 +382,16 @@ def test_letterboxd_saved_connection_test_without_body(client: TestClient) -> No
 
 def test_trakt_device_start_requires_credentials(client: TestClient, monkeypatch) -> None:
     _create_user_and_login(client)
-    monkeypatch.delenv("TRAKT_CLIENT_ID", raising=False)
-    monkeypatch.delenv("TRAKT_CLIENT_SECRET", raising=False)
 
-    from plextraktbox import config
+    from plextraktbox.config import Settings
 
-    config.get_settings.cache_clear()
+    monkeypatch.setattr(
+        Settings,
+        "require_trakt_credentials",
+        lambda self: (_ for _ in ()).throw(
+            ValueError("Trakt API app is not configured. Set TRAKT_CLIENT_ID and TRAKT_CLIENT_SECRET.")
+        ),
+    )
 
     resp = client.post("/api/connections/trakt/device/start", headers=HEADERS)
     assert resp.status_code == 503

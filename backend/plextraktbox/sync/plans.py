@@ -59,6 +59,9 @@ class RunSummary:
     skipped: int = 0
     errors: int = 0
     planned: int = 0
+    shows_added: int = 0
+    shows_removed: int = 0
+    episodes_watched: int = 0
     unmatched: list[UnmatchedItem] = field(default_factory=list)
 
     def merge_apply(self, result: ApplyResult, *, action: ChangeAction) -> None:
@@ -81,6 +84,9 @@ class RunSummary:
             "skipped": self.skipped,
             "errors": self.errors,
             "planned": self.planned,
+            "shows_added": self.shows_added,
+            "shows_removed": self.shows_removed,
+            "episodes_watched": self.episodes_watched,
             "unmatched_count": len(self.unmatched),
             "unmatched": [
                 {

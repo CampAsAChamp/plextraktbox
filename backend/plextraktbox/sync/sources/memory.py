@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from plextraktbox.sync.media_item import MediaItem, MediaType
+from plextraktbox.sync.media_item import MediaItem, MediaType, format_episode_title
 from plextraktbox.sync.plans import ApplyResult, ChangeAction, PlannedChange
 from plextraktbox.sync.sources.base import NotSupported, Source, SourceCapabilities
 
@@ -20,6 +20,8 @@ def _clone_item(item: MediaItem, *, source: str) -> MediaItem:
         watched_at=item.watched_at,
         source=source,
         source_key=item.source_key or item.match_key() or item.title,
+        season=item.season,
+        episode=item.episode,
     )
 
 
@@ -150,6 +152,7 @@ def movie(
     title: str,
     tmdb: str | None = None,
     imdb: str | None = None,
+    tvdb: str | None = None,
     source: str = "",
     source_key: str = "",
     watchlisted: bool = False,
@@ -161,6 +164,8 @@ def movie(
         identifiers["tmdb"] = tmdb
     if imdb:
         identifiers["imdb"] = imdb
+    if tvdb:
+        identifiers["tvdb"] = tvdb
     key = source_key or (f"tmdb:{tmdb}" if tmdb else title)
     return MediaItem(
         title=title,
@@ -171,4 +176,69 @@ def movie(
         watched=watched,
         source=source,
         source_key=key,
+    )
+
+
+def show(
+    *,
+    title: str,
+    tmdb: str | None = None,
+    imdb: str | None = None,
+    tvdb: str | None = None,
+    source: str = "",
+    source_key: str = "",
+    watchlisted: bool = False,
+    rating: float | None = None,
+    watched: bool = False,
+) -> MediaItem:
+    identifiers: dict[str, str] = {}
+    if tmdb:
+        identifiers["tmdb"] = tmdb
+    if imdb:
+        identifiers["imdb"] = imdb
+    if tvdb:
+        identifiers["tvdb"] = tvdb
+    key = source_key or (f"tmdb:{tmdb}" if tmdb else title)
+    return MediaItem(
+        title=title,
+        media_type=MediaType.SHOW,
+        identifiers=identifiers,
+        watchlisted=watchlisted,
+        rating=rating,
+        watched=watched,
+        source=source,
+        source_key=key,
+    )
+
+
+def episode(
+    *,
+    title: str,
+    season: int,
+    episode: int,
+    tmdb: str | None = None,
+    imdb: str | None = None,
+    tvdb: str | None = None,
+    source: str = "",
+    source_key: str = "",
+    watched: bool = False,
+) -> MediaItem:
+    identifiers: dict[str, str] = {}
+    if tmdb:
+        identifiers["tmdb"] = tmdb
+    if imdb:
+        identifiers["imdb"] = imdb
+    if tvdb:
+        identifiers["tvdb"] = tvdb
+    display = format_episode_title(title, season, episode)
+    key = source_key or (f"tmdb:{tmdb}:s{season}e{episode}" if tmdb else display)
+    return MediaItem(
+        title=display,
+        media_type=MediaType.EPISODE,
+        identifiers=identifiers,
+        watched=watched,
+        source=source,
+        source_key=key,
+        season=season,
+        episode=episode,
     )

@@ -3,7 +3,7 @@
 from plextraktbox.sync.plans import ApplyResult, PlannedChange
 from plextraktbox.sync.sources.base import NotSupported, SourceCapabilities
 from plextraktbox.sync.sources.letterboxd_source import LetterboxdSource, READ_ONLY
-from plextraktbox.sync.sources.memory import MemorySource, movie
+from plextraktbox.sync.sources.memory import MemorySource, episode, movie, show
 from plextraktbox.sync.sources.plex_source import PlexSource
 from plextraktbox.sync.sources.trakt_source import TraktSource
 
@@ -15,7 +15,9 @@ __all__ = [
     "MemorySource",
     "PlexSource",
     "TraktSource",
+    "episode",
     "movie",
+    "show",
 ]
 
 

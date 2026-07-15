@@ -69,6 +69,9 @@ class JobRun(SQLModel, table=True):
             skipped=int(raw.get("skipped", 0)),
             errors=int(raw.get("errors", 0)),
             planned=int(raw.get("planned", 0)),
+            shows_added=int(raw.get("shows_added", 0)),
+            shows_removed=int(raw.get("shows_removed", 0)),
+            episodes_watched=int(raw.get("episodes_watched", 0)),
             unmatched=unmatched,
         )
 
