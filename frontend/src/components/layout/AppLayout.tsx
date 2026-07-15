@@ -108,10 +108,7 @@ export function AppLayout({
         <Group h="100%" px="md" justify="space-between">
           <Group gap="md">
             {showHome ? (
-              <Group
-                gap="sm"
-                wrap="nowrap"
-                component={Link}
+              <Link
                 to="/"
                 aria-label="Go to dashboard"
                 aria-current={isHome ? "page" : undefined}
@@ -121,20 +118,22 @@ export function AppLayout({
                   cursor: "pointer",
                 }}
               >
-                <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
-                  plextraktbox
-                </Title>
-                <ActionIcon
-                  component="span"
-                  variant={isHome ? "light" : "subtle"}
-                  color={isHome ? "amber" : "gray"}
-                  size="lg"
-                  aria-hidden
-                  tabIndex={-1}
-                >
-                  <HomeIcon size={18} />
-                </ActionIcon>
-              </Group>
+                <Group gap="sm" wrap="nowrap">
+                  <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
+                    plextraktbox
+                  </Title>
+                  <ActionIcon
+                    component="span"
+                    variant={isHome ? "light" : "subtle"}
+                    color={isHome ? "amber" : "gray"}
+                    size="lg"
+                    aria-hidden
+                    tabIndex={-1}
+                  >
+                    <HomeIcon size={18} />
+                  </ActionIcon>
+                </Group>
+              </Link>
             ) : (
               <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
                 plextraktbox
