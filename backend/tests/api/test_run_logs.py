@@ -94,3 +94,43 @@ def test_run_logs_not_found(client: TestClient) -> None:
     _create_user_and_login(client)
     resp = client.get("/api/runs/999/logs")
     assert resp.status_code == 404
+
+
+@respx.mock
+def test_export_run_logs_txt_and_jsonl(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _create_user_and_login(client)
+    _configure_connections(client)
+    _mock_live_fetch(monkeypatch)
+    run_id = _run_job_and_get_id(client)
+
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        listed = client.get(f"/api/runs/{run_id}/logs")
+        if listed.json()["items"]:
+            break
+        time.sleep(0.05)
+
+    txt = client.get(f"/api/runs/{run_id}/logs/export?format=txt")
+    assert txt.status_code == 200
+    assert "attachment" in txt.headers["content-disposition"]
+    assert f"run-{run_id}-logs.txt" in txt.headers["content-disposition"]
+    assert "text/plain" in txt.headers["content-type"]
+    assert "sync.run.complete" in txt.text
+
+    jsonl = client.get(f"/api/runs/{run_id}/logs/export?format=jsonl")
+    assert jsonl.status_code == 200
+    assert f"run-{run_id}-logs.jsonl" in jsonl.headers["content-disposition"]
+    lines = [line for line in jsonl.text.splitlines() if line.strip()]
+    assert lines
+    parsed = json.loads(lines[0])
+    assert "message" in parsed
+    assert "level" in parsed
+    assert any("sync.run.complete" in json.loads(line)["message"] for line in lines)
+
+
+def test_export_run_logs_not_found(client: TestClient) -> None:
+    _create_user_and_login(client)
+    resp = client.get("/api/runs/999/logs/export?format=txt")
+    assert resp.status_code == 404

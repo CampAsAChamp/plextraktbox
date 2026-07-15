@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 from sqlmodel import Session, col, select
 
 from plextraktbox.models.log_entry import LogEntry
+
+# Page size when streaming an entire run for export.
+_EXPORT_PAGE_SIZE = 2000
 
 
 def list_log_entries(
@@ -29,3 +34,23 @@ def list_log_entries(
         stmt = stmt.where(col(LogEntry.message).ilike(pattern))
 
     return list(session.exec(stmt).all())
+
+
+def iter_all_log_entries(session: Session, run_id: int) -> Iterator[LogEntry]:
+    """Yield every log entry for a run in id order (paginated under the hood)."""
+    after_id = 0
+    while True:
+        page = list_log_entries(
+            session,
+            run_id,
+            after_id=after_id,
+            limit=_EXPORT_PAGE_SIZE,
+        )
+        if not page:
+            return
+        for entry in page:
+            yield entry
+            if entry.id is not None:
+                after_id = entry.id
+        if len(page) < _EXPORT_PAGE_SIZE:
+            return

@@ -5,19 +5,24 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import AsyncIterator
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, status
+from fastapi.responses import Response
 from sse_starlette.sse import EventSourceResponse
 
 from plextraktbox.api.deps import CurrentUserDep, SessionDep
 from plextraktbox.logstream.pubsub import StreamEndEvent, StreamEvent, StreamLogEvent, get_log_hub
 from plextraktbox.models.job_run import JobRunStatus
+from plextraktbox.models.log_entry import LogEntry
 from plextraktbox.schemas.log import LogEntryItem, LogListResponse, StreamEndPayload, StreamLogPayload
 from plextraktbox.services import logs as log_svc
 from plextraktbox.services import runs as run_svc
 from plextraktbox.utils.datetime import serialize_utc_datetime
 
 router = APIRouter(prefix="/runs", tags=["runs"])
+
+ExportFormat = Literal["txt", "jsonl"]
 
 
 @router.get("/{run_id}/logs", response_model=LogListResponse)
@@ -46,6 +51,52 @@ def list_run_logs(
         items=[LogEntryItem.from_model(entry) for entry in entries],
         limit=limit,
         after_id=after_id,
+    )
+
+
+def _format_log_txt(entry: LogEntry) -> str:
+    ts = serialize_utc_datetime(entry.ts)
+    return f"{ts} [{entry.level.upper()}] {entry.logger}: {entry.message}\n"
+
+
+def _format_log_jsonl(entry: LogEntry) -> str:
+    payload = {
+        "id": entry.id,
+        "run_id": entry.run_id,
+        "ts": serialize_utc_datetime(entry.ts),
+        "level": entry.level,
+        "logger": entry.logger,
+        "message": entry.message,
+        "context": entry.context(),
+    }
+    return json.dumps(payload, separators=(",", ":")) + "\n"
+
+
+def _export_body(session: SessionDep, run_id: int, fmt: ExportFormat) -> bytes:
+    """Materialize the export while the request session is still open."""
+    formatter = _format_log_txt if fmt == "txt" else _format_log_jsonl
+    return b"".join(
+        formatter(entry).encode("utf-8") for entry in log_svc.iter_all_log_entries(session, run_id)
+    )
+
+
+@router.get("/{run_id}/logs/export")
+def export_run_logs(
+    run_id: int,
+    _user: CurrentUserDep,
+    session: SessionDep,
+    format: ExportFormat = Query(default="txt"),  # noqa: A002 — API query name
+) -> Response:
+    run = run_svc.get_run(session, run_id)
+    if run is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
+
+    media_type = "text/plain; charset=utf-8" if format == "txt" else "application/x-ndjson"
+    filename = f"run-{run_id}-logs.{format}"
+    return Response(
+        content=_export_body(session, run_id, format),
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
