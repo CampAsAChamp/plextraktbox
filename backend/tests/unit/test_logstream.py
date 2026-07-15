@@ -7,7 +7,12 @@ from unittest.mock import MagicMock, patch
 
 import structlog
 
-from plextraktbox.logstream.handler import LogRecord, _redact_context, run_log_processor
+from plextraktbox.logstream.handler import (
+    LogRecord,
+    _redact_context,
+    redact_log_processor,
+    run_log_processor,
+)
 from plextraktbox.logstream.pubsub import StreamLogEvent, get_log_hub
 
 
@@ -23,6 +28,64 @@ def test_redact_context_masks_sensitive_keys() -> None:
     assert redacted["token"] == "***"
     assert redacted["api_key"] == "***"
     assert redacted["title"] == "Inception"
+
+
+def test_redact_context_masks_nested_and_extended_keys() -> None:
+    context = {
+        "nested": {"refresh_token": "r1", "client_secret": "s1", "title": "Film"},
+        "pin_code": "1234",
+        "device_code": "ABCD",
+        "cookie": "session=x",
+        "csrf_token": "csrf",
+        "webhook_url": "https://example.com/hook",
+        "items": [{"access_token": "a1", "name": "ok"}, "plain"],
+    }
+
+    redacted = _redact_context(context)
+
+    assert redacted["nested"] == {"refresh_token": "***", "client_secret": "***", "title": "Film"}
+    assert redacted["pin_code"] == "***"
+    assert redacted["device_code"] == "***"
+    assert redacted["cookie"] == "***"
+    assert redacted["csrf_token"] == "***"
+    assert redacted["webhook_url"] == "***"
+    assert redacted["items"] == [{"access_token": "***", "name": "ok"}, "plain"]
+
+
+def test_redact_log_processor_mutates_event_dict() -> None:
+    event_dict = {
+        "event": "sync.plan",
+        "level": "info",
+        "access_token": "plaintext",
+        "title": "Inception",
+    }
+
+    result = redact_log_processor(None, "info", event_dict)
+
+    assert result is event_dict
+    assert event_dict["access_token"] == "***"
+    assert event_dict["title"] == "Inception"
+    assert event_dict["event"] == "sync.plan"
+
+
+def test_run_log_processor_persists_already_redacted_context() -> None:
+    event_dict = {
+        "event": "sync.plan",
+        "level": "info",
+        "run_id": 9,
+        "access_token": "plaintext",
+        "title": "Inception",
+    }
+    redact_log_processor(None, "info", event_dict)
+
+    writer = MagicMock()
+    with patch("plextraktbox.logstream.handler.get_log_writer", return_value=writer):
+        run_log_processor(None, "info", event_dict)
+
+    writer.emit.assert_called_once()
+    record = writer.emit.call_args.args[0]
+    assert record.context["access_token"] == "***"
+    assert record.context["title"] == "Inception"
 
 
 def test_run_log_processor_ignores_events_without_run_id() -> None:

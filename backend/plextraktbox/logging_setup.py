@@ -11,7 +11,7 @@ import structlog
 from structlog.dev import Column, ConsoleRenderer, KeyValueColumnFormatter
 
 from plextraktbox.config import get_settings
-from plextraktbox.logstream.handler import run_log_processor
+from plextraktbox.logstream.handler import redact_log_processor, run_log_processor
 
 _LEVEL_LABELS = {
     "critical": "CRITICAL",
@@ -145,6 +145,7 @@ def configure_logging() -> None:
         timestamper,
         structlog.processors.StackInfoRenderer(),
         structlog.stdlib.ExtraAdder(),
+        redact_log_processor,
         run_log_processor,
     ]
 

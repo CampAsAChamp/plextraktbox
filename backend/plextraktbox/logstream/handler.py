@@ -18,7 +18,11 @@ from plextraktbox.logstream.pubsub import StreamLogEvent, get_log_hub
 from plextraktbox.models.log_entry import LogEntry
 from plextraktbox.utils.datetime import serialize_utc_datetime
 
-_REDACT_KEY = re.compile(r"(token|password|secret|api_key|authorization|credential)", re.I)
+_REDACT_KEY = re.compile(
+    r"(token|password|secret|api_key|authorization|credential|"
+    r"pin_code|device_code|cookie|csrf|webhook)",
+    re.I,
+)
 _STANDARD_KEYS = frozenset(
     {
         "event",
@@ -44,18 +48,40 @@ class LogRecord:
     ts: datetime | None = None
 
 
+def _redact_list_item(item: object) -> object:
+    """Redact nested structures using each element's own keys (not the parent key)."""
+    if isinstance(item, dict):
+        return {k: _redact_value(str(k), v) for k, v in item.items()}
+    if isinstance(item, list):
+        return [_redact_list_item(value) for value in item]
+    return item
+
+
 def _redact_value(key: str, value: object) -> object:
     if _REDACT_KEY.search(key):
         return "***"
     if isinstance(value, dict):
         return {k: _redact_value(str(k), v) for k, v in value.items()}
     if isinstance(value, list):
-        return [_redact_value(key, item) for item in value]
+        return [_redact_list_item(item) for item in value]
     return value
 
 
 def _redact_context(context: dict[str, Any]) -> dict[str, Any]:
     return {key: _redact_value(key, value) for key, value in context.items()}
+
+
+def redact_log_processor(
+    _logger: object,
+    _method_name: str,
+    event_dict: structlog.types.EventDict,
+) -> structlog.types.EventDict:
+    """Scrub sensitive keys from the event dict before persist/stream and console output."""
+    for key in list(event_dict.keys()):
+        if key.startswith("_"):
+            continue
+        event_dict[key] = _redact_value(str(key), event_dict[key])
+    return event_dict
 
 
 def _serialize_context(context: dict[str, Any]) -> dict[str, Any]:

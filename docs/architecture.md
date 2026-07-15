@@ -151,7 +151,9 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - 3rd-party tokens Fernet-encrypted in `connection.secret_enc`, decrypted only in memory. bcrypt for local password.
 - Starlette SessionMiddleware (HttpOnly, SameSite=Lax, Secure over HTTPS); auth dependency gates all routes except `/api/setup/*` (self-disables once a user exists) and `/api/health`; require `X-Requested-With` on mutating requests (CSRF).
 - Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
-- structlog redaction processor scrubs token/password-shaped values before persist/stream. Reverse proxy / TLS setup documented in [deploy/truenas.md](deploy/truenas.md) (Phase 22).
+- structlog redaction processor scrubs token/password-shaped keys on all structlog output
+  (console/JSON + persist/stream). Reverse proxy / TLS setup documented in
+  [deploy/truenas.md](deploy/truenas.md) (Phase 22).
 - **Planned (Phase 15):** optional [Doppler](https://www.doppler.com/) integration for developer and CI secret injection (`doppler run`, service tokens). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is for maintainer workflows, not a runtime dependency for end users.
 
 
