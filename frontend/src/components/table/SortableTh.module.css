@@ -4,8 +4,12 @@
 
 .thSorted {
   /* Solid strip — no radius so it aligns with body column highlight. */
-  background-color: color-mix(in srgb, var(--mantine-color-amber-6) 42%, var(--mantine-color-dark-5));
-  color: var(--mantine-color-amber-1);
+  background-color: color-mix(
+    in srgb,
+    var(--mantine-primary-color-6) 42%,
+    var(--mantine-color-dark-5)
+  );
+  color: var(--mantine-primary-color-1);
 }
 
 .label {
@@ -13,11 +17,11 @@
 }
 
 .labelSorted {
-  color: var(--mantine-color-amber-2);
+  color: var(--mantine-primary-color-2);
 }
 
 .sortedCell {
-  background-color: color-mix(in srgb, var(--mantine-color-amber-6) 22%, transparent) !important;
+  background-color: color-mix(in srgb, var(--mantine-primary-color-6) 22%, transparent) !important;
   transition: background-color 180ms ease;
 }
 
@@ -32,7 +36,7 @@
 }
 
 .indicatorSorted {
-  color: var(--mantine-color-amber-2);
+  color: var(--mantine-primary-color-2);
 }
 
 .layer {

@@ -50,7 +50,13 @@ export function formatApiDetail(detail: unknown, fallback: string): string {
   return fallback;
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  options?: { parseJson?: boolean },
+): Promise<T> {
+  const parseJson = options?.parseJson ?? true;
   const resp = await fetch(`/api${path}`, {
     method,
     credentials: "same-origin",
@@ -73,11 +79,15 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   if (resp.status === 204) return undefined as T;
+  if (!parseJson) {
+    return (await resp.text()) as T;
+  }
   return resp.json() as Promise<T>;
 }
 
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
+  getText: (path: string) => request<string>("GET", path, undefined, { parseJson: false }),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
   del: <T>(path: string) => request<T>("DELETE", path),

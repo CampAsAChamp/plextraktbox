@@ -1,4 +1,4 @@
-import { Group, Paper, Stack, Text } from "@mantine/core";
+import { Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Job } from "../../api/jobs";
@@ -42,6 +42,7 @@ function ScheduleSummary({ job }: { job: Job }) {
 
 function LastRunSummary({ job }: { job: Job }) {
   const { preferences } = useDisplayPreferences();
+  const theme = useMantineTheme();
   const last = job.last_run;
   if (!last) {
     return (
@@ -59,7 +60,7 @@ function LastRunSummary({ job }: { job: Job }) {
           to={`/runs/${last.id}`}
           size="sm"
           fw={500}
-          c="amber.4"
+          c={`${theme.primaryColor}.4`}
           style={{ textDecoration: "none" }}
         >
           Run #{last.id}

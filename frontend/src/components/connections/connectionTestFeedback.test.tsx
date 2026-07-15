@@ -9,7 +9,7 @@ import { TestConnectionButton, useConnectionTestFeedback } from "./connectionTes
 
 function renderButton(testStatus: "idle" | "success" | "error") {
   return render(
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider theme={theme} forceColorScheme="dark">
       <Notifications />
       <TestConnectionButton testStatus={testStatus} onClick={() => undefined} />
     </MantineProvider>,
@@ -40,7 +40,7 @@ describe("TestConnectionButton", () => {
     let clicked = false;
 
     render(
-      <MantineProvider theme={theme} defaultColorScheme="dark">
+      <MantineProvider theme={theme} forceColorScheme="dark">
         <TestConnectionButton testStatus="idle" onClick={() => (clicked = true)} />
       </MantineProvider>,
     );

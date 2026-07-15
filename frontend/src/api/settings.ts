@@ -13,6 +13,7 @@ export interface AppSettings {
   log_retention_days: number;
   global_dry_run: boolean;
   exclude_ids: ExcludeIds;
+  ui_theme: string;
 }
 
 export type AppSettingsInput = {

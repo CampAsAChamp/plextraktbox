@@ -1,4 +1,4 @@
-/* Permanent cinema-night atmosphere — always on with the baseline UI. */
+/* Theme-aware atmosphere — `--ptb-body-gradient` is set by ThemeProvider. */
 
 html,
 body,
@@ -12,11 +12,14 @@ body {
   padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
   background-color: var(--mantine-color-dark-8);
-  background-image: linear-gradient(
-    165deg,
-    var(--mantine-color-dark-9) 0%,
-    var(--mantine-color-dark-8) 42%,
-    var(--mantine-color-dark-7) 100%
+  background-image: var(
+    --ptb-body-gradient,
+    linear-gradient(
+      165deg,
+      var(--mantine-color-dark-9) 0%,
+      var(--mantine-color-dark-8) 42%,
+      var(--mantine-color-dark-7) 100%
+    )
   );
   background-attachment: fixed;
   color: var(--mantine-color-dark-0);

@@ -1,4 +1,4 @@
-import { Group, Table, Text, UnstyledButton } from "@mantine/core";
+import { Group, Table, Text, UnstyledButton, useMantineTheme } from "@mantine/core";
 import type { SortDirection, SortState } from "../../utils/tableSort";
 import classes from "./SortableTh.module.css";
 
@@ -75,6 +75,7 @@ export function SortableTh<TColumn extends string>({
   /** Hide this column below the given Mantine breakpoint. */
   hiddenFrom?: "xs" | "sm" | "md" | "lg" | "xl";
 }) {
+  const theme = useMantineTheme();
   const active = sort?.column === column;
   const direction = active ? sort.direction : undefined;
   const ariaSort = active ? (direction === "asc" ? "ascending" : "descending") : "none";
@@ -101,7 +102,7 @@ export function SortableTh<TColumn extends string>({
             size="sm"
             fw={700}
             className={`${classes.label}${active ? ` ${classes.labelSorted}` : ""}`}
-            c={active ? "amber.2" : "inherit"}
+            c={active ? `${theme.primaryColor}.2` : "inherit"}
           >
             {label}
           </Text>
