@@ -1,6 +1,8 @@
 import { api } from "./client";
 import type { RunListResponse } from "./jobs";
 
+export type RunListItem = RunListResponse["items"][number];
+
 export function listRuns(params?: { job_id?: number; limit?: number; offset?: number }) {
   const search = new URLSearchParams();
   if (params?.job_id !== undefined) search.set("job_id", String(params.job_id));
@@ -11,5 +13,9 @@ export function listRuns(params?: { job_id?: number; limit?: number; offset?: nu
 }
 
 export function getRun(id: number) {
-  return api.get<RunListResponse["items"][number]>(`/runs/${id}`);
+  return api.get<RunListItem>(`/runs/${id}`);
+}
+
+export function markRunFailed(id: number) {
+  return api.post<RunListItem>(`/runs/${id}/mark-failed`);
 }

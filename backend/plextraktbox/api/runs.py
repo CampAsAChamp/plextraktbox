@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from plextraktbox.api.deps import CurrentUserDep, SessionDep
+from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
 from plextraktbox.schemas.run import RunListItem, RunListResponse
 from plextraktbox.services import runs as run_svc
 
@@ -24,6 +24,7 @@ def list_runs(
         RunListItem.from_model(
             run,
             job_name=run_svc.resolve_job_name(session, run),
+            source_pair=run_svc.get_job_source_pair(session, run.job_id),
         )
         for run in runs
     ]
@@ -38,4 +39,26 @@ def get_run(run_id: int, _user: CurrentUserDep, session: SessionDep) -> RunListI
     return RunListItem.from_model(
         run,
         job_name=run_svc.resolve_job_name(session, run),
+        source_pair=run_svc.get_job_source_pair(session, run.job_id),
+    )
+
+
+@router.post(
+    "/{run_id}/mark-failed",
+    response_model=RunListItem,
+    dependencies=[Depends(require_csrf)],
+)
+def mark_run_failed(run_id: int, _user: CurrentUserDep, session: SessionDep) -> RunListItem:
+    """Mark a stuck running run as failed. Does not cancel in-flight sync work."""
+    run = run_svc.get_run(session, run_id)
+    if run is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
+    try:
+        run = run_svc.mark_run_failed(session, run)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    return RunListItem.from_model(
+        run,
+        job_name=run_svc.resolve_job_name(session, run),
+        source_pair=run_svc.get_job_source_pair(session, run.job_id),
     )

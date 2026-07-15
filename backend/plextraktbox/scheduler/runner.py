@@ -138,12 +138,19 @@ def _execute_run_in_session(
             log=run_logger,
         )
         summary = asyncio.run(run_sync(ctx))
-        run.set_summary(summary)
-        run.status = _status_from_summary(summary)
-        run.finished_at = datetime.now(UTC)
-        session.add(run)
-        session.commit()
-        session.refresh(run)
+        if not _finalize_if_still_running(
+            session,
+            run,
+            status=_status_from_summary(summary),
+            summary=summary,
+        ):
+            run_logger.info(
+                "sync.run.complete_ignored",
+                reason="already_terminal",
+                status=run.status.value,
+            )
+            final_status = run.status.value
+            return run.id or 0
         final_status = run.status.value
         run_logger.info(
             "sync.run.complete",
@@ -153,12 +160,20 @@ def _execute_run_in_session(
         dispatch_notifications(session, job, run)
         return run.id or 0
     except Exception as exc:
-        run.status = JobRunStatus.FAILED
-        run.error = str(exc)
-        run.finished_at = datetime.now(UTC)
-        session.add(run)
-        session.commit()
-        session.refresh(run)
+        if not _finalize_if_still_running(
+            session,
+            run,
+            status=JobRunStatus.FAILED,
+            error=str(exc),
+        ):
+            run_logger.warning(
+                "sync.run.failed_ignored",
+                reason="already_terminal",
+                status=run.status.value,
+                error=str(exc),
+            )
+            final_status = run.status.value
+            return run.id or 0
         final_status = run.status.value
         run_logger.warning("sync.run.failed", error=str(exc))
         dispatch_notifications(session, job, run)
@@ -167,6 +182,33 @@ def _execute_run_in_session(
         structlog.contextvars.unbind_contextvars("job_id", "run_id")
         if run.id is not None:
             get_log_hub().close(run.id, status=final_status)
+
+
+def _finalize_if_still_running(
+    session: Session,
+    run: JobRun,
+    *,
+    status: JobRunStatus,
+    summary: RunSummary | None = None,
+    error: str | None = None,
+) -> bool:
+    """Persist a terminal status only if the run is still marked running.
+
+    Returns False when a user already marked the run failed (or it otherwise left
+    running), so we do not overwrite that administrative action.
+    """
+    session.refresh(run)
+    if run.status != JobRunStatus.RUNNING:
+        return False
+    if summary is not None:
+        run.set_summary(summary)
+    run.status = status
+    run.error = error
+    run.finished_at = datetime.now(UTC)
+    session.add(run)
+    session.commit()
+    session.refresh(run)
+    return True
 
 
 def _status_from_summary(summary: RunSummary) -> JobRunStatus:

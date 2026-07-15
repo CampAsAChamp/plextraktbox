@@ -1,7 +1,9 @@
 import { Alert, Button, Group, Loader, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { getRun } from "../api/runs";
+import { ApiError } from "../api/client";
+import { getRun, markRunFailed } from "../api/runs";
 import { HelpCircleIcon } from "../components/icons/HelpCircleIcon";
 import { LogViewer } from "../components/LogViewer/LogViewer";
 import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
@@ -37,6 +39,7 @@ const SUMMARY_TOOLTIPS: Record<string, string> = {
 export function RunDetailPage() {
   const { runId } = useParams();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const id = Number(runId);
   const { preferences } = useDisplayPreferences();
   const backTo =
@@ -49,6 +52,19 @@ export function RunDetailPage() {
     queryFn: () => getRun(id),
     enabled: Number.isFinite(id),
     refetchInterval: (query) => (query.state.data?.status === "running" ? 2000 : false),
+  });
+
+  const markFailedMutation = useMutation({
+    mutationFn: () => markRunFailed(id),
+    onSuccess: (run) => {
+      queryClient.setQueryData(["runs", id], run);
+      void queryClient.invalidateQueries({ queryKey: ["runs"] });
+      notifications.show({ color: "orange", message: `Run #${run.id} marked as failed` });
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed";
+      notifications.show({ color: "red", message });
+    },
   });
 
   if (!Number.isFinite(id)) {
@@ -78,9 +94,29 @@ export function RunDetailPage() {
         </Button>
         <Group justify="space-between">
           <Title order={3}>Run #{run.id}</Title>
-          <Button component={Link} to={`/runs?job_id=${run.job_id}`} variant="light">
-            Job history
-          </Button>
+          <Group gap="sm">
+            {run.status === "running" ? (
+              <Button
+                color="red"
+                variant="light"
+                loading={markFailedMutation.isPending}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Mark this run as failed? If sync work is still in progress on the server, it may continue until it finishes, but this run will stay marked failed.",
+                    )
+                  ) {
+                    markFailedMutation.mutate();
+                  }
+                }}
+              >
+                Mark as failed
+              </Button>
+            ) : null}
+            <Button component={Link} to={`/runs?job_id=${run.job_id}`} variant="light">
+              Job history
+            </Button>
+          </Group>
         </Group>
       </Stack>
 
