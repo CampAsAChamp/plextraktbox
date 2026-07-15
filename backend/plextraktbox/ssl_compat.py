@@ -47,7 +47,7 @@ def configure_ssl_compat() -> None:
     if not _custom_ca_bundle_configured():
         return
 
-    ssl.create_default_context = _relaxed_create_default_context  # type: ignore[assignment]
+    ssl.create_default_context = _relaxed_create_default_context
     _PATCHED = True
 
 
