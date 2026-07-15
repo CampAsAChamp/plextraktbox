@@ -1,3 +1,22 @@
+# [0.4.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.3.1...v0.4.0) (2026-07-15)
+
+
+### Bug Fixes
+
+* match AppLayout GitHub menu item label in test ([cc8f963](https://github.com/CampAsAChamp/plextraktbox/commit/cc8f963c8e0996b4338c6140215c9aedf8eab598))
+* treat up-dev Ctrl+C as a clean stop ([fe2bf21](https://github.com/CampAsAChamp/plextraktbox/commit/fe2bf216cee02fd109625ef61f527d36475a5f52))
+* use dict.fromkeys for colorless HTTP method styles ([b2e42a3](https://github.com/CampAsAChamp/plextraktbox/commit/b2e42a3296c7dec83803d07bb151908b443760d3))
+* wait for compose teardown on up-dev Ctrl+C ([f7b00a8](https://github.com/CampAsAChamp/plextraktbox/commit/f7b00a86550430db8379c6002791dd3964dade4e))
+
+
+### Features
+
+* add selectable UI themes on the frontend ([0ab1e8b](https://github.com/CampAsAChamp/plextraktbox/commit/0ab1e8b2aa6c79cd5d656f67079030a68014d01f))
+* add theme catalog API and persist ui_theme ([af61249](https://github.com/CampAsAChamp/plextraktbox/commit/af61249f78839b376d55d3069e453dad83c5d812))
+* add theme picker to Settings ([be8a198](https://github.com/CampAsAChamp/plextraktbox/commit/be8a19847109e94402d95adcdbad5187d442a1f9))
+* color HTTP methods in console access logs ([0d8998a](https://github.com/CampAsAChamp/plextraktbox/commit/0d8998aa2ccbe1877252e1c9505b1e05e7dd75f7))
+* hide healthy API badge and link GitHub in account menu ([9672868](https://github.com/CampAsAChamp/plextraktbox/commit/9672868ce4a8e0078c94f05dcf43f74be6553105))
+
 ## [0.3.1](https://github.com/CampAsAChamp/plextraktbox/compare/v0.3.0...v0.3.1) (2026-07-15)
 
 
