@@ -48,6 +48,10 @@ mise run test-backend
 mise run test-frontend
 ```
 
+GitHub Actions (`.github/workflows/ci.yml`) runs `mise run check` on pull requests and
+pushes to `main`. The workflow stubs a CI `.env` (dummy `SECRET_KEY` / Trakt placeholders);
+pytest uses in-process FastAPI + throwaway SQLite — not a live container.
+
 ## Phase verification
 
 Per-phase checklists live in [phases/test-plans/](phases/test-plans/). The master index is
@@ -63,7 +67,7 @@ Reference for phase test plans and automated tests:
 
 - **Container (default):** `mise run up` → http://localhost:8000
 - **Local dev (hot reload):** see [dev-workflow.md](dev-workflow.md)
-- **Automated:** `mise run test` / `mise run check` (local CI parity until GitHub Actions lands in Phase 12)
+- **Automated:** `mise run test` / `mise run check` (same bar as GitHub Actions CI)
 - **Sync engine (Phase 3+):** fakes in `tests/fakes/` via `SyncContext` (no network); assert
   source-of-truth per data type; dry-run = zero writes
 - **HTTP/time:** `respx`, `freezegun`
