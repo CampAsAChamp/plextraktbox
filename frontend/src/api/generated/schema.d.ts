@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Password */
+        post: operations["change_password_api_auth_change_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/connections/status": {
         parameters: {
             query?: never;
@@ -412,7 +429,7 @@ export interface paths {
         put?: never;
         /**
          * Preview Schedule
-         * @description Return the next N fire times for a draft cron expression (UTC).
+         * @description Return the next N fire times for a draft cron (in configured cron timezone).
          */
         post: operations["preview_schedule_api_jobs_schedule_preview_post"];
         delete?: never;
@@ -666,6 +683,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings Endpoint */
+        get: operations["get_settings_endpoint_api_settings_get"];
+        /** Update Settings Endpoint */
+        put: operations["update_settings_endpoint_api_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/backup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Backup
+         * @description Stream a consistent SQLite snapshot of the application database.
+         */
+        get: operations["download_backup_api_settings_backup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dev/revision": {
         parameters: {
             query?: never;
@@ -707,6 +762,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ChangePasswordRequest */
+        ChangePasswordRequest: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
         /**
          * ConnectionStatus
          * @enum {string}
@@ -751,6 +813,15 @@ export interface components {
             /** Webhook Url */
             webhook_url?: string | null;
         };
+        /** ExcludeIds */
+        ExcludeIds: {
+            /** Tmdb */
+            tmdb?: string[];
+            /** Imdb */
+            imdb?: string[];
+            /** Tvdb */
+            tvdb?: string[];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -761,15 +832,29 @@ export interface components {
             /**
              * Status
              * @default ok
-             * @constant
+             * @enum {string}
              */
-            status: "ok";
+            status: "ok" | "degraded";
             /** Version */
             version: string;
             /** Git Sha */
             git_sha?: string | null;
             /** Built At */
             built_at?: string | null;
+            /**
+             * Db Writable
+             * @default true
+             */
+            db_writable: boolean;
+            /**
+             * Scheduler Running
+             * @default true
+             */
+            scheduler_running: boolean;
+            /** Connections */
+            connections?: {
+                [key: string]: string;
+            };
         };
         /**
          * InAppLevel
@@ -809,20 +894,20 @@ export interface components {
              * @default true
              */
             enabled: boolean;
+            /** Cron */
+            cron?: string | null;
+            /** Dry Run */
+            dry_run?: boolean | null;
             /**
-             * Cron
-             * @default 0 3 * * *
+             * Require Dry Run First
+             * @default true
              */
-            cron: string;
-            /**
-             * Dry Run
-             * @default false
-             */
-            dry_run: boolean;
+            require_dry_run_first: boolean;
             /** Data Types */
             data_types?: components["schemas"]["DataType"][];
             /** @default inherit */
             notify_mode: components["schemas"]["NotifyMode"];
+            exclude_ids?: components["schemas"]["ExcludeIds"];
         };
         /** JobResponse */
         JobResponse: {
@@ -837,9 +922,12 @@ export interface components {
             cron: string;
             /** Dry Run */
             dry_run: boolean;
+            /** Require Dry Run First */
+            require_dry_run_first: boolean;
             /** Data Types */
             data_types: components["schemas"]["DataType"][];
             notify_mode: components["schemas"]["NotifyMode"];
+            exclude_ids: components["schemas"]["ExcludeIds"];
             /** Next Run At */
             next_run_at?: string | null;
         };
@@ -896,10 +984,16 @@ export interface components {
              * @default false
              */
             dry_run: boolean;
+            /**
+             * Require Dry Run First
+             * @default true
+             */
+            require_dry_run_first: boolean;
             /** Data Types */
             data_types?: components["schemas"]["DataType"][];
             /** @default inherit */
             notify_mode: components["schemas"]["NotifyMode"];
+            exclude_ids?: components["schemas"]["ExcludeIds"];
         };
         /** LetterboxdConnectionRequest */
         LetterboxdConnectionRequest: {
@@ -1162,6 +1256,37 @@ export interface components {
          * @enum {string}
          */
         Service: "plex" | "trakt" | "letterboxd" | "tmdb";
+        /** SettingsResponse */
+        SettingsResponse: {
+            /** Default Cron */
+            default_cron: string;
+            /** Cron Timezone */
+            cron_timezone: string;
+            /** Cron Timezone Resolved */
+            cron_timezone_resolved: string;
+            /** Log Retention Days */
+            log_retention_days: number;
+            /** Global Dry Run */
+            global_dry_run: boolean;
+            exclude_ids: components["schemas"]["ExcludeIds"];
+        };
+        /** SettingsUpdateRequest */
+        SettingsUpdateRequest: {
+            /** Default Cron */
+            default_cron: string;
+            /**
+             * Cron Timezone
+             * @default UTC
+             */
+            cron_timezone: string;
+            /** Cron Local Zone */
+            cron_local_zone?: string | null;
+            /** Log Retention Days */
+            log_retention_days: number;
+            /** Global Dry Run */
+            global_dry_run: boolean;
+            exclude_ids?: components["schemas"]["ExcludeIds"];
+        };
         /** SetupStatusResponse */
         SetupStatusResponse: {
             /** Needs Setup */
@@ -1418,6 +1543,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
+    change_password_api_auth_change_password_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2654,6 +2812,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_endpoint_api_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+        };
+    };
+    update_settings_endpoint_api_settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_backup_api_settings_backup_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

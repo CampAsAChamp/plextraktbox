@@ -8,6 +8,7 @@ import {
   Switch,
   Table,
   Text,
+  Textarea,
   TextInput,
   Tooltip,
 } from "@mantine/core";
@@ -19,7 +20,13 @@ import type { DataType, Job, JobInput, NotifyMode, SourcePair } from "../../api/
 import { DATA_TYPES_BY_PAIR, SOURCE_PAIR_LABELS } from "../../api/jobs";
 import { previewSchedule } from "../../api/jobApi";
 import { NOTIFY_MODE_LABELS } from "../../api/notifications";
+import {
+  formatExcludeLines,
+  getSettings,
+  parseExcludeLines,
+} from "../../api/settings";
 import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
+import { formatTimezoneLabel } from "../../settings/displayPreferences";
 import { CRON_INVALID_MESSAGE, isValidCronExpression } from "../../utils/cron";
 import { CRON_PRESETS, matchCronPreset } from "../../utils/cronPresets";
 import { formatScheduleDateTimeParts } from "../../utils/dateTimeFormat";
@@ -55,21 +62,49 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
   const [cron, setCron] = useState(initial?.cron ?? "0 3 * * *");
   const [enabled, setEnabled] = useState(initial?.enabled ?? true);
   const [dryRun, setDryRun] = useState(initial?.dry_run ?? false);
+  const [requireDryRunFirst, setRequireDryRunFirst] = useState(
+    initial?.require_dry_run_first ?? true,
+  );
   const [notifyMode, setNotifyMode] = useState<NotifyMode>(initial?.notify_mode ?? "inherit");
   const [dataTypes, setDataTypes] = useState<DataType[]>(
     initial?.data_types ?? DATA_TYPES_BY_PAIR.plex_trakt,
+  );
+  const [excludeTmdb, setExcludeTmdb] = useState(
+    formatExcludeLines(initial?.exclude_ids?.tmdb),
+  );
+  const [excludeImdb, setExcludeImdb] = useState(
+    formatExcludeLines(initial?.exclude_ids?.imdb),
+  );
+  const [excludeTvdb, setExcludeTvdb] = useState(
+    formatExcludeLines(initial?.exclude_ids?.tvdb),
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [debouncedCron] = useDebouncedValue(cron, 300);
   const cronValid = isValidCronExpression(debouncedCron);
   const activePreset = matchCronPreset(cron);
+  const [defaultsApplied, setDefaultsApplied] = useState(Boolean(initial));
+
+  const settingsQuery = useQuery({
+    queryKey: ["settings"],
+    queryFn: getSettings,
+  });
+  const cronTimezoneResolved = settingsQuery.data?.cron_timezone_resolved ?? "UTC";
+  const cronTimezoneLabel =
+    cronTimezoneResolved === "UTC" ? "UTC" : formatTimezoneLabel(cronTimezoneResolved);
 
   const previewQuery = useQuery({
-    queryKey: ["schedule-preview", debouncedCron],
+    queryKey: ["schedule-preview", debouncedCron, cronTimezoneResolved],
     queryFn: () => previewSchedule(debouncedCron.trim(), 5),
     enabled: cronValid,
     staleTime: 30_000,
   });
+
+  useEffect(() => {
+    if (initial || defaultsApplied || !settingsQuery.data) return;
+    setCron(settingsQuery.data.default_cron);
+    setDryRun(settingsQuery.data.global_dry_run);
+    setDefaultsApplied(true);
+  }, [initial, defaultsApplied, settingsQuery.data]);
 
   useEffect(() => {
     if (initial) return;
@@ -109,8 +144,14 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
       enabled,
       cron,
       dry_run: dryRun,
+      require_dry_run_first: requireDryRunFirst,
       data_types: dataTypes,
       notify_mode: notifyMode,
+      exclude_ids: {
+        tmdb: parseExcludeLines(excludeTmdb),
+        imdb: parseExcludeLines(excludeImdb),
+        tvdb: parseExcludeLines(excludeTvdb),
+      },
     });
   }
 
@@ -186,24 +227,27 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
           </Group>
           {activePreset ? (
             <Text size="xs" c="dimmed">
-              {CRON_PRESETS.find((preset) => preset.id === activePreset)?.description}
+              {CRON_PRESETS.find((preset) => preset.id === activePreset)?.description} (
+              {cronTimezoneLabel})
             </Text>
           ) : null}
           <TextInput
             label="Cron expression"
             description={
               <>
-                UTC cron (minute hour day month weekday). Weekday uses 0=Monday … 6=Sunday. Use{" "}
+                Cron in {cronTimezoneLabel} (minute hour day month weekday). Weekday uses
+                0=Monday … 6=Sunday. Use{" "}
                 <a href="https://crontab.guru/" target="_blank" rel="noreferrer">
                   crontab.guru
                 </a>{" "}
-                carefully — it numbers Sunday as 0.
+                carefully — it numbers Sunday as 0. Change the cron timezone under Settings.
               </>
             }
             value={cron}
             onChange={(event) => setCron(event.currentTarget.value)}
             error={errors.cron}
             required
+            styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
           />
           {cronValid ? (
             <Stack gap={4}>
@@ -247,7 +291,8 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
                 </RoundedTable>
               )}
               <Text size="xs" c="dimmed">
-                Times shown in your display timezone; the schedule itself runs in UTC.
+                Times shown in your display timezone; the schedule itself runs in{" "}
+                {cronTimezoneLabel}.
               </Text>
             </Stack>
           ) : null}
@@ -275,7 +320,58 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
             checked={dryRun}
             onChange={(event) => setDryRun(event.currentTarget.checked)}
           />
+          <Switch
+            label={
+              <Group gap={4} wrap="nowrap" component="span">
+                Require dry-run first
+                <Tooltip
+                  label="Block live applies until this job has at least one successful dry-run"
+                  withArrow
+                  openDelay={200}
+                >
+                  <Text
+                    component="span"
+                    c="dimmed"
+                    display="inline-flex"
+                    style={{ cursor: "help" }}
+                    aria-label="Require dry-run first help"
+                  >
+                    <HelpCircleIcon size={12} />
+                  </Text>
+                </Tooltip>
+              </Group>
+            }
+            checked={requireDryRunFirst}
+            onChange={(event) => setRequireDryRunFirst(event.currentTarget.checked)}
+          />
         </Group>
+
+        <Stack gap="xs">
+          <Text size="sm" fw={500}>
+            Per-job exclude ids (optional)
+          </Text>
+          <Text size="xs" c="dimmed">
+            Merged with the global exclude list from Settings. One id per line.
+          </Text>
+          <Textarea
+            label="TMDB"
+            minRows={2}
+            value={excludeTmdb}
+            onChange={(event) => setExcludeTmdb(event.currentTarget.value)}
+          />
+          <Textarea
+            label="IMDb"
+            minRows={2}
+            value={excludeImdb}
+            onChange={(event) => setExcludeImdb(event.currentTarget.value)}
+          />
+          <Textarea
+            label="TVDB"
+            minRows={2}
+            value={excludeTvdb}
+            onChange={(event) => setExcludeTvdb(event.currentTarget.value)}
+          />
+        </Stack>
 
         <Radio.Group
           label="Notifications"

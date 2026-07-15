@@ -7,6 +7,12 @@ export type DataType = "watchlist" | "ratings" | "watched";
 
 export type NotifyMode = "inherit" | "custom" | "disabled";
 
+export interface ExcludeIds {
+  tmdb: string[];
+  imdb: string[];
+  tvdb: string[];
+}
+
 export interface Job {
   id: number;
   name: string;
@@ -14,8 +20,10 @@ export interface Job {
   enabled: boolean;
   cron: string;
   dry_run: boolean;
+  require_dry_run_first: boolean;
   data_types: DataType[];
   notify_mode: NotifyMode;
+  exclude_ids: ExcludeIds;
   /** Next scheduled fire time (ISO UTC), null when disabled or unscheduled. */
   next_run_at: string | null;
 }
@@ -30,8 +38,10 @@ export interface JobInput {
   enabled: boolean;
   cron: string;
   dry_run: boolean;
+  require_dry_run_first: boolean;
   data_types: DataType[];
   notify_mode: NotifyMode;
+  exclude_ids: ExcludeIds;
 }
 
 export type RunTrigger = "scheduled" | "manual";

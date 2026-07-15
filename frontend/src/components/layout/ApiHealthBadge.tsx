@@ -6,7 +6,13 @@ export function ApiHealthBadge() {
 
   if (data) {
     const label = formatVersionLabel(data);
+    const degraded = data.status === "degraded";
     const tooltipParts = [`plextraktbox ${label}`];
+    if (degraded) {
+      tooltipParts.push("degraded");
+      if (!data.db_writable) tooltipParts.push("db not writable");
+      if (!data.scheduler_running) tooltipParts.push("scheduler stopped");
+    }
     if (data.built_at) {
       tooltipParts.push(`built ${data.built_at}`);
     }
@@ -14,8 +20,8 @@ export function ApiHealthBadge() {
 
     return (
       <Tooltip label={tooltip} withArrow>
-        <Badge color="green" variant="light">
-          ✓ API · {label}
+        <Badge color={degraded ? "yellow" : "green"} variant="light">
+          {degraded ? "⚠" : "✓"} API · {label}
         </Badge>
       </Tooltip>
     );
