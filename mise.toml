@@ -70,7 +70,7 @@ depends = ["test-backend", "test-frontend"]
 description = "[META] Run backend pytest suite"
 depends = ["install-backend"]
 dir = "{{ config_root }}/backend"
-run = ".venv/bin/python -m pytest -q"
+run = ".venv/bin/python -m pytest"
 
 [tasks."test-frontend"]
 description = "[META] Run frontend vitest suite"
