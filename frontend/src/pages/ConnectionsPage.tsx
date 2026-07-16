@@ -13,12 +13,12 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { showToast } from "../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { api, ApiError } from "../api/client";
+import { api, ApiError } from "src/api/client";
 import type {
   ConnectionSummary,
   ConnectionsStatus,
@@ -33,30 +33,30 @@ import type {
   TraktDevicePollInput,
   TraktDevicePollResult,
   TraktDeviceStart,
-} from "../api/connections";
+} from "src/api/connections";
 import {
   isConnectionConfigured,
   SAVED_SECRET_PLACEHOLDER,
   savedUsername,
   secretPlaceholderInputProps,
-} from "../components/connections/connectionFormHelpers";
+} from "src/components/connections/connectionFormHelpers";
 import {
   TestConnectionButton,
   useConnectionTestFeedback,
-} from "../components/connections/connectionTestFeedback";
-import { SERVICE_LABELS } from "../components/connections/connectionStatus";
-import { ServiceLogo } from "../components/connections/ServiceLogo";
-import { ServiceStepLabel } from "../components/connections/ServiceStepLabel";
-import { StatusCheckIcon } from "../components/connections/StatusCheckIcon";
-import { ConnectIcon } from "../components/icons/ConnectIcon";
-import { FilmIcon } from "../components/icons/FilmIcon";
-import { HomeIcon } from "../components/icons/HomeIcon";
-import { KeyIcon } from "../components/icons/KeyIcon";
-import { LockIcon } from "../components/icons/LockIcon";
-import { SaveIcon } from "../components/icons/SaveIcon";
-import { TrashIcon } from "../components/icons/TrashIcon";
-import { TvIcon } from "../components/icons/TvIcon";
-import { UserIcon } from "../components/icons/UserIcon";
+} from "src/components/connections/connectionTestFeedback";
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
+import { ServiceLogo } from "src/components/connections/ServiceLogo";
+import { ServiceStepLabel } from "src/components/connections/ServiceStepLabel";
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon";
+import { ConnectIcon } from "src/components/icons/ConnectIcon";
+import { FilmIcon } from "src/components/icons/FilmIcon";
+import { HomeIcon } from "src/components/icons/HomeIcon";
+import { KeyIcon } from "src/components/icons/KeyIcon";
+import { LockIcon } from "src/components/icons/LockIcon";
+import { SaveIcon } from "src/components/icons/SaveIcon";
+import { TrashIcon } from "src/components/icons/TrashIcon";
+import { TvIcon } from "src/components/icons/TvIcon";
+import { UserIcon } from "src/components/icons/UserIcon";
 import classes from "./OnboardingStepper.module.css";
 
 const tmdbSchema = z.object({

@@ -3,7 +3,7 @@ import {
   SAVED_SECRET_PLACEHOLDER,
   secretPlaceholderHandlers,
   secretPlaceholderInputProps,
-} from "./connectionFormHelpers";
+} from "src/components/connections/connectionFormHelpers";
 
 describe("secretPlaceholderInputProps", () => {
   it("shows saved bullets and hides the visibility toggle", () => {

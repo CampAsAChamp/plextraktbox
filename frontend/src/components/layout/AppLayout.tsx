@@ -16,12 +16,12 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { api } from "../../api/client";
-import { formatVersionLabel, useHealthQuery } from "../../api/health";
-import { GitHubIcon } from "../icons/GitHubIcon";
-import { HomeIcon } from "../icons/HomeIcon";
-import { ApiHealthBadge } from "./ApiHealthBadge";
-import { NotificationBell } from "../notifications/NotificationBell";
+import { api } from "src/api/client";
+import { formatVersionLabel, useHealthQuery } from "src/api/health";
+import { GitHubIcon } from "src/components/icons/GitHubIcon";
+import { HomeIcon } from "src/components/icons/HomeIcon";
+import { ApiHealthBadge } from "src/components/layout/ApiHealthBadge";
+import { NotificationBell } from "src/components/notifications/NotificationBell";
 
 const GITHUB_REPO_URL = "https://github.com/CampAsAChamp/plextraktbox";
 

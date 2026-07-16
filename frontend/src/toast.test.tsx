@@ -1,7 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { iconForToastColor, showToast } from "./toast";
+import { iconForToastColor, showToast } from "src/toast";
 
 vi.mock("@mantine/notifications", () => ({
   notifications: {

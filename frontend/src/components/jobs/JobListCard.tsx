@@ -1,15 +1,15 @@
 import { Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import type { Job } from "../../api/jobs";
-import { DryRunBadge, JobStatusBadge } from "../JobForm/JobForm";
-import { RunStatusBadge } from "../runs/RunBadges";
-import { RunSummaryStats } from "../runs/RunSummaryStats";
-import { DataTypeBadge } from "../services/DataTypeBadge";
-import { SourcePairLabel } from "../services/SourcePairLabel";
-import { RowActionsMenu } from "../table/RowActionsMenu";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { formatDateTime, formatScheduleDateTime } from "../../utils/dateTimeFormat";
+import type { Job } from "src/api/jobs";
+import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm";
+import { RunStatusBadge } from "src/components/runs/RunBadges";
+import { RunSummaryStats } from "src/components/runs/RunSummaryStats";
+import { DataTypeBadge } from "src/components/services/DataTypeBadge";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { RowActionsMenu } from "src/components/table/RowActionsMenu";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat";
 import dryRunRowClasses from "../../styles/dryRunRow.module.css";
 
 type JobListCardProps = {

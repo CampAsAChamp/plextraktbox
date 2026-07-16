@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CRON_PRESETS, matchCronPreset } from "./cronPresets";
-import { isValidCronExpression } from "./cron";
+import { CRON_PRESETS, matchCronPreset } from "src/utils/cronPresets";
+import { isValidCronExpression } from "src/utils/cron";
 
 describe("cron presets", () => {
   it("uses valid cron expressions", () => {

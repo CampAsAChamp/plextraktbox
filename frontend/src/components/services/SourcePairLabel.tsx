@@ -1,8 +1,8 @@
 import { Group, Text, Tooltip } from "@mantine/core";
-import type { SourcePair } from "../../api/jobs";
-import { ServiceLogo } from "../connections/ServiceLogo";
-import { SERVICE_LABELS } from "../connections/connectionStatus";
-import { SERVICE_TEXT_COLORS } from "./serviceBrand";
+import type { SourcePair } from "src/api/jobs";
+import { ServiceLogo } from "src/components/connections/ServiceLogo";
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
+import { SERVICE_TEXT_COLORS } from "src/components/services/serviceBrand";
 
 type SyncService = "plex" | "trakt" | "letterboxd";
 

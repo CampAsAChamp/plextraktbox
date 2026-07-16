@@ -1,5 +1,5 @@
 import { Group, Table, Text, UnstyledButton, useMantineTheme } from "@mantine/core";
-import type { SortDirection, SortState } from "../../utils/tableSort";
+import type { SortDirection, SortState } from "src/utils/tableSort";
 import classes from "./SortableTh.module.css";
 
 function ChevronUpIcon({ size = 16 }: { size?: number }) {

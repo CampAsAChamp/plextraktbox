@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { RunListItem } from "../api/jobs";
-import { filterRuns, parseRunStatuses, parseRunTrigger } from "./runFilters";
+import type { RunListItem } from "src/api/jobs";
+import { filterRuns, parseRunStatuses, parseRunTrigger } from "src/utils/runFilters";
 
 const sampleRuns: RunListItem[] = [
   {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatApiDetail } from "./client";
+import { formatApiDetail } from "src/api/client";
 
 describe("formatApiDetail", () => {
   it("returns string detail as-is", () => {

@@ -1,9 +1,9 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ConnectionsPage } from "./ConnectionsPage";
+import { ConnectionsPage } from "src/pages/ConnectionsPage";
 import classes from "./OnboardingStepper.module.css";
-import { renderWithProviders } from "../test/render";
+import { renderWithProviders } from "src/test/render";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

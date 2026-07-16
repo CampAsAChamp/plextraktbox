@@ -2,8 +2,8 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { Route, Routes } from "react-router-dom";
-import { renderWithProviders } from "../../test/render";
-import { AppLayout } from "./AppLayout";
+import { renderWithProviders } from "src/test/render";
+import { AppLayout } from "src/components/layout/AppLayout";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

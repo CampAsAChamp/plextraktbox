@@ -1,4 +1,4 @@
-import type { ConnectionSummary, Service } from "../../api/connections";
+import type { ConnectionSummary, Service } from "src/api/connections";
 
 export const SERVICE_LABELS: Record<Service, string> = {
   plex: "Plex",

@@ -1,4 +1,4 @@
-import { showToast } from "../toast";
+import { showToast } from "src/toast";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import {
   DEFAULT_DISPLAY_PREFERENCES,
@@ -8,7 +8,7 @@ import {
   type DisplayPreferences,
   type TimeFormatPreference,
   type TimezonePreference,
-} from "./displayPreferences";
+} from "src/settings/displayPreferences";
 
 type DisplayPreferencesContextValue = {
   preferences: DisplayPreferences;

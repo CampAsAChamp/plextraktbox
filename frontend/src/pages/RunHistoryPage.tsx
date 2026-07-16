@@ -15,30 +15,30 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import type { RunListItem } from "../api/jobs";
-import { SOURCE_PAIR_LABELS } from "../api/jobs";
-import { listJobs } from "../api/jobApi";
-import { listRuns } from "../api/runs";
+import type { RunListItem } from "src/api/jobs";
+import { SOURCE_PAIR_LABELS } from "src/api/jobs";
+import { listJobs } from "src/api/jobApi";
+import { listRuns } from "src/api/runs";
 import {
   RUN_TRIGGER_OPTIONS,
   filterRuns,
   parseRunStatuses,
   parseRunTrigger,
-} from "../utils/runFilters";
+} from "src/utils/runFilters";
 import {
   DryRunBadge,
   renderRunTriggerOption,
   RunStatusBadge,
   RunTriggerBadge,
-} from "../components/runs/RunBadges";
-import { RunListCard } from "../components/runs/RunListCard";
-import { RunStatusMultiSelect } from "../components/runs/RunStatusMultiSelect";
-import { SourcePairLabel } from "../components/services/SourcePairLabel";
-import { RoundedTable } from "../components/table/RoundedTable";
-import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
-import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
-import { formatDateTime, formatDuration } from "../utils/dateTimeFormat";
-import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
+} from "src/components/runs/RunBadges";
+import { RunListCard } from "src/components/runs/RunListCard";
+import { RunStatusMultiSelect } from "src/components/runs/RunStatusMultiSelect";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { RoundedTable } from "src/components/table/RoundedTable";
+import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat";
+import { nextSortState, sortRows, type SortState } from "src/utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 import classes from "./RunHistoryPage.module.css";
 

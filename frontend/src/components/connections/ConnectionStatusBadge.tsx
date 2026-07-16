@@ -1,12 +1,12 @@
 import { Badge, Group } from "@mantine/core";
-import type { ConnectionSummary } from "../../api/connections";
+import type { ConnectionSummary } from "src/api/connections";
 import {
   connectionStatusLabel,
   formatConnectionStatus,
   SERVICE_LABELS,
   statusColor,
-} from "./connectionStatus";
-import { ServiceLogo } from "./ServiceLogo";
+} from "src/components/connections/connectionStatus";
+import { ServiceLogo } from "src/components/connections/ServiceLogo";
 
 interface ConnectionStatusBadgeProps {
   connection: ConnectionSummary;

@@ -4,8 +4,8 @@
  * Colors from https://www.nordtheme.com/docs/colors-and-palettes (MIT).
  */
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "./shared";
-import type { BuiltinThemeDefinition } from "./types";
+import { sharedTheme } from "src/themes/shared";
+import type { BuiltinThemeDefinition } from "src/themes/types";
 
 /** Nord frost / polar — primary around `#88C0D0` / `#81A1C1`. */
 const cyan: MantineColorsTuple = [

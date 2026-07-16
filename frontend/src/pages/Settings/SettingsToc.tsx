@@ -1,11 +1,11 @@
 import { Box, Group, Select, TableOfContents, Text, useMantineTheme } from "@mantine/core";
 import type { ComponentType } from "react";
-import { BellIcon } from "../../components/icons/BellIcon";
-import { ClockIcon } from "../../components/icons/ClockIcon";
-import { DatabaseIcon } from "../../components/icons/DatabaseIcon";
-import { PaletteIcon } from "../../components/icons/PaletteIcon";
-import { SyncIcon } from "../../components/icons/SyncIcon";
-import { UserIcon } from "../../components/icons/UserIcon";
+import { BellIcon } from "src/components/icons/BellIcon";
+import { ClockIcon } from "src/components/icons/ClockIcon";
+import { DatabaseIcon } from "src/components/icons/DatabaseIcon";
+import { PaletteIcon } from "src/components/icons/PaletteIcon";
+import { SyncIcon } from "src/components/icons/SyncIcon";
+import { UserIcon } from "src/components/icons/UserIcon";
 
 const INITIAL_SECTIONS = [
   { id: "settings-account", value: "Account", depth: 1 },

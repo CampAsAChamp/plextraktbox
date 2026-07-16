@@ -13,20 +13,20 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { z } from "zod";
-import { ApiError } from "../../api/client";
+import { ApiError } from "src/api/client";
 import {
   formatExcludeLines,
   getSettings,
   parseExcludeLines,
   updateSettings,
   type AppSettingsInput,
-} from "../../api/settings";
-import { SettingsSectionTitle } from "../../components/SettingsSectionTitle";
-import { ClockIcon } from "../../components/icons/ClockIcon";
-import { GlobeIcon } from "../../components/icons/GlobeIcon";
-import { MapPinIcon } from "../../components/icons/MapPinIcon";
-import { SaveIcon } from "../../components/icons/SaveIcon";
-import { SyncIcon } from "../../components/icons/SyncIcon";
+} from "src/api/settings";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { ClockIcon } from "src/components/icons/ClockIcon";
+import { GlobeIcon } from "src/components/icons/GlobeIcon";
+import { MapPinIcon } from "src/components/icons/MapPinIcon";
+import { SaveIcon } from "src/components/icons/SaveIcon";
+import { SyncIcon } from "src/components/icons/SyncIcon";
 import {
   formatTimezoneLabel,
   getBrowserTimezone,
@@ -36,9 +36,9 @@ import {
   listIanaTimezones,
   type TimezoneMode,
   type TimezonePreference,
-} from "../../settings/displayPreferences";
-import { showToast } from "../../toast";
-import { CRON_INVALID_MESSAGE, isValidCronExpression } from "../../utils/cron";
+} from "src/settings/displayPreferences";
+import { showToast } from "src/toast";
+import { CRON_INVALID_MESSAGE, isValidCronExpression } from "src/utils/cron";
 
 const syncSchema = z.object({
   default_cron: z

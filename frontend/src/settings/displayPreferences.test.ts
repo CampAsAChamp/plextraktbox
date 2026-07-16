@@ -8,7 +8,7 @@ import {
   normalizeDisplayPreferences,
   resolveTimeZone,
   saveDisplayPreferences,
-} from "./displayPreferences";
+} from "src/settings/displayPreferences";
 
 const STORAGE_KEY = "plextraktbox.displayPreferences";
 

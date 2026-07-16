@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatVersionLabel } from "./health";
+import { formatVersionLabel } from "src/api/health";
 
 const baseHealth = {
   status: "ok" as const,

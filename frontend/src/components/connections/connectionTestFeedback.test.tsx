@@ -4,8 +4,8 @@ import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { theme } from "../../theme";
-import { TestConnectionButton, useConnectionTestFeedback } from "./connectionTestFeedback";
+import { theme } from "src/theme";
+import { TestConnectionButton, useConnectionTestFeedback } from "src/components/connections/connectionTestFeedback";
 
 function renderButton(testStatus: "idle" | "success" | "error") {
   return render(

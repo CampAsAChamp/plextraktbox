@@ -1,6 +1,11 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { createColoredViteLogger } from "./src/lib/viteLogger";
+
+const root = path.dirname(fileURLToPath(import.meta.url));
 
 // The built SPA is emitted into the backend package's static/ dir so the single
 // Docker image can serve it. In dev, /api is proxied to the uvicorn server.
@@ -13,6 +18,11 @@ const containerDev = Boolean(process.env.VITE_API_PROXY_TARGET);
 export default defineConfig({
   customLogger: createColoredViteLogger(),
   plugins: [react()],
+  resolve: {
+    alias: {
+      src: path.resolve(root, "src"),
+    },
+  },
   build: {
     outDir: "../backend/plextraktbox/static",
     emptyOutDir: true,

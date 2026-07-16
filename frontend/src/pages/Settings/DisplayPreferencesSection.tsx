@@ -1,9 +1,9 @@
 import { Code, Paper, SegmentedControl, Stack, Text } from "@mantine/core";
-import { SettingsSectionTitle } from "../../components/SettingsSectionTitle";
-import { ClockIcon } from "../../components/icons/ClockIcon";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { TimezonePreferenceControls } from "../../settings/TimezonePreferenceControls";
-import { formatDateTime } from "../../utils/dateTimeFormat";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { ClockIcon } from "src/components/icons/ClockIcon";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { TimezonePreferenceControls } from "src/settings/TimezonePreferenceControls";
+import { formatDateTime } from "src/utils/dateTimeFormat";
 
 const TIME_FORMAT_OPTIONS = [
   { value: "24h", label: "24-hour" },

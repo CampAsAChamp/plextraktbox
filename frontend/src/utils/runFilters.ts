@@ -1,4 +1,4 @@
-import type { JobRunStatus, RunListItem, RunTrigger } from "../api/jobs";
+import type { JobRunStatus, RunListItem, RunTrigger } from "src/api/jobs";
 
 export const RUN_STATUS_OPTIONS: { value: JobRunStatus; label: string }[] = [
   { value: "running", label: "Running" },

@@ -1,4 +1,4 @@
-import type { Service } from "../../api/connections";
+import type { Service } from "src/api/connections";
 
 /** Brand colors for sync services (text labels and logo fills). */
 export const SERVICE_TEXT_COLORS: Record<Exclude<Service, "tmdb">, string> = {

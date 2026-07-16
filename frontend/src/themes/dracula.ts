@@ -4,8 +4,8 @@
  * Colors from https://draculatheme.com/contribute (MIT).
  */
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "./shared";
-import type { BuiltinThemeDefinition } from "./types";
+import { sharedTheme } from "src/themes/shared";
+import type { BuiltinThemeDefinition } from "src/themes/types";
 
 /** Dracula purple primary — `#BD93F9`. */
 const violet: MantineColorsTuple = [

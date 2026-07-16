@@ -14,22 +14,22 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { User } from "../../api/auth";
-import type { ConnectionSummary } from "../../api/connections";
-import { ApiError } from "../../api/client";
-import type { Job } from "../../api/jobs";
-import { listJobs, runJob } from "../../api/jobApi";
-import { ConnectionStatusBadge } from "../../components/connections/ConnectionStatusBadge";
-import { JobListCard } from "../../components/jobs/JobListCard";
-import { DryRunBadge, JobStatusBadge } from "../../components/JobForm/JobForm";
-import { RunStatusBadge } from "../../components/runs/RunBadges";
-import { RunSummaryStats } from "../../components/runs/RunSummaryStats";
-import { SourcePairLabel } from "../../components/services/SourcePairLabel";
-import { RoundedTable } from "../../components/table/RoundedTable";
-import { RowActionsMenu } from "../../components/table/RowActionsMenu";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { showToast } from "../../toast";
-import { formatDateTime, formatScheduleDateTime } from "../../utils/dateTimeFormat";
+import type { User } from "src/api/auth";
+import type { ConnectionSummary } from "src/api/connections";
+import { ApiError } from "src/api/client";
+import type { Job } from "src/api/jobs";
+import { listJobs, runJob } from "src/api/jobApi";
+import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge";
+import { JobListCard } from "src/components/jobs/JobListCard";
+import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm";
+import { RunStatusBadge } from "src/components/runs/RunBadges";
+import { RunSummaryStats } from "src/components/runs/RunSummaryStats";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { RoundedTable } from "src/components/table/RoundedTable";
+import { RowActionsMenu } from "src/components/table/RowActionsMenu";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { showToast } from "src/toast";
+import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat";
 import dryRunRowClasses from "../../styles/dryRunRow.module.css";
 
 interface DashboardPageProps {

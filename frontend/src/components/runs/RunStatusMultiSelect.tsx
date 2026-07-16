@@ -1,7 +1,7 @@
 import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core";
-import type { JobRunStatus } from "../../api/jobs";
-import { RUN_STATUS_OPTIONS } from "../../utils/runFilters";
-import { RunStatusBadge, RunStatusOptionRow } from "./RunBadges";
+import type { JobRunStatus } from "src/api/jobs";
+import { RUN_STATUS_OPTIONS } from "src/utils/runFilters";
+import { RunStatusBadge, RunStatusOptionRow } from "src/components/runs/RunBadges";
 
 type RunStatusMultiSelectProps = {
   label?: string;

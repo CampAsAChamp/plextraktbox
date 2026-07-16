@@ -1,10 +1,10 @@
 import { Group, Paper, Stack, Text, UnstyledButton } from "@mantine/core";
-import type { RunListItem } from "../../api/jobs";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { formatDateTime, formatDuration } from "../../utils/dateTimeFormat";
-import { SourcePairLabel } from "../services/SourcePairLabel";
+import type { RunListItem } from "src/api/jobs";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
 import dryRunRowClasses from "../../styles/dryRunRow.module.css";
-import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "./RunBadges";
+import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges";
 
 type RunListCardProps = {
   run: RunListItem;

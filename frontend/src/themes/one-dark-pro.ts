@@ -5,8 +5,8 @@
  * https://github.com/Binaryify/OneDark-Pro
  */
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "./shared";
-import type { BuiltinThemeDefinition } from "./types";
+import { sharedTheme } from "src/themes/shared";
+import type { BuiltinThemeDefinition } from "src/themes/types";
 
 /** Soft blue primary — One Dark Pro function/accent `#61afef`. */
 const blue: MantineColorsTuple = [

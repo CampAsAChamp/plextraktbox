@@ -1,6 +1,6 @@
 import { Badge } from "@mantine/core";
-import type { DataType } from "../../api/jobs";
-import { DATA_TYPE_COLORS, DATA_TYPE_LABELS } from "../../api/jobs";
+import type { DataType } from "src/api/jobs";
+import { DATA_TYPE_COLORS, DATA_TYPE_LABELS } from "src/api/jobs";
 
 interface DataTypeBadgeProps {
   dataType: DataType;

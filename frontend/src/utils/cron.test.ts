@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidCronExpression } from "./cron";
+import { isValidCronExpression } from "src/utils/cron";
 
 describe("isValidCronExpression", () => {
   it("accepts standard 5-field cron expressions", () => {

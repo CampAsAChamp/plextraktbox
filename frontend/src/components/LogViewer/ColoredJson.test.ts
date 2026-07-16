@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tokenizeJsonText } from "./ColoredJson";
+import { tokenizeJsonText } from "src/components/LogViewer/ColoredJson";
 
 describe("tokenizeJsonText", () => {
   it("colors keys, strings, numbers, and booleans", () => {

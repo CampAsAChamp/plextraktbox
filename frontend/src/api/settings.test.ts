@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatExcludeLines, parseExcludeLines } from "./settings";
+import { formatExcludeLines, parseExcludeLines } from "src/api/settings";
 
 describe("exclude id helpers", () => {
   it("parses lines and commas", () => {

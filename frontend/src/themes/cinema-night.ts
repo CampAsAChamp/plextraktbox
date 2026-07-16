@@ -1,7 +1,7 @@
 /** Cinema Night — amber primary + cool charcoal surfaces (former product baseline). */
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "./shared";
-import type { BuiltinThemeDefinition } from "./types";
+import { sharedTheme } from "src/themes/shared";
+import type { BuiltinThemeDefinition } from "src/themes/types";
 
 const amber: MantineColorsTuple = [
   "#FFF8EB",

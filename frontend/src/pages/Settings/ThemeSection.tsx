@@ -15,20 +15,20 @@ import {
 } from "@mantine/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { getSettings } from "../../api/settings";
+import { getSettings } from "src/api/settings";
 import {
   deleteTheme,
   listThemes,
   updateActiveTheme,
   uploadTheme,
   type ThemeInfo,
-} from "../../api/themes";
-import { SettingsSectionTitle } from "../../components/SettingsSectionTitle";
-import { PaletteIcon } from "../../components/icons/PaletteIcon";
-import { TrashIcon } from "../../components/icons/TrashIcon";
-import { showToast } from "../../toast";
-import { BUILTIN_THEMES, getBuiltinTheme } from "../../themes/registry";
-import { writeCachedThemeId } from "../../themes/themePreference";
+} from "src/api/themes";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { PaletteIcon } from "src/components/icons/PaletteIcon";
+import { TrashIcon } from "src/components/icons/TrashIcon";
+import { showToast } from "src/toast";
+import { BUILTIN_THEMES, getBuiltinTheme } from "src/themes/registry";
+import { writeCachedThemeId } from "src/themes/themePreference";
 
 function ThemeSwatch({
   theme,

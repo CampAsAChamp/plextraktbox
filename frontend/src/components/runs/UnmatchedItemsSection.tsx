@@ -1,10 +1,10 @@
 import { Accordion, Badge, Group, ScrollArea, Table, Text } from "@mantine/core";
-import type { DataType } from "../../api/jobs";
-import type { Service } from "../../api/connections";
-import { SERVICE_LABELS } from "../connections/connectionStatus";
-import { ServiceLogo } from "../connections/ServiceLogo";
-import { DataTypeBadge } from "../services/DataTypeBadge";
-import { RoundedTable } from "../table/RoundedTable";
+import type { DataType } from "src/api/jobs";
+import type { Service } from "src/api/connections";
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
+import { ServiceLogo } from "src/components/connections/ServiceLogo";
+import { DataTypeBadge } from "src/components/services/DataTypeBadge";
+import { RoundedTable } from "src/components/table/RoundedTable";
 
 export interface UnmatchedItem {
   source: string;

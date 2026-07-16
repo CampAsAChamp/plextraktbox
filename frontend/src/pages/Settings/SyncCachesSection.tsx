@@ -1,17 +1,17 @@
 import { Button, Checkbox, Group, NumberInput, Paper, Stack, Text } from "@mantine/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
-import { ApiError } from "../../api/client";
+import { ApiError } from "src/api/client";
 import {
   clearSyncCaches,
   getSettings,
   updateSettings,
   type AppSettingsInput,
-} from "../../api/settings";
-import { SettingsSectionTitle } from "../../components/SettingsSectionTitle";
-import { SaveIcon } from "../../components/icons/SaveIcon";
-import { SyncIcon } from "../../components/icons/SyncIcon";
-import { showToast } from "../../toast";
+} from "src/api/settings";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { SaveIcon } from "src/components/icons/SaveIcon";
+import { SyncIcon } from "src/components/icons/SyncIcon";
+import { showToast } from "src/toast";
 
 export function SyncCachesSection() {
   const queryClient = useQueryClient();

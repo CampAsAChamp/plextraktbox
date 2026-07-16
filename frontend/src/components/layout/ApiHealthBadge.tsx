@@ -1,5 +1,5 @@
 import { Badge, Box, Tooltip } from "@mantine/core";
-import { formatVersionLabel, useHealthQuery } from "../../api/health";
+import { formatVersionLabel, useHealthQuery } from "src/api/health";
 
 /** Shown only when `/health` is degraded or unreachable — healthy stays out of the navbar. */
 export function ApiHealthBadge() {

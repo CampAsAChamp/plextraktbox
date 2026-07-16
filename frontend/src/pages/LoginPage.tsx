@@ -9,14 +9,14 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { showToast } from "../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { api } from "../api/client";
-import type { LoginInput, User } from "../api/auth";
-import { ApiError } from "../api/client";
+import { api } from "src/api/client";
+import type { LoginInput, User } from "src/api/auth";
+import { ApiError } from "src/api/client";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username or email is required"),

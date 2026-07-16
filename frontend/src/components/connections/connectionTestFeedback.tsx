@@ -1,11 +1,11 @@
 import { Button } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError } from "../../api/client";
-import type { ConnectionTestResult } from "../../api/connections";
-import { showToast } from "../../toast";
-import { StatusCheckIcon } from "./StatusCheckIcon";
-import { StatusXIcon } from "./StatusXIcon";
-import { TestConnectionIcon } from "./TestConnectionIcon";
+import { ApiError } from "src/api/client";
+import type { ConnectionTestResult } from "src/api/connections";
+import { showToast } from "src/toast";
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon";
+import { StatusXIcon } from "src/components/connections/StatusXIcon";
+import { TestConnectionIcon } from "src/components/connections/TestConnectionIcon";
 import classes from "./connectionTestFeedback.module.css";
 
 export type ConnectionTestStatus = "idle" | "success" | "error";

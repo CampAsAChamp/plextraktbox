@@ -4,7 +4,7 @@ import {
   DEFAULT_THEME_ID,
   getBuiltinTheme,
   isBuiltinThemeId,
-} from "./registry";
+} from "src/themes/registry";
 
 describe("theme registry", () => {
   it("defaults to Atom One Dark Pro", () => {

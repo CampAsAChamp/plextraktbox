@@ -1,4 +1,4 @@
-import type { ConnectionSummary } from "../../api/connections";
+import type { ConnectionSummary } from "src/api/connections";
 
 export const SAVED_SECRET_PLACEHOLDER = "••••••••••••";
 

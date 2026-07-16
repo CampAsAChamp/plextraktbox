@@ -1,5 +1,5 @@
-import { api } from "./client";
-import type { Job, JobInput, JobRun, SchedulePreview } from "./jobs";
+import { api } from "src/api/client";
+import type { Job, JobInput, JobRun, SchedulePreview } from "src/api/jobs";
 
 export function listJobs() {
   return api.get<Job[]>("/jobs");

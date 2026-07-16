@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareValues, nextSortState, sortRows } from "./tableSort";
+import { compareValues, nextSortState, sortRows } from "src/utils/tableSort";
 
 describe("nextSortState", () => {
   it("cycles none → asc → desc → none", () => {

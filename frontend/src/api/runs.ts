@@ -1,5 +1,5 @@
-import { api } from "./client";
-import type { RunListResponse } from "./jobs";
+import { api } from "src/api/client";
+import type { RunListResponse } from "src/api/jobs";
 
 export type RunListItem = RunListResponse["items"][number];
 

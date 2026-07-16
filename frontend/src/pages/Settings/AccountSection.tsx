@@ -8,15 +8,15 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { showToast } from "../../toast";
+import { showToast } from "src/toast";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
-import type { User } from "../../api/auth";
-import { ApiError } from "../../api/client";
-import { changePassword } from "../../api/settings";
-import { SettingsSectionTitle } from "../../components/SettingsSectionTitle";
-import { UserIcon } from "../../components/icons/UserIcon";
+import type { User } from "src/api/auth";
+import { ApiError } from "src/api/client";
+import { changePassword } from "src/api/settings";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { UserIcon } from "src/components/icons/UserIcon";
 
 const passwordSchema = z
   .object({

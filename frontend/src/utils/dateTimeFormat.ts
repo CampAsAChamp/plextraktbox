@@ -1,4 +1,4 @@
-import { resolveTimeZone, type DateFormatPreference, type DisplayPreferences } from "../settings/displayPreferences";
+import { resolveTimeZone, type DateFormatPreference, type DisplayPreferences } from "src/settings/displayPreferences";
 
 const NAIVE_ISO_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/;
 

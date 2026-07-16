@@ -1,13 +1,13 @@
 import { Group, Stack, Title } from "@mantine/core";
-import type { User } from "../../api/auth";
-import { NotificationSettings } from "../../components/notifications/NotificationSettings";
-import { AccountSection } from "./AccountSection";
-import { DisplayPreferencesSection } from "./DisplayPreferencesSection";
-import { BackupSection } from "./BackupSection";
-import { SettingsMobileNav, SettingsToc } from "./SettingsToc";
-import { SyncCachesSection } from "./SyncCachesSection";
-import { SyncSettingsSection } from "./SyncSettingsSection";
-import { ThemeSection } from "./ThemeSection";
+import type { User } from "src/api/auth";
+import { NotificationSettings } from "src/components/notifications/NotificationSettings";
+import { AccountSection } from "src/pages/Settings/AccountSection";
+import { DisplayPreferencesSection } from "src/pages/Settings/DisplayPreferencesSection";
+import { BackupSection } from "src/pages/Settings/BackupSection";
+import { SettingsMobileNav, SettingsToc } from "src/pages/Settings/SettingsToc";
+import { SyncCachesSection } from "src/pages/Settings/SyncCachesSection";
+import { SyncSettingsSection } from "src/pages/Settings/SyncSettingsSection";
+import { ThemeSection } from "src/pages/Settings/ThemeSection";
 
 interface SettingsPageProps {
   user: User;

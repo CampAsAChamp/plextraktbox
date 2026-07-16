@@ -17,25 +17,25 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import type { DataType, Job, JobInput, NotifyMode, SourcePair } from "../../api/jobs";
-import { DATA_TYPES_BY_PAIR, SOURCE_PAIR_LABELS } from "../../api/jobs";
-import { previewSchedule } from "../../api/jobApi";
-import { NOTIFY_MODE_LABELS } from "../../api/notifications";
+import type { DataType, Job, JobInput, NotifyMode, SourcePair } from "src/api/jobs";
+import { DATA_TYPES_BY_PAIR, SOURCE_PAIR_LABELS } from "src/api/jobs";
+import { previewSchedule } from "src/api/jobApi";
+import { NOTIFY_MODE_LABELS } from "src/api/notifications";
 import {
   formatExcludeLines,
   getSettings,
   parseExcludeLines,
-} from "../../api/settings";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { formatTimezoneLabel } from "../../settings/displayPreferences";
-import { CRON_INVALID_MESSAGE, isValidCronExpression } from "../../utils/cron";
-import { CRON_PRESETS, matchCronPreset } from "../../utils/cronPresets";
-import { formatScheduleDateTimeParts } from "../../utils/dateTimeFormat";
-import { DataTypeBadge } from "../services/DataTypeBadge";
-import { SourcePairLabel } from "../services/SourcePairLabel";
-import { HelpCircleIcon } from "../icons/HelpCircleIcon";
-import { SaveIcon } from "../icons/SaveIcon";
-import { RoundedTable } from "../table/RoundedTable";
+} from "src/api/settings";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatTimezoneLabel } from "src/settings/displayPreferences";
+import { CRON_INVALID_MESSAGE, isValidCronExpression } from "src/utils/cron";
+import { CRON_PRESETS, matchCronPreset } from "src/utils/cronPresets";
+import { formatScheduleDateTimeParts } from "src/utils/dateTimeFormat";
+import { DataTypeBadge } from "src/components/services/DataTypeBadge";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon";
+import { SaveIcon } from "src/components/icons/SaveIcon";
+import { RoundedTable } from "src/components/table/RoundedTable";
 
 const jobSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
@@ -410,4 +410,4 @@ export function JobStatusBadge({ enabled }: { enabled: boolean }) {
   );
 }
 
-export { DryRunBadge } from "../runs/RunBadges";
+export { DryRunBadge } from "src/components/runs/RunBadges";

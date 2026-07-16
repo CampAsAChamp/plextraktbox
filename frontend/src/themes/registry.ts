@@ -1,8 +1,8 @@
-import { cinemaNightDefinition } from "./cinema-night";
-import { draculaDefinition } from "./dracula";
-import { nordDefinition } from "./nord";
-import { oneDarkProDefinition, oneDarkProTheme } from "./one-dark-pro";
-import type { BuiltinThemeDefinition, BuiltinThemeId } from "./types";
+import { cinemaNightDefinition } from "src/themes/cinema-night";
+import { draculaDefinition } from "src/themes/dracula";
+import { nordDefinition } from "src/themes/nord";
+import { oneDarkProDefinition, oneDarkProTheme } from "src/themes/one-dark-pro";
+import type { BuiltinThemeDefinition, BuiltinThemeId } from "src/themes/types";
 
 export const DEFAULT_THEME_ID: BuiltinThemeId = "one-dark-pro";
 

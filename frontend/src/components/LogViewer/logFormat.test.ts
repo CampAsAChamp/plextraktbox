@@ -9,7 +9,7 @@ import {
   shouldPrettyPrintContextValue,
   shouldRenderStatusBadge,
   shouldSyntaxHighlightContextValue,
-} from "./logFormat";
+} from "src/components/LogViewer/logFormat";
 
 describe("formatContextValue", () => {
   it("pretty-prints objects", () => {

@@ -1,17 +1,17 @@
 import { Group, SegmentedControl, Select, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { ClockIcon } from "../components/icons/ClockIcon";
-import { GlobeIcon } from "../components/icons/GlobeIcon";
-import { MapPinIcon } from "../components/icons/MapPinIcon";
-import { useDisplayPreferences } from "./DisplayPreferencesProvider";
+import { ClockIcon } from "src/components/icons/ClockIcon";
+import { GlobeIcon } from "src/components/icons/GlobeIcon";
+import { MapPinIcon } from "src/components/icons/MapPinIcon";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
 import {
   formatTimezoneLabel,
   getBrowserTimezone,
   getManualTimezone,
   getTimezoneMode,
   listIanaTimezones,
-} from "./displayPreferences";
+} from "src/settings/displayPreferences";
 
 function modeLabel(icon: ReactNode, text: string, title: string) {
   return (

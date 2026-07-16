@@ -1,10 +1,10 @@
 import { MantineProvider, type MantineThemeOverride } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { getSettings } from "../api/settings";
-import { fetchThemeCss } from "../api/themes";
-import { customThemeBase, getBuiltinTheme, isBuiltinThemeId } from "./registry";
-import { readCachedThemeId, writeCachedThemeId } from "./themePreference";
+import { getSettings } from "src/api/settings";
+import { fetchThemeCss } from "src/api/themes";
+import { customThemeBase, getBuiltinTheme, isBuiltinThemeId } from "src/themes/registry";
+import { readCachedThemeId, writeCachedThemeId } from "src/themes/themePreference";
 
 const CUSTOM_STYLE_ID = "ptb-custom-theme";
 

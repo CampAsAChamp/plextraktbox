@@ -10,25 +10,25 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { showToast } from "../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { Job } from "../api/jobs";
-import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "../api/jobs";
-import { JobListCard } from "../components/jobs/JobListCard";
-import { DataTypeBadge } from "../components/services/DataTypeBadge";
-import { SourcePairLabel } from "../components/services/SourcePairLabel";
-import { RoundedTable } from "../components/table/RoundedTable";
-import { RowActionsMenu } from "../components/table/RowActionsMenu";
-import { SortableTh, sortedColumnCellClass } from "../components/table/SortableTh";
-import { ApiError } from "../api/client";
-import { cloneJob, deleteJob, listJobs, runJob } from "../api/jobApi";
-import { DryRunBadge, JobStatusBadge } from "../components/JobForm/JobForm";
-import { TrashIcon } from "../components/icons/TrashIcon";
-import { useDisplayPreferences } from "../settings/DisplayPreferencesProvider";
-import { formatScheduleDateTime } from "../utils/dateTimeFormat";
-import { nextSortState, sortRows, type SortState } from "../utils/tableSort";
+import type { Job } from "src/api/jobs";
+import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "src/api/jobs";
+import { JobListCard } from "src/components/jobs/JobListCard";
+import { DataTypeBadge } from "src/components/services/DataTypeBadge";
+import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { RoundedTable } from "src/components/table/RoundedTable";
+import { RowActionsMenu } from "src/components/table/RowActionsMenu";
+import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh";
+import { ApiError } from "src/api/client";
+import { cloneJob, deleteJob, listJobs, runJob } from "src/api/jobApi";
+import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm";
+import { TrashIcon } from "src/components/icons/TrashIcon";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatScheduleDateTime } from "src/utils/dateTimeFormat";
+import { nextSortState, sortRows, type SortState } from "src/utils/tableSort";
 import dryRunRowClasses from "../styles/dryRunRow.module.css";
 
 type JobSortColumn = "name" | "source_pair" | "data_types" | "cron" | "dry_run" | "enabled";

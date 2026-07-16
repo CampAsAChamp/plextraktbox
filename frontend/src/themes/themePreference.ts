@@ -1,4 +1,4 @@
-import { DEFAULT_THEME_ID } from "./registry";
+import { DEFAULT_THEME_ID } from "src/themes/registry";
 
 const STORAGE_KEY = "plextraktbox.uiTheme";
 

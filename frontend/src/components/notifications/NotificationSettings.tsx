@@ -10,7 +10,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { showToast } from "../../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
@@ -22,12 +22,12 @@ import {
   updateNotificationConfig,
   type NotificationChannel,
   type NotificationConfig,
-} from "../../api/notifications";
-import { ApiError } from "../../api/client";
-import { SettingsSectionTitle } from "../SettingsSectionTitle";
-import { BellIcon } from "../icons/BellIcon";
-import { DiscordIcon } from "../icons/DiscordIcon";
-import { SaveIcon } from "../icons/SaveIcon";
+} from "src/api/notifications";
+import { ApiError } from "src/api/client";
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
+import { BellIcon } from "src/components/icons/BellIcon";
+import { DiscordIcon } from "src/components/icons/DiscordIcon";
+import { SaveIcon } from "src/components/icons/SaveIcon";
 
 const CHANNELS: NotificationChannel[] = ["discord", "inapp"];
 const DISCORD_BLURPLE = "#5865F2";

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { listThemes, updateActiveTheme, uploadTheme } from "./themes";
+import { listThemes, updateActiveTheme, uploadTheme } from "src/api/themes";
 
 describe("themes api", () => {
   afterEach(() => {

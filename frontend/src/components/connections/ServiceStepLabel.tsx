@@ -1,7 +1,7 @@
 import { Group, Text } from "@mantine/core";
-import type { ConnectionSummary, Service } from "../../api/connections";
-import { SERVICE_LABELS } from "./connectionStatus";
-import { StatusCheckIcon } from "./StatusCheckIcon";
+import type { ConnectionSummary, Service } from "src/api/connections";
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon";
 
 interface ServiceStepLabelProps {
   service: Service;

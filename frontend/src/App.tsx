@@ -1,22 +1,22 @@
 import { Center, Loader } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { api } from "./api/client";
-import type { SetupStatus, User } from "./api/auth";
-import type { ConnectionsStatus } from "./api/connections";
-import { ApiError } from "./api/client";
-import { AppLayout } from "./components/layout/AppLayout";
-import { DashboardPage } from "./pages/Dashboard";
-import { JobCreatePage } from "./pages/JobCreatePage";
-import { JobEditPage } from "./pages/JobEditPage";
-import { JobsPage } from "./pages/JobsPage";
-import { LoginPage } from "./pages/LoginPage";
-import { ConnectionsPage } from "./pages/ConnectionsPage";
-import { RunDetailPage } from "./pages/RunDetailPage";
-import { RunHistoryPage } from "./pages/RunHistoryPage";
-import { SettingsPage } from "./pages/Settings";
-import { SetupWizardPage } from "./pages/SetupWizardPage";
-import { DisplayPreferencesProvider } from "./settings/DisplayPreferencesProvider";
+import { api } from "src/api/client";
+import type { SetupStatus, User } from "src/api/auth";
+import type { ConnectionsStatus } from "src/api/connections";
+import { ApiError } from "src/api/client";
+import { AppLayout } from "src/components/layout/AppLayout";
+import { DashboardPage } from "src/pages/Dashboard";
+import { JobCreatePage } from "src/pages/JobCreatePage";
+import { JobEditPage } from "src/pages/JobEditPage";
+import { JobsPage } from "src/pages/JobsPage";
+import { LoginPage } from "src/pages/LoginPage";
+import { ConnectionsPage } from "src/pages/ConnectionsPage";
+import { RunDetailPage } from "src/pages/RunDetailPage";
+import { RunHistoryPage } from "src/pages/RunHistoryPage";
+import { SettingsPage } from "src/pages/Settings";
+import { SetupWizardPage } from "src/pages/SetupWizardPage";
+import { DisplayPreferencesProvider } from "src/settings/DisplayPreferencesProvider";
 
 function LoadingScreen() {
   return (

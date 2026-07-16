@@ -1,11 +1,11 @@
 import { Button, Group, Stack, Title } from "@mantine/core";
-import { showToast } from "../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import type { JobInput } from "../api/jobs";
-import { ApiError } from "../api/client";
-import { createJob } from "../api/jobApi";
-import { JobForm } from "../components/JobForm/JobForm";
+import type { JobInput } from "src/api/jobs";
+import { ApiError } from "src/api/client";
+import { createJob } from "src/api/jobApi";
+import { JobForm } from "src/components/JobForm/JobForm";
 
 export function JobCreatePage() {
   const navigate = useNavigate();

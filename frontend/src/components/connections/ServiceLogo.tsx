@@ -1,5 +1,5 @@
-import type { Service } from "../../api/connections";
-import { SERVICE_TEXT_COLORS } from "../services/serviceBrand";
+import type { Service } from "src/api/connections";
+import { SERVICE_TEXT_COLORS } from "src/components/services/serviceBrand";
 
 interface ServiceLogoProps {
   service: Service;

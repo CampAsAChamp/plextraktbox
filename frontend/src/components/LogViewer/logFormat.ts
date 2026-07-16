@@ -1,4 +1,4 @@
-import type { LogEntry } from "../../api/logs";
+import type { LogEntry } from "src/api/logs";
 
 export const LOG_LOGGER_BRACKET_COLOR = "#808080";
 export const LOG_LOGGER_NAME_COLOR = "#4ec9b0";

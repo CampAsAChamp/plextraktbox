@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "./client";
-import type { components } from "./generated/schema";
+import { api } from "src/api/client";
+import type { components } from "src/api/generated/schema";
 
 export type HealthResponse = components["schemas"]["HealthResponse"];
 

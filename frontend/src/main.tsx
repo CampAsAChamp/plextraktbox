@@ -9,9 +9,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { App } from "./App";
+import { App } from "src/App";
 import "./styles/app.css";
-import { ThemeProvider } from "./themes/ThemeProvider";
+import { ThemeProvider } from "src/themes/ThemeProvider";
 
 const queryClient = new QueryClient();
 
