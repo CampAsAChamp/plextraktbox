@@ -37,6 +37,12 @@ Run `mise tasks` for the full task list.
 - **Backend:** Ruff lint + format check (including import sorting via Ruff `I`) and mypy
 - **Frontend:** ESLint (`npm run lint`), Prettier check (`npm run format:check`), and TypeScript (`npm run typecheck`)
 
+To apply autofixes (Ruff lint/format, ESLint `--fix`, Prettier write) without running mypy/typecheck:
+
+```bash
+mise run lint-fix
+```
+
 Frontend helpers from `frontend/`:
 
 ```bash

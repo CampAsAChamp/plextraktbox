@@ -47,6 +47,7 @@ mise run dev-backend         # uvicorn :8000 (terminal 1)
 mise run dev-frontend        # Vite :5173 (terminal 2)
 mise run up-dev              # container dev with hot reload
 mise run test                # pytest + vitest
+mise run lint-fix           # autofix Ruff/ESLint + format (Ruff/Prettier)
 mise run check               # lint + typecheck + tests (CI parity)
 mise run db-upgrade          # apply Alembic migrations
 mise run up                  # production container on :8000 (override via PORT)

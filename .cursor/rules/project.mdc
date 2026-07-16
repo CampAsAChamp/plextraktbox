@@ -27,6 +27,7 @@ mise run dev-backend   # :8000 (override via PORT for prod compose)
 mise run dev-frontend  # :5173
 mise run up-dev        # container hot reload (Doppler)
 mise run test          # pytest + vitest
+mise run lint-fix     # autofix Ruff/ESLint + format (Ruff/Prettier)
 mise run check         # lint + typecheck + tests
 mise run db-upgrade    # Alembic
 ```
