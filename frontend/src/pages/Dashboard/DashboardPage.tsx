@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
-import type { User } from "src/api/auth"
 import { ApiError } from "src/api/client"
 import type { ConnectionSummary } from "src/api/connections"
 import { listJobs, runJob } from "src/api/jobApi"
@@ -25,7 +24,6 @@ import { showToast } from "src/toast"
 import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 interface DashboardPageProps {
-  user: User
   connections?: ConnectionSummary[]
 }
 
@@ -115,7 +113,7 @@ function jobActions(job: Job, isRunning: (job: Job, mode: RunMode) => boolean, o
   )
 }
 
-export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
+export function DashboardPage({ connections = [] }: DashboardPageProps) {
   const queryClient = useQueryClient()
   const [dismissedProblemsKey, setDismissedProblemsKey] = useState<string | null>(null)
 

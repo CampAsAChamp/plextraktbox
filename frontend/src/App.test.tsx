@@ -95,7 +95,7 @@ test("shows dashboard when connections are incomplete", async () => {
 
   await waitFor(() => {
     expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument()
-    expect(screen.getByText(/Signed in as/)).toBeInTheDocument()
+    expect(screen.getByText("nick")).toBeInTheDocument()
   })
 })
 
@@ -111,6 +111,6 @@ test("shows dashboard when setup is complete and session is present", async () =
 
   await waitFor(() => {
     expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument()
-    expect(screen.getByText(/Signed in as/)).toBeInTheDocument()
+    expect(screen.getByText("nick")).toBeInTheDocument()
   })
 })
