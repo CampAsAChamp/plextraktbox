@@ -1,33 +1,33 @@
-import { ActionIcon, Alert, Badge, Box, Button, Group, Loader, Stack, Table, Text, Title, Tooltip } from "@mantine/core"
+import { Alert, Badge, Box, Button, Group, Loader, Stack, Table, Text, Title } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import { ApiError } from "src/api/client"
 import type { ConnectionSummary } from "src/api/connections"
-import { listJobs, runJob } from "src/api/jobApi"
+import { cloneJob, listJobs } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
+import { listRuns } from "src/api/runs"
 import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge"
+import { DashboardGlanceStrip } from "src/components/dashboard/DashboardGlanceStrip"
 import { ConnectIcon } from "src/components/icons/ConnectIcon"
 import { ListIcon } from "src/components/icons/ListIcon"
-import { PencilIcon } from "src/components/icons/PencilIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
+import { JobActions } from "src/components/jobs/JobActions"
 import { JobListCard } from "src/components/jobs/JobListCard"
 import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
+import { useRunJob } from "src/hooks/useRunJob"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
 import { showToast } from "src/toast"
-import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 interface DashboardPageProps {
   connections?: ConnectionSummary[]
 }
-
-type RunMode = "run" | "dry-run"
 
 /** Stable key for the current set of failed/partial last runs. */
 function problemJobsSignature(jobs: Job[]): string {
@@ -38,27 +38,27 @@ function problemJobsSignature(jobs: Job[]): string {
 }
 
 function ScheduleCell({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences()
-  const nextLabel = !job.enabled
-    ? "Disabled — no next run"
-    : job.next_run_at
-      ? formatScheduleDateTime(job.next_run_at, preferences)
-      : "Next run unavailable"
-
   return (
     <Stack gap={2}>
       <Text size="sm" ff="monospace">
         {job.cron}
       </Text>
-      <Text size="xs" c="dimmed">
-        {nextLabel}
-      </Text>
+      {!job.enabled ? (
+        <Text size="xs" c="dimmed">
+          Disabled — no next run
+        </Text>
+      ) : job.next_run_at ? (
+        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" />
+      ) : (
+        <Text size="xs" c="dimmed">
+          Next run unavailable
+        </Text>
+      )}
     </Stack>
   )
 }
 
 function LastRunCell({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences()
   const last = job.last_run
   if (!last) {
     return (
@@ -77,79 +77,60 @@ function LastRunCell({ job }: { job: Job }) {
         <RunStatusBadge status={last.status} />
         <DryRunBadge dryRun={last.dry_run} />
       </Group>
-      <Text size="xs" c="dimmed">
-        {formatDateTime(last.finished_at ?? last.started_at, preferences)}
-      </Text>
+      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" />
       <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
-  )
-}
-
-function jobActions(job: Job, isRunning: (job: Job, mode: RunMode) => boolean, onRun: (job: Job, mode: RunMode) => void) {
-  return (
-    <Group gap={4} wrap="wrap">
-      <Tooltip label="Run now">
-        <ActionIcon variant="light" aria-label={`Run ${job.name}`} loading={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
-          ▶
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Dry-run">
-        <ActionIcon
-          variant="light"
-          color="blue"
-          aria-label={`Dry-run ${job.name}`}
-          loading={isRunning(job, "dry-run")}
-          onClick={() => onRun(job, "dry-run")}
-        >
-          ▷
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Edit">
-        <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} variant="subtle" aria-label={`Edit ${job.name}`}>
-          <PencilIcon />
-        </ActionIcon>
-      </Tooltip>
-    </Group>
   )
 }
 
 export function DashboardPage({ connections = [] }: DashboardPageProps) {
   const queryClient = useQueryClient()
   const [dismissedProblemsKey, setDismissedProblemsKey] = useState<string | null>(null)
+  const { isRunning, onRun } = useRunJob()
 
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
   })
 
-  const runMutation = useMutation({
-    mutationFn: ({ job, mode }: { job: Job; mode: RunMode }) => runJob(job.id, mode === "dry-run" ? true : undefined),
-    onSuccess: (run) => {
+  const runsQuery = useQuery({
+    queryKey: ["runs", "glance"],
+    queryFn: () => listRuns({ limit: 200 }),
+  })
+
+  const cloneMutation = useMutation({
+    mutationFn: (job: Job) => cloneJob(job.id),
+    onSuccess: (cloned) => {
       void queryClient.invalidateQueries({ queryKey: ["jobs"] })
-      void queryClient.invalidateQueries({ queryKey: ["runs"] })
       showToast({
-        color: run.status === "success" ? "green" : "orange",
-        message: `Run #${run.id} finished with status ${run.status}`,
+        color: "green",
+        message: `Cloned as "${cloned.name}" (disabled)`,
       })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Run failed"
+      const message = error instanceof ApiError ? String(error.message) : "Clone failed"
       showToast({ color: "red", message })
     },
   })
 
   const needsReauth = connections.some((item) => item.status === "needs_reauth")
   const jobs = jobsQuery.data ?? []
+  const runs = runsQuery.data?.items ?? []
   const problemJobs = jobs.filter((job) => job.last_run?.status === "failed" || job.last_run?.status === "partial")
   const problemsKey = problemJobsSignature(problemJobs)
   const showProblemsAlert = problemJobs.length > 0 && problemsKey !== "" && problemsKey !== dismissedProblemsKey
 
-  function isRunning(job: Job, mode: RunMode): boolean {
-    return runMutation.isPending && runMutation.variables?.job.id === job.id && runMutation.variables.mode === mode
-  }
-
-  function onRun(job: Job, mode: RunMode) {
-    runMutation.mutate({ job, mode })
+  function jobRowActions(job: Job) {
+    return (
+      <JobActions
+        job={job}
+        isRunning={isRunning}
+        onRun={onRun}
+        onClone={(j) => cloneMutation.mutate(j)}
+        clonePending={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+        showHistory={false}
+      />
+    )
   }
 
   return (
@@ -202,6 +183,8 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
         </Alert>
       ) : null}
 
+      {!jobsQuery.isLoading && !runsQuery.isLoading ? <DashboardGlanceStrip jobs={jobs} runs={runs} /> : null}
+
       <Stack gap="xs">
         <Text fw={500}>Connections</Text>
         <Group gap="xs" wrap="wrap">
@@ -248,7 +231,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
           <>
             <Stack gap="sm" hiddenFrom="sm">
               {jobs.map((job) => (
-                <JobListCard key={job.id} job={job} showLastRun actions={jobActions(job, isRunning, onRun)} />
+                <JobListCard key={job.id} job={job} showLastRun actions={jobRowActions(job)} />
               ))}
             </Stack>
 
@@ -286,7 +269,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
                       <Table.Td>
                         <LastRunCell job={job} />
                       </Table.Td>
-                      <Table.Td>{jobActions(job, isRunning, onRun)}</Table.Td>
+                      <Table.Td>{jobRowActions(job)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

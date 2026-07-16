@@ -1,136 +1,46 @@
-import { ActionIcon, Box, Button, Group, Loader, Modal, Stack, Table, Text, Title, Tooltip } from "@mantine/core"
+import { Box, Button, Group, Loader, Modal, Stack, Table, Text, Title } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import { ApiError } from "src/api/client"
-import { cloneJob, deleteJob, listJobs, runJob } from "src/api/jobApi"
+import { cloneJob, deleteJob, listJobs } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
 import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "src/api/jobs"
-import { PencilIcon } from "src/components/icons/PencilIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
-import { TrashIcon } from "src/components/icons/TrashIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
+import { JobActions } from "src/components/jobs/JobActions"
 import { JobListCard } from "src/components/jobs/JobListCard"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
 import { SortableTh } from "src/components/table/SortableTh"
 import { sortedColumnCellClass } from "src/components/table/sortedColumnCellClass"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
+import { useRunJob } from "src/hooks/useRunJob"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
 import { showToast } from "src/toast"
-import { formatScheduleDateTime } from "src/utils/dateTimeFormat"
 import { nextSortState, sortRows, type SortState } from "src/utils/tableSort"
 
 type JobSortColumn = "name" | "source_pair" | "data_types" | "cron" | "dry_run" | "enabled"
-type RunMode = "run" | "dry-run"
-
-function StrokeIcon({ size = 14, children }: { size?: number; children: React.ReactNode }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {children}
-    </svg>
-  )
-}
-
-function HistoryIcon() {
-  return (
-    <StrokeIcon>
-      <path d="M12 8v4l3 3" />
-      <path d="M3.05 11a9 9 0 1 1 .5 4" />
-      <path d="M3 4v5h5" />
-    </StrokeIcon>
-  )
-}
-
-function CloneIcon() {
-  return (
-    <StrokeIcon>
-      <rect x="9" y="9" width="13" height="13" rx="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </StrokeIcon>
-  )
-}
-
-type JobActionsProps = {
-  job: Job
-  isRunning: (job: Job, mode: RunMode) => boolean
-  onRun: (job: Job, mode: RunMode) => void
-  onClone: (job: Job) => void
-  clonePending: boolean
-  onDelete: (job: Job) => void
-}
-
-function JobActions({ job, isRunning, onRun, onClone, clonePending, onDelete }: JobActionsProps) {
-  return (
-    <Group gap={4} wrap="wrap">
-      <Tooltip label="Run now">
-        <ActionIcon variant="light" aria-label="Run now" loading={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
-          ▶
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Dry-run">
-        <ActionIcon
-          variant="light"
-          color="blue"
-          aria-label="Dry-run"
-          loading={isRunning(job, "dry-run")}
-          onClick={() => onRun(job, "dry-run")}
-        >
-          ▷
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Edit">
-        <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} variant="subtle" aria-label="Edit">
-          <PencilIcon />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Clone">
-        <ActionIcon variant="subtle" aria-label="Clone" loading={clonePending} onClick={() => onClone(job)}>
-          <CloneIcon />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="History">
-        <ActionIcon component={Link} to={`/runs?job_id=${job.id}`} variant="subtle" aria-label="History">
-          <HistoryIcon />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Delete">
-        <ActionIcon color="red" variant="subtle" aria-label="Delete" onClick={() => onDelete(job)}>
-          <TrashIcon />
-        </ActionIcon>
-      </Tooltip>
-    </Group>
-  )
-}
 
 function ScheduleCell({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences()
-  const nextLabel = !job.enabled
-    ? "Disabled — no next run"
-    : job.next_run_at
-      ? formatScheduleDateTime(job.next_run_at, preferences)
-      : "Next run unavailable"
-
   return (
     <Stack gap={2}>
       <Text size="sm" ff="monospace">
         {job.cron}
       </Text>
-      <Text size="xs" c="dimmed">
-        {nextLabel}
-      </Text>
+      {!job.enabled ? (
+        <Text size="xs" c="dimmed">
+          Disabled — no next run
+        </Text>
+      ) : job.next_run_at ? (
+        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" />
+      ) : (
+        <Text size="xs" c="dimmed">
+          Next run unavailable
+        </Text>
+      )}
     </Stack>
   )
 }
@@ -139,30 +49,11 @@ export function JobsPage() {
   const queryClient = useQueryClient()
   const [sort, setSort] = useState<SortState<JobSortColumn> | null>(null)
   const [jobPendingDelete, setJobPendingDelete] = useState<Job | null>(null)
+  const { isRunning, onRun } = useRunJob()
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
   })
-
-  const runMutation = useMutation({
-    mutationFn: ({ job, mode }: { job: Job; mode: RunMode }) => runJob(job.id, mode === "dry-run" ? true : undefined),
-    onSuccess: (run) => {
-      void queryClient.invalidateQueries({ queryKey: ["jobs"] })
-      void queryClient.invalidateQueries({ queryKey: ["runs"] })
-      showToast({
-        color: run.status === "success" ? "green" : "orange",
-        message: `Run #${run.id} finished with status ${run.status}`,
-      })
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Run failed"
-      showToast({ color: "red", message })
-    },
-  })
-
-  function isRunning(job: Job, mode: RunMode): boolean {
-    return runMutation.isPending && runMutation.variables?.job.id === job.id && runMutation.variables.mode === mode
-  }
 
   const cloneMutation = useMutation({
     mutationFn: (job: Job) => cloneJob(job.id),
@@ -245,7 +136,7 @@ export function JobsPage() {
                   <JobActions
                     job={job}
                     isRunning={isRunning}
-                    onRun={(j, mode) => runMutation.mutate({ job: j, mode })}
+                    onRun={onRun}
                     onClone={(j) => cloneMutation.mutate(j)}
                     clonePending={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
                     onDelete={setJobPendingDelete}
@@ -297,7 +188,7 @@ export function JobsPage() {
                       <JobActions
                         job={job}
                         isRunning={isRunning}
-                        onRun={(j, mode) => runMutation.mutate({ job: j, mode })}
+                        onRun={onRun}
                         onClone={(j) => cloneMutation.mutate(j)}
                         clonePending={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
                         onDelete={setJobPendingDelete}
