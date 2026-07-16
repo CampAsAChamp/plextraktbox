@@ -85,21 +85,21 @@ export function JobActions({
       </Tooltip>
       {showEdit ? (
         <Tooltip label="Edit">
-          <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} variant="subtle" aria-label={`Edit ${job.name}`}>
+          <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} color="gray" variant="subtle" aria-label={`Edit ${job.name}`}>
             <PencilIcon />
           </ActionIcon>
         </Tooltip>
       ) : null}
       {onClone ? (
         <Tooltip label="Clone">
-          <ActionIcon variant="subtle" aria-label={`Clone ${job.name}`} loading={clonePending} onClick={() => onClone(job)}>
+          <ActionIcon color="gray" variant="subtle" aria-label={`Clone ${job.name}`} loading={clonePending} onClick={() => onClone(job)}>
             <CloneIcon />
           </ActionIcon>
         </Tooltip>
       ) : null}
       {showHistory ? (
         <Tooltip label="History">
-          <ActionIcon component={Link} to={`/runs?job_id=${job.id}`} variant="subtle" aria-label={`History for ${job.name}`}>
+          <ActionIcon component={Link} to={`/runs?job_id=${job.id}`} color="gray" variant="subtle" aria-label={`History for ${job.name}`}>
             <HistoryIcon />
           </ActionIcon>
         </Tooltip>
