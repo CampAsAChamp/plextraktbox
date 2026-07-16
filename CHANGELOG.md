@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.10.0...v0.11.0) (2026-07-16)
+
+
+### Features
+
+* enhance theme management with swatch previews ([3c170ec](https://github.com/CampAsAChamp/plextraktbox/commit/3c170ec7a04d95637baf7d6cc298e79d7e674c31))
+
 # [0.10.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.9.0...v0.10.0) (2026-07-16)
 
 
