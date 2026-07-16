@@ -7,6 +7,13 @@ COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/zscaler-root-ca.pem
 
 WORKDIR /app/frontend
+# CVE-2026-12151: node:24-alpine ships undici 6.26.0 inside npm; replace with 6.27.0+.
+RUN cd /tmp \
+    && npm pack undici@6.27.0 \
+    && rm -rf /usr/local/lib/node_modules/npm/node_modules/undici \
+    && mkdir -p /usr/local/lib/node_modules/npm/node_modules/undici \
+    && tar -xzf undici-6.27.0.tgz -C /usr/local/lib/node_modules/npm/node_modules/undici --strip-components=1 \
+    && rm -f undici-6.27.0.tgz
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
