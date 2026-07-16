@@ -17,8 +17,20 @@ jq = "1.7"
 # Load repo-root .env for tasks; do not hardcode SECRET_KEY/DATA_DIR here.
 _.file = ".env"
 
+[tasks."dev-backend"]
+description = "[LOCAL] Run uvicorn with reload natively (terminal 1; or use up-dev)"
+depends = ["install-backend", "db-upgrade"]
+dir = "{{ config_root }}/backend"
+run = ".venv/bin/uvicorn plextraktbox.main:app --reload --use-colors --no-access-log"
+
 [tasks."dev-backend".env]
 DATA_DIR = "{{ config_root }}/data"
+
+[tasks."db-upgrade"]
+description = "[LOCAL] Apply Alembic migrations to the local SQLite DB"
+depends = ["install-backend"]
+dir = "{{ config_root }}/backend"
+run = ".venv/bin/python -m alembic upgrade head"
 
 [tasks."db-upgrade".env]
 DATA_DIR = "{{ config_root }}/data"
@@ -70,7 +82,7 @@ depends = ["test-backend", "test-frontend"]
 description = "[META] Run backend pytest suite"
 depends = ["install-backend"]
 dir = "{{ config_root }}/backend"
-run = ".venv/bin/python -m pytest"
+run = ".venv/bin/python -m pytest -v"
 
 [tasks."test-frontend"]
 description = "[META] Run frontend vitest suite"
@@ -113,18 +125,6 @@ description = "[LOCAL] Build React app into backend/plextraktbox/static"
 depends = ["install-frontend"]
 dir = "{{ config_root }}/frontend"
 run = "npm run build"
-
-[tasks."db-upgrade"]
-description = "[LOCAL] Apply Alembic migrations to the local SQLite DB"
-depends = ["install-backend"]
-dir = "{{ config_root }}/backend"
-run = ".venv/bin/python -m alembic upgrade head"
-
-[tasks."dev-backend"]
-description = "[LOCAL] Run uvicorn with reload natively (terminal 1; or use up-dev)"
-depends = ["install-backend", "db-upgrade"]
-dir = "{{ config_root }}/backend"
-run = ".venv/bin/uvicorn plextraktbox.main:app --reload --use-colors --no-access-log"
 
 [tasks."dev-frontend"]
 description = "[LOCAL] Run Vite dev server natively (terminal 2; or use up-dev)"
