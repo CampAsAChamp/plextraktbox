@@ -1,4 +1,4 @@
-import { MantineProvider, type MantineThemeOverride } from "@mantine/core"
+import { MantineProvider, type MantineThemeOverride, v8CssVariablesResolver } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { type ReactNode, useEffect, useMemo, useState } from "react"
 
@@ -105,7 +105,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [isCustom, cssQuery.isError])
 
   return (
-    <MantineProvider theme={mantineTheme} forceColorScheme="dark">
+    // Prefer Mantine 8's translucent light variants over 9's solid (higher-contrast) defaults.
+    // v8CssVariablesResolver is Mantine's official escape hatch for the old look.
+    <MantineProvider theme={mantineTheme} forceColorScheme="dark" cssVariablesResolver={v8CssVariablesResolver}>
       {children}
     </MantineProvider>
   )
