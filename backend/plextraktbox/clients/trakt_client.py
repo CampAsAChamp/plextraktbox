@@ -15,6 +15,7 @@ from plextraktbox.clients.media_mappers import (
     media_item_from_trakt_show,
 )
 from plextraktbox.sync.media_item import MediaItem, MediaType
+from plextraktbox.utils.datetime import as_utc_datetime, parse_iso_datetime
 
 TRAKT_BASE = "https://api.trakt.tv"
 TRAKT_HEADERS = {
@@ -23,15 +24,8 @@ TRAKT_HEADERS = {
 }
 
 
-def _as_utc_aware(value: datetime) -> datetime:
-    """Normalize DB datetimes (often naive UTC) for aware comparisons."""
-    if value.tzinfo is None:
-        return value.replace(tzinfo=UTC)
-    return value.astimezone(UTC)
-
-
 def _token_is_expired(token_expires_at: datetime) -> bool:
-    return _as_utc_aware(token_expires_at) <= datetime.now(UTC)
+    return as_utc_datetime(token_expires_at) <= datetime.now(UTC)
 
 
 @dataclass(frozen=True)
@@ -342,7 +336,7 @@ def fetch_watched_episodes(client_id: str, access_token: str) -> list[MediaItem]
                     continue
                 watched_at = None
                 if raw := ep.get("last_watched_at"):
-                    watched_at = _parse_iso_datetime(str(raw))
+                    watched_at = parse_iso_datetime(str(raw))
                 item = media_item_from_trakt_episode(
                     show=show,
                     season=season_num,
@@ -357,17 +351,6 @@ def fetch_watched_episodes(client_id: str, access_token: str) -> list[MediaItem]
 def fetch_watched(client_id: str, access_token: str) -> list[MediaItem]:
     """Fetch Trakt watched movies and episodes."""
     return fetch_watched_movies(client_id, access_token) + fetch_watched_episodes(client_id, access_token)
-
-
-def _parse_iso_datetime(value: str) -> datetime | None:
-    normalized = value.replace("Z", "+00:00")
-    try:
-        parsed = datetime.fromisoformat(normalized)
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=UTC)
-    return parsed.astimezone(UTC)
 
 
 def _trakt_ids(item: MediaItem) -> dict[str, int | str]:

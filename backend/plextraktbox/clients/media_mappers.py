@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import contextlib
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 from plextraktbox.sync.guid import identifiers_from_guids, letterboxd_slug, media_type_from_plex_type
 from plextraktbox.sync.media_item import MediaItem, MediaType, format_episode_title
+from plextraktbox.utils.datetime import as_utc_datetime, parse_iso_datetime
+from plextraktbox.utils.rating import letterboxd_to_normalized
 
 
 def _plex_guids(video: Any) -> list[str]:
@@ -107,9 +109,7 @@ def _plex_last_viewed_at(video: Any) -> datetime | None:
     if raw is None:
         return None
     if isinstance(raw, datetime):
-        if raw.tzinfo is None:
-            return raw.replace(tzinfo=UTC)
-        return raw.astimezone(UTC)
+        return as_utc_datetime(raw)
     return None
 
 
@@ -159,7 +159,7 @@ def media_item_from_trakt_movie(
     if resolved_watched_at is None:
         for key in ("last_watched_at", "watched_at"):
             if raw := payload.get(key):
-                parsed = _parse_iso_datetime(str(raw))
+                parsed = parse_iso_datetime(str(raw))
                 if parsed is not None:
                     resolved_watched_at = parsed
                     break
@@ -284,8 +284,8 @@ def media_item_from_letterboxd_film(
 
 
 def letterboxd_stars_to_normalized(stars: float) -> float:
-    """Convert Letterboxd 0.5–5 stars to Plex/Trakt 0–10 scale."""
-    return round(stars * 2, 1)
+    """Alias for :func:`letterboxd_to_normalized` (Letterboxd 0.5–5 → 0–10)."""
+    return letterboxd_to_normalized(stars)
 
 
 def parse_letterboxd_rating(raw: str | None) -> float | None:
@@ -297,19 +297,8 @@ def parse_letterboxd_rating(raw: str | None) -> float | None:
         return None
     if stars <= 0:
         return None
-    return letterboxd_stars_to_normalized(stars)
+    return letterboxd_to_normalized(stars)
 
 
 def film_slug_from_url(url: str) -> str | None:
     return letterboxd_slug(url)
-
-
-def _parse_iso_datetime(value: str) -> datetime | None:
-    normalized = value.replace("Z", "+00:00")
-    try:
-        parsed = datetime.fromisoformat(normalized)
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=UTC)
-    return parsed.astimezone(UTC)
