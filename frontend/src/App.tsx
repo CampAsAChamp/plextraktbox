@@ -94,13 +94,7 @@ function AppRoutes() {
         <Route path="/connections" element={authed ? <ConnectionsPage /> : <Navigate to="/login" replace />} />
         <Route
           path="/"
-          element={
-            authed && user ? (
-              <DashboardPage connections={connectionsQuery.data?.connections} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
+          element={authed && user ? <DashboardPage connections={connectionsQuery.data?.connections} /> : <Navigate to="/login" replace />}
         />
         <Route path="/jobs" element={authed ? <JobsPage /> : <Navigate to="/login" replace />} />
         <Route path="/jobs/new" element={authed ? <JobCreatePage /> : <Navigate to="/login" replace />} />

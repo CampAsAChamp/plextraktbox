@@ -186,12 +186,7 @@ function NotificationItem({
       <Menu.Item onClick={() => !item.read && onRead(item.id)}>{content}</Menu.Item>
     )
 
-  const rowClass = [
-    classes.row,
-    item.read && !dimming ? classes.read : "",
-    swiping ? classes.swiping : "",
-    dimming ? classes.dimming : "",
-  ]
+  const rowClass = [classes.row, item.read && !dimming ? classes.read : "", swiping ? classes.swiping : "", dimming ? classes.dimming : ""]
     .filter(Boolean)
     .join(" ")
 
@@ -469,14 +464,7 @@ export function NotificationBell() {
           h={44}
           aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         >
-          <Indicator
-            inline
-            disabled={unreadCount === 0}
-            color="blue"
-            size={16}
-            offset={2}
-            label={unreadCount > 99 ? "99+" : unreadCount}
-          >
+          <Indicator inline disabled={unreadCount === 0} color="blue" size={16} offset={2} label={unreadCount > 99 ? "99+" : unreadCount}>
             <BellIcon filled={unreadCount > 0} />
           </Indicator>
         </ActionIcon>
@@ -510,11 +498,7 @@ export function NotificationBell() {
             </Button>
           </Group>
         </Group>
-        <ScrollArea.Autosize
-          mah={360}
-          type="auto"
-          styles={{ viewport: { overflowX: "hidden" } }}
-        >
+        <ScrollArea.Autosize mah={360} type="auto" styles={{ viewport: { overflowX: "hidden" } }}>
           {listQuery.isFetching && !listQuery.data ? (
             <Text size="sm" c="dimmed" px="sm" py="md">
               Loading…
