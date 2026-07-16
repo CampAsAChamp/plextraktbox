@@ -1,3 +1,18 @@
+# [0.7.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.6.0...v0.7.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* patch undici CVE-2026-12151 in Node build images ([7c780eb](https://github.com/CampAsAChamp/plextraktbox/commit/7c780eb4d5b4e7244d0759b3f1cc3081e4cf89a1))
+* surface log stream and notification errors ([589cd58](https://github.com/CampAsAChamp/plextraktbox/commit/589cd586c09f58efc2391d9c6c2220b86c861886))
+* switch Python runtime to alpine for fewer CVEs ([ef68f47](https://github.com/CampAsAChamp/plextraktbox/commit/ef68f475d2f4f3b694b425213cb9d039df0d0f2b))
+
+
+### Features
+
+* add SQLite backup restore ([109da26](https://github.com/CampAsAChamp/plextraktbox/commit/109da2675daac9fe4b3cd21c9c8e7f68308f062c))
+* allow configuring HTTP listen port via PORT ([53c0418](https://github.com/CampAsAChamp/plextraktbox/commit/53c0418777e4d4a24bd67aec85322639ee275fd9))
+
 # [0.6.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.5.0...v0.6.0) (2026-07-16)
 
 
