@@ -69,3 +69,16 @@ export function deleteInAppNotification(id: number) {
 export function clearAllInAppNotifications() {
   return api.del<void>("/notifications/inapp/clear-all")
 }
+
+/** Local ENV only — 404 when the backend is not ENV=local. */
+export function isLocalDevApi() {
+  return api
+    .get<{ started_at: number }>("/dev/revision")
+    .then((data) => typeof data.started_at === "number")
+    .catch(() => false)
+}
+
+/** Local ENV only — inserts sample in-app notifications for UI testing. */
+export function seedDevInAppNotifications() {
+  return api.post<InAppListResponse>("/dev/notifications/seed")
+}
