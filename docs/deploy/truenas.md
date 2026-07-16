@@ -16,7 +16,8 @@ These apply whenever touching Dockerfile, compose, or entrypoint — not only at
   app reinstalls. Prefer ZFS snapshots of that dataset for routine backups; Settings also offers an
   ad-hoc SQLite download (`GET /api/settings/backup`) and restore (`POST /api/settings/backup/restore`).
   Restore replaces the live DB file (a `.pre-restore` copy is left beside it); reload the UI afterward.
-- **One HTTP port** (8000) — no host networking, no privileged mode, no Docker-socket access
+- **One HTTP port** (default **8000**, overridable via `PORT`) — no host networking, no
+  privileged mode, no Docker-socket access
 - **No hardcoded UIDs** — support `PUID`/`PGID` env vars so file ownership on the mounted dataset
   behaves on TrueNAS
 - Ship via TrueNAS **Apps** (custom app / "Launch Docker Image" workflow, or catalog app later)
@@ -94,10 +95,13 @@ owner UID/GID (often the Apps user `568` / `apps` on recent SCALE builds). You w
 | Field | Value |
 | ----- | ----- |
 | Image | `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (prefer a pinned semver; or `:latest`) |
-| Container port | `8000` |
+| Container port | `8000` (or the same value as `PORT` if you override it) |
 | Host / node port | Choose a free port (e.g. `8000`) — tunnel origin uses this |
 | Volume / storage | Host path → `/mnt/tank/apps/plextraktbox/data` mounted at container path `/data` |
 | Restart policy | Unless stopped (or Always) |
+
+When overriding the listen port, set env `PORT` and map **host and container ports to that same
+value** (compose does `${PORT:-8000}:${PORT:-8000}`; TrueNAS custom apps need both sides to match).
 
 **Environment variables:**
 
@@ -108,6 +112,7 @@ owner UID/GID (often the Apps user `568` / `apps` on recent SCALE builds). You w
 | `TRAKT_CLIENT_SECRET` | Yes | From your Trakt API app |
 | `ENV` | No | Image default is `prod` (Secure session cookies). Do not set `local` on TrueNAS |
 | `DATA_DIR` | No | Default `/data` — leave unset when using the mount above |
+| `PORT` | No | HTTP listen port inside the container (default `8000`). If set, publish the same host port |
 | `PUID` | Recommended | Host UID that should own files on the dataset (e.g. `568`) |
 | `PGID` | Recommended | Host GID for that dataset (e.g. `568`) |
 
@@ -204,7 +209,7 @@ Format notes: `frontend/src/themes/README.md`.
 | Setting | Value |
 | ------- | ----- |
 | Image | `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (or `:latest`) |
-| Port | 8000 → app HTTP |
+| Port | `PORT` (default 8000) → app HTTP; host mapping must match |
 | Volume | Host ZFS path → `/data` |
-| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, recommended `PUID`/`PGID` |
+| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PORT`, recommended `PUID`/`PGID` |
 | HTTPS | Cloudflare Tunnel → `http://<host>:<port>` |

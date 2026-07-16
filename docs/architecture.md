@@ -46,13 +46,14 @@ without rework.
 **Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
 **Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine**,
 `@microsoft/fetch-event-source` (SSE), react-hook-form + zod, `@tanstack/react-virtual` (log
-virtualization). Tests: Vitest + RTL + MSW.
+virtualization). Lint/format: ESLint + Prettier. Tests: Vitest + RTL + MSW.
 
 ## Directory structure
 
 ```
 plextraktbox/
-├── Dockerfile (multi-stage: build SPA → copy into python img)  docker-compose.yml  .env.example
+├── Dockerfile (multi-stage: Node 24 alpine SPA build → python:3.14-alpine runtime; PUID/PGID; PORT)
+│     docker-compose.yml  .env.example
 ├── backend/
 │   ├── pyproject.toml  alembic.ini  migrations/
 │   └── plextraktbox/
@@ -60,7 +61,9 @@ plextraktbox/
 │       ├── security.py (bcrypt, session, Fernet enc/dec)  logging_setup.py
 │       ├── models/       user, connection, job, job_run, log_entry, notification, inapp_notification, setting
 │       ├── schemas/      wizard, job, run, notification DTOs
-│       ├── api/          deps(auth), auth, setup(wizard), connections, jobs, runs, logs_stream(SSE), notifications, health
+│       ├── api/          deps(auth), auth, setup(wizard), connections, jobs, runs, run_logs(SSE),
+│       │                 settings(backup), themes, notifications, health
+│       ├── services/     jobs, sync_run, source_factory, backup, themes, …
 │       ├── clients/      plex_client, trakt_client, letterboxd_client, tmdb_client (each w/ test_connection())
 │       ├── sync/         engine, media_item, guid, matcher, plugins(pluggy), context
 │       │   ├── sources/  base(Source ABC), plex_source, trakt_source, letterboxd_source(read-only)
@@ -71,9 +74,12 @@ plextraktbox/
 │   └── tests/  conftest, fakes/(FakePlex/Trakt/Letterboxd/TMDB), unit/, api/
 └── frontend/src/
     ├── App.tsx (router + auth-gate + setup-gate)
-    ├── api/ client, jobs, runs, logs(SSE hook), auth
+    ├── api/ client, jobs, runs, logs(SSE hook), auth, settings, themes
+    ├── themes/ built-in palettes (default Atom One Dark Pro) + ThemeProvider
+    ├── settings/ settings UI helpers
     ├── components/ LogViewer/, JobForm/, layout/(responsive AppShell: header nav + mobile drawer)
-    └── pages/ SetupWizard/, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer), Settings
+    └── pages/ SetupWizard, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer),
+               Connections, Settings
 ```
 
 **Responsive layout:** First-class UI concern — Mantine breakpoints (`sm` ≈ 768px), hamburger
@@ -167,7 +173,8 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 
 See [phases/README.md](phases/README.md). **Current focus:** TrueNAS catalog
 ([Phase 23](phases/phase-23.md)). Themes use Mantine palettes (default Atom One Dark Pro) plus
-optional custom CSS under `{DATA_DIR}/themes/`.
+optional custom CSS under `{DATA_DIR}/themes/`. Settings supports SQLite backup download and
+restore (`/api/settings/backup`); on TrueNAS prefer ZFS snapshots of `/data` for routine backups.
 
 
 

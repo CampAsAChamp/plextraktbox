@@ -16,8 +16,9 @@ Run `mise tasks` for the full task list.
 
 ## Shared setup (container)
 
-The container serves **both** the API and the built React app on port 8000. You do not need a
-separate Vite dev server for smoke testing.
+The container serves **both** the API and the built React app on port 8000 by default
+(`PORT` in `.env` overrides listen + compose publish). You do not need a separate Vite dev server
+for smoke testing.
 
 ```bash
 # First time only (skip if you already have .env):

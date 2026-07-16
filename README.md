@@ -108,7 +108,8 @@ Target deployment environment is **TrueNAS SCALE** — see [docs/deploy/truenas.
 
 ### Quick Start (Container)
 
-One terminal — the image serves the API and built UI together on port 8000.
+One terminal — the image serves the API and built UI together on port 8000 (override with
+`PORT` in `.env`; host and container ports both follow that value).
 
 ```bash
 # Maintainers: doppler login && doppler setup (secrets in Doppler; see docs/dev-workflow.md)
@@ -148,7 +149,7 @@ mise run dev-frontend              # terminal 2 — Vite on :5173
 
 Native dev and docker both use `./data` at the repo root (`DATA_DIR` in `.env`). Open the Vite URL (usually http://localhost:5173) for the dev SPA. Both backend and frontend must be running for the health badge to go green.
 
-Do not run `up` and `up-dev` at the same time — they both bind port 8000.
+Do not run `up` and `up-dev` at the same time — they both bind the HTTP listen port (default 8000).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

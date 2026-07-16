@@ -85,7 +85,8 @@ those steps with `doppler run --` against the `ci` config.
 
 ## Local dev (hot reload)
 
-Pick one approach — do **not** run `up` and `up-dev` together (both bind port 8000).
+Pick one approach — do **not** run `up` and `up-dev` together (both bind the HTTP listen port,
+default 8000; set `PORT` in `.env` to change it for prod compose).
 
 **One terminal (container dev — recommended for maintainers):**
 
