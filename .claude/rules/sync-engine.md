@@ -5,7 +5,7 @@ paths:
 
 # Sync engine
 
-Ported from PlexTraktSync patterns: GUID matching, stateless diffing, dry-run, pluggy plugins.
+Ported from PlexTraktSync patterns: GUID matching, stateless diffing, dry-run.
 Sync fetch/resolve caches (LB export + slug→ids, Trakt lists, Discover keys, Plex once-per-run
 library) are identifier/list caches — not a cross-service match table.
 
@@ -26,7 +26,6 @@ fetch or use the Letterboxd watchlist.
 - `reconcilers/` — per-data-type plan + apply logic
 - `engine.py` — orchestrates fetch → plan → log → apply → `RunSummary`
 - `guid.py` / `matcher.py` — identifier matching (TMDB → IMDb → TVDB)
-- `plugins.py` — pluggy hook seam for future extensions
 
 ## Rules
 

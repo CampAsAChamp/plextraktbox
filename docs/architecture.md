@@ -43,10 +43,10 @@ without rework.
 
 ## Tech choices
 
-**Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, passlib[bcrypt], itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx, freezegun.
+**Backend (Py 3.14+):** FastAPI, uvicorn[standard], SQLModel (+SQLAlchemy), Alembic, **APScheduler** (AsyncIOScheduler + SQLAlchemyJobStore), pydantic-settings, bcrypt, itsdangerous (Starlette SessionMiddleware), **cryptography Fernet** (encrypt tokens at rest), plexapi, trakt.py, letterboxd_stats + beautifulsoup4/httpx, requests-cache (SQLite HTTP cache), TMDB via httpx, **structlog** (log pipeline), ruff+mypy. Tests: pytest, pytest-asyncio, respx.
 **Frontend (Node 24+):** React 18 + Vite + TS, TanStack Query, React Router, **Mantine**,
-`@microsoft/fetch-event-source` (SSE), react-hook-form + zod, `@tanstack/react-virtual` (log
-virtualization). Lint/format: ESLint + Prettier. Tests: Vitest + RTL + MSW.
+`@microsoft/fetch-event-source` (SSE), zod, `@tanstack/react-virtual` (log
+virtualization). Lint/format: ESLint + Prettier. Tests: Vitest + RTL.
 
 ## Directory structure
 
@@ -63,9 +63,9 @@ plextraktbox/
 │       ├── schemas/      wizard, job, run, notification DTOs
 │       ├── api/          deps(auth), auth, setup(wizard), connections, jobs, runs, run_logs(SSE),
 │       │                 settings(backup), themes, notifications, health
-│       ├── services/     jobs, sync_run, source_factory, backup, themes, …
+│       ├── services/     jobs, source_factory, backup, themes, …
 │       ├── clients/      plex_client, trakt_client, letterboxd_client, tmdb_client (each w/ test_connection())
-│       ├── sync/         engine, media_item, guid, matcher, plugins(pluggy), context
+│       ├── sync/         engine, media_item, guid, matcher, context
 │       │   ├── sources/  base(Source ABC), plex_source, trakt_source, letterboxd_source(read-only)
 │       │   └── reconcilers/ base, watchlist(Plex-truth), ratings(LB-truth), watched(Trakt-truth)
 │       ├── scheduler/    manager(APScheduler lifecycle), runner(execute JobRun + record + notify)
@@ -91,7 +91,7 @@ menus, stacked LogViewer/settings/forms on narrow viewports, `viewport-fit=cover
 
 ## Sync engine (port PlexTraktSync ideas)
 
-Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy** engine into **Sources** (per-service read/write adapters) + **Reconcilers** (per-data-type source-of-truth logic).
+Adapts PlexTraktSync's GUID matching, stateless diffing, and dry-run into **Sources** (per-service read/write adapters) + **Reconcilers** (per-data-type source-of-truth logic).
 
 **Flow charts and sequence diagrams** (run lifecycle, watchlist / ratings / watched, matching):
 [sync-flows.md](sync-flows.md).
@@ -102,8 +102,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 - **Fetch / resolve caches:** Letterboxd CSV export TTL on `/data`; persisted `letterboxd_slug` → external ids; Trakt list TTL snapshots; Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
 - **Sources** (`sources/base.py` ABC): `fetch_watchlist/ratings/watched`, `apply_watchlist/ratings/watched(..., dry_run)`, `capabilities`. `PlexSource`/`TraktSource` full read/write; `LetterboxdSource` **read-only** — `apply_`* raise `NotSupported`, capabilities mark writes false (enforces no-write-back at type level).
 - **Reconcilers** compute a **plan** then **apply** (skipped on dry_run), each hard-coding its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
-- `plugins.py` — pluggy hookspecs (`provide_sources`, `provide_reconcilers`, `before_run`, `after_item`, `after_run`); leaves a seam for future services.
-- `engine.run(job, ctx)` — before_run → fetch (cached) → per-data-type reconcile → log every planned change ("would X" on dry-run) → apply with per-item try/except (one failure ≠ abort) → RunSummary (counts: matched/added/removed/rated/watched/skipped/errors).
+- `engine.run(job, ctx)` — fetch (cached) → per-data-type reconcile → log every planned change ("would X" on dry-run) → apply with per-item try/except (one failure ≠ abort) → RunSummary (counts: matched/added/removed/rated/watched/skipped/errors).
 
 ### Plex ratings: Discover vs library
 

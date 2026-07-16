@@ -99,17 +99,15 @@ Inside the engine, the shape is always **fetch → plan → log → apply**:
 
 ```mermaid
 flowchart LR
-  A[before_run hooks] --> B[For each data_type]
-  B --> C[reconciler.plan]
-  C --> D[Log each PlannedChange]
-  D --> E{dry_run?}
-  E -->|yes| F[Skip apply]
-  E -->|no| G[Group by target + action]
-  G --> H[source.apply_*]
-  H --> I[Merge ApplyResult into RunSummary]
-  F --> J[after_run hooks]
-  I --> J
-  J --> K[RunSummary]
+  A[For each data_type] --> B[reconciler.plan]
+  B --> C[Log each PlannedChange]
+  C --> D{dry_run?}
+  D -->|yes| E[Skip apply]
+  D -->|no| F[Group by target + action]
+  F --> G[source.apply_*]
+  G --> H[Merge ApplyResult into RunSummary]
+  E --> I[RunSummary]
+  H --> I
 ```
 
 ## Matching

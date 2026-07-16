@@ -19,7 +19,7 @@ Letterboxd has **no write API** — `LetterboxdSource.apply_*` must stay unsuppo
 ## Stack
 
 - **Backend:** Python 3.14, FastAPI, SQLModel, Alembic, APScheduler, structlog, plexapi, trakt.py, letterboxd_stats
-- **Frontend:** React 18, TypeScript, Vite, Mantine, TanStack Query, react-hook-form + zod
+- **Frontend:** React 18, TypeScript, Vite, Mantine, TanStack Query, zod
 - **Tooling:** [mise.toml](mise.toml) pins Python/Node and defines all dev tasks
 - **Deploy target:** TrueNAS SCALE (single container, `/data` ZFS mount, `PORT` default 8000)
 
@@ -29,9 +29,9 @@ Letterboxd has **no write API** — `LetterboxdSource.apply_*` must stay unsuppo
 backend/plextraktbox/
   api/           REST routes (auth, setup, connections, jobs, runs, logs SSE, settings, themes)
   clients/       Plex, Trakt, Letterboxd, TMDB HTTP adapters
-  sync/          engine, sources, reconcilers, guid, matcher, plugins (pluggy)
+  sync/          engine, sources, reconcilers, guid, matcher
   models/        SQLModel tables
-  services/      business logic (jobs, sync_run, source_factory, backup, themes, …)
+  services/      business logic (jobs, source_factory, backup, themes, …)
 frontend/src/    React SPA (setup wizard, connections, jobs, run history, settings, themes)
 docs/            architecture, testing, dev-workflow, deploy, phases (catalog)
 ```

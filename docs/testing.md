@@ -61,9 +61,9 @@ maintainers (`mise run check-doppler`); default CI does not require a Doppler to
 - **Automated:** `mise run test` / `mise run check` (same bar as GitHub Actions CI)
 - **Sync engine:** fakes in `tests/fakes/` via `SyncContext` (no network); assert source-of-truth
   per data type; dry-run = zero writes
-- **HTTP/time:** `respx`, `freezegun`
+- **HTTP:** `respx`
 - **API:** httpx AsyncClient + in-memory SQLite
-- **Frontend:** vitest + RTL (+ MSW where needed)
+- **Frontend:** vitest + RTL
 - **Doppler:** `mise run up-dev` (default hot reload) / `up-doppler` / `check-doppler`; optional CI
   `DOPPLER_TOKEN` — secrets in Doppler, knobs in `.env` (see [dev-workflow.md](dev-workflow.md))
 - **TrueNAS:** personal install + catalog — see [deploy/truenas.md](deploy/truenas.md) and
