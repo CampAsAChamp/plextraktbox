@@ -20,7 +20,7 @@ jobs:
 
       # Default CI uses dummy secrets (no Doppler). Optional live-credential jobs may set
       # DOPPLER_TOKEN (service token → plextraktbox / ci) and wrap steps with `doppler run --`.
-      # See docs/dev-workflow.md and docs/phases/phase-15.md.
+      # See docs/dev-workflow.md.
       - name: Stub .env for mise
         run: |
           cp .env.example .env

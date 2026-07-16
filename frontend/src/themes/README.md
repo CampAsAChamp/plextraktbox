@@ -1,4 +1,4 @@
-# UI themes (Phase 24)
+# UI themes
 
 Built-in palettes live as `createTheme()` modules in this directory. Custom themes are CSS
 files under `{DATA_DIR}/themes/` (upload via Settings or mount a volume).

@@ -1,7 +1,7 @@
 # plextraktbox — Architecture
 
 Living design doc for the project — stack, sync engine, data model, and locked decisions (the
-"why"). **Phase scope, status, and test plans** live in [phases/README.md](phases/README.md).
+"why"). Remaining work: [phases/README.md](phases/README.md).
 
 ## Context
 
@@ -17,8 +17,8 @@ Repo and package name: `plextraktbox`.
 
 The user will run this on **TrueNAS** (not just any Docker host). Packaging constraints and the
 two-milestone deploy plan (personal install → App Catalog) are documented in
-[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so TrueNAS
-installs drop in without rework.
+[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible so TrueNAS installs drop in
+without rework.
 
 
 
@@ -76,9 +76,9 @@ plextraktbox/
     └── pages/ SetupWizard/, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer), Settings
 ```
 
-**Responsive layout (Phase 20):** First-class UI concern — Mantine breakpoints (`sm` ≈ 768px),
-hamburger `Drawer` nav below `sm`, horizontal `ScrollArea` tables with priority columns + labeled
-row action menus, stacked LogViewer/settings/forms on narrow viewports, `viewport-fit=cover` +
+**Responsive layout:** First-class UI concern — Mantine breakpoints (`sm` ≈ 768px), hamburger
+`Drawer` nav below `sm`, horizontal `ScrollArea` tables with priority columns + labeled row action
+menus, stacked LogViewer/settings/forms on narrow viewports, `viewport-fit=cover` +
 `env(safe-area-inset-*)`. No separate mobile app or PWA.
 
 
@@ -93,7 +93,7 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, dry-run, and **pluggy**
 - `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (`movie` | `show` | `episode`), plus `season`/`episode` for episode match keys.
 - `guid.py` — port of PlexTraktSync `PlexGuid`/`MediaFactory`: parse Plex guids → structured `Guid`; LB path resolves URL → TMDB id → `tmdb://<id>`.
 - `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted Plex↔Trakt mapping).
-- **Fetch / resolve caches ([Phase 21](phases/phase-21.md), done):** Letterboxd CSV export TTL on `/data`; persisted `letterboxd_slug` → external ids; Trakt list TTL snapshots; Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
+- **Fetch / resolve caches:** Letterboxd CSV export TTL on `/data`; persisted `letterboxd_slug` → external ids; Trakt list TTL snapshots; Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
 - **Sources** (`sources/base.py` ABC): `fetch_watchlist/ratings/watched`, `apply_watchlist/ratings/watched(..., dry_run)`, `capabilities`. `PlexSource`/`TraktSource` full read/write; `LetterboxdSource` **read-only** — `apply_`* raise `NotSupported`, capabilities mark writes false (enforces no-write-back at type level).
 - **Reconcilers** compute a **plan** then **apply** (skipped on dry_run), each hard-coding its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
 - `plugins.py` — pluggy hookspecs (`provide_sources`, `provide_reconcilers`, `before_run`, `after_item`, `after_run`); leaves a seam for future services.
@@ -126,7 +126,7 @@ Reference: [plexapi Discover rating discussion](https://github.com/pkkid/python-
 - **notification_config** — channel(discord|inapp), enabled, on_success, on_failure, scope(global|job), job_id?, `config_enc`(webhook creds), `config_json`.
 - **inapp_notification** — created_at, level, title, body, read, run_id? (powers bell).
 - **setting** — key/value_json (default cron, `cron_timezone` as UTC/local/IANA for interpreting job crons, log_retention_days, global dry-run, global exclude/ignore list). Plus APScheduler's `apscheduler_jobs` table in same DB. Retention + connection-health system jobs prune old logs/runs and probe connections (always UTC).
-- **Sync caches ([Phase 21](phases/phase-21.md), done)** — Letterboxd export files + `letterboxd_slug_cache` / `trakt_list_cache` / `plex_discover_key_cache` tables. (Plex once-per-run library share is in-process via `PlexLibrarySnapshot`, not a DB table.)
+- **Sync caches** — Letterboxd export files + `letterboxd_slug_cache` / `trakt_list_cache` / `plex_discover_key_cache` tables. (Plex once-per-run library share is in-process via `PlexLibrarySnapshot`, not a DB table.)
 
 
 
@@ -158,27 +158,24 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 - Trakt device OAuth: server-level `TRAKT_CLIENT_ID` / `TRAKT_CLIENT_SECRET` (one API app per deployment); per-user refresh token Fernet-encrypted, auto-refresh on expiry, re-auth in UI on failure.
 - structlog redaction processor scrubs token/password-shaped keys on all structlog output
   (console/JSON + persist/stream). Reverse proxy / TLS setup documented in
-  [deploy/truenas.md](deploy/truenas.md) (Phase 22).
-- **Maintainer secrets (Phase 15):** optional [Doppler](https://www.doppler.com/) injection (`doppler run`, `mise run *-doppler`, service tokens for CI). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is not a runtime dependency for end users. See [dev-workflow.md](dev-workflow.md).
+  [deploy/truenas.md](deploy/truenas.md).
+- **Maintainer secrets:** optional [Doppler](https://www.doppler.com/) injection (`doppler run`, `mise run *-doppler`, service tokens for CI). Self-hosted TrueNAS installs keep `.env` / app-config as the default — Doppler is not a runtime dependency for end users. See [dev-workflow.md](dev-workflow.md).
 
 
 
-## Phase progress
+## Remaining work
 
-See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** TrueNAS catalog (23); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), mobile layout (20), **sync caches (21)**, **TrueNAS personal install (22)**, and **UI themes (24)** are complete. Themes use Mantine palettes (default Atom One Dark Pro) plus optional custom CSS under `{DATA_DIR}/themes/`.
+See [phases/README.md](phases/README.md). **Current focus:** TrueNAS catalog
+([Phase 23](phases/phase-23.md)). Themes use Mantine palettes (default Atom One Dark Pro) plus
+optional custom CSS under `{DATA_DIR}/themes/`.
 
 
 
 ## Verification
 
-- **Phase index:** [phases/README.md](phases/README.md)
+- **Remaining work:** [phases/README.md](phases/README.md)
 - **How to test:** [testing.md](testing.md)
 - **Dev ergonomics:** [dev-workflow.md](dev-workflow.md)
-
-When a phase lands: update its scope doc and the table in [phases/README.md](phases/README.md);
-copy [phases/test-plans/phase-test-plan-template.md](phases/test-plans/phase-test-plan-template.md)
-→ `phases/test-plans/phase-N-test-plan.md`.
 
 ### Critical files
 

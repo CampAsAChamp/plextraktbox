@@ -20,6 +20,5 @@ PR-title CI both enforce the format. `pre-push` runs `mise run check` before pus
 Examples: `feat: add mobile nav drawer`, `fix: retry Trakt token refresh on 401`,
 `chore: tighten API health badge typography`
 
-**Releases (Phase 19):** Commits that land on `main` (direct push or squash-merge PR
-title) must be Conventional Commits. CI also checks PR titles via
-`.github/workflows/pr-title.yml`.
+**Releases:** Commits that land on `main` (direct push or squash-merge PR title) must be
+Conventional Commits. CI also checks PR titles via `.github/workflows/pr-title.yml`.

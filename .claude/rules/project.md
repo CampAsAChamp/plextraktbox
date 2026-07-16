@@ -3,9 +3,9 @@
 Self-hosted Plex / Letterboxd / Trakt sync app. Single Docker container: FastAPI + React SPA + SQLite + APScheduler.
 
 - **Design doc:** `docs/architecture.md` (architecture, locked decisions — source of truth for "why")
-- **Phase index:** `docs/phases/README.md` (single progress table)
+- **Remaining work:** `docs/phases/README.md` (TrueNAS catalog)
 - **Agent guide:** `CLAUDE.md`
-- **Testing:** `docs/testing.md` + `docs/phases/test-plans/`
+- **Testing:** `docs/testing.md`
 - **Dev workflow:** `docs/dev-workflow.md`
 
 ## Stack

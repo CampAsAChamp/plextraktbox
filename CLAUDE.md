@@ -3,7 +3,7 @@
 Self-hosted app that keeps **Plex**, **Letterboxd**, and **Trakt** in sync — web UI, scheduler, live log streaming, notifications. Single Docker container (FastAPI + React SPA + SQLite + APScheduler).
 
 **Design doc:** [docs/architecture.md](docs/architecture.md) (architecture, locked decisions — keep in sync when behavior changes).
-**Phase index:** [docs/phases/README.md](docs/phases/README.md) (status, scope, test plans).
+**Remaining work:** [docs/phases/README.md](docs/phases/README.md) (TrueNAS catalog).
 **Human docs:** [README.md](README.md), [docs/README.md](docs/README.md), [docs/testing.md](docs/testing.md), [docs/dev-workflow.md](docs/dev-workflow.md).
 
 ## Sync model (source of truth)
@@ -33,7 +33,7 @@ backend/plextraktbox/
   models/        SQLModel tables
   services/      business logic (jobs, sync_run, source_factory)
 frontend/src/    React SPA (setup wizard, connections, jobs, run history)
-docs/            architecture, phases, testing, dev-workflow, deploy
+docs/            architecture, testing, dev-workflow, deploy, phases (catalog)
 ```
 
 ## Commands
@@ -79,17 +79,16 @@ the user asks.
 - **Matching** (`sync/guid.py`, `sync/matcher.py`): TMDB → IMDb → TVDB priority; stateless (no persisted mapping).
 - **Fakes** for tests live in `backend/tests/fakes/`.
 
-## Phase progress
+## Remaining work
 
-See [docs/phases/README.md](docs/phases/README.md). Phases 0–8, **11 (TV sync)**, **12 (CI)**, **13 (settings/ops)**, **14 (dashboard UX)**, **15 (Doppler maintainer secrets)**, **18 (version/build info)**, **19 (automated releases / GHCR)**, **20 (mobile layout)**, **21 (sync fetch/resolve caches)**, **22 (TrueNAS personal install)**, and **24 (UI themes)** are done; next is TrueNAS catalog (23). Default theme is Atom One Dark Pro; custom CSS under `{DATA_DIR}/themes/`. Frontend redesign (former 9–10) was retired — stay on Mantine.
+See [docs/phases/README.md](docs/phases/README.md). Product development is done; next is TrueNAS
+catalog ([Phase 23](docs/phases/phase-23.md)). Default theme is Atom One Dark Pro; custom CSS under
+`{DATA_DIR}/themes/`. Stay on Mantine.
 
 **Releases:** Commits that land on `main` (direct push or squash-merge PR title) must use
 Conventional Commits (`feat:` / `fix:` / `feat!:`) so semantic-release can bump and
 publish. Image: `ghcr.io/campasachamp/plextraktbox:vX.Y.Z`.
 
-When a phase lands, update its doc under `docs/phases/`, add/update its test plan under
-`docs/phases/test-plans/`, and update the table in `docs/phases/README.md`.
-
 ## Keeping this file current
 
-Update **CLAUDE.md** and `.cursor/rules/` / `.claude/rules/` in the same PR when you change stack, commands, sync rules, or phase status. Prefer brief, verified facts over exhaustive file lists.
+Update **CLAUDE.md** and `.cursor/rules/` / `.claude/rules/` in the same PR when you change stack, commands, sync rules, or remaining-work status. Prefer brief, verified facts over exhaustive file lists.

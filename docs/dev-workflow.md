@@ -36,16 +36,14 @@ Run `mise tasks` for the full task list.
 non-secret knobs (`DATA_DIR`, `SYNC_RUN_DELAY_SECONDS`, …). Self-hosted / TrueNAS installs ignore
 Doppler and use `.env` or the app-config UI.
 
-**What belongs in Doppler** (project `plextraktbox`, configs `local` / `ci` — see
-[phase-15](phases/phase-15.md)):
+**What belongs in Doppler** (project `plextraktbox`, configs `local` / `ci`):
 
 - Required: `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`
 - Optional for `dev-bootstrap`: `DEV_*`, `PLEX_*`, `TMDB_API_KEY`, `LETTERBOXD_*`, Trakt user tokens
 
 **One-time setup:**
 
-1. Create the Doppler project/configs and paste secrets (dashboard steps in
-   [phase-15](phases/phase-15.md)).
+1. Create the Doppler project/configs and paste secrets in the Doppler dashboard.
 2. Install the [Doppler CLI](https://docs.doppler.com/docs/install-cli), then:
 
 ```bash
@@ -96,13 +94,9 @@ mise run dev-frontend                  # terminal 2 — Vite on :5173
 Native dev and docker both use `./data` at the repo root (`DATA_DIR` in `.env`). Open the Vite URL
 (usually http://localhost:5173); both processes must be running for the health badge to go green.
 
-See [phases/test-plans/phase-0-test-plan.md](phases/test-plans/phase-0-test-plan.md) §2 for
-container vs native smoke details.
-
 ## API smoke sessions
 
-Authenticated curl examples in phase test plans use a cookie jar (`cookies.txt`). Create it once per
-dev session:
+Authenticated curl examples use a cookie jar (`cookies.txt`). Create it once per dev session:
 
 ```bash
 mise run api-login

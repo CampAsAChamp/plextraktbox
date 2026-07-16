@@ -4,14 +4,14 @@
 | --- | ------- |
 | [architecture.md](architecture.md) | Stack, sync engine, data model, security — the "why" |
 | [sync-flows.md](sync-flows.md) | Sync job flow charts + sequence diagrams (per data type) |
-| [phases/README.md](phases/README.md) | **Phase index** (status, scope, test plans) |
+| [phases/README.md](phases/README.md) | Remaining work (TrueNAS catalog) |
 | [testing.md](testing.md) | Smoke tests, automated checks, testing conventions |
 | [dev-workflow.md](dev-workflow.md) | Hot reload, Doppler (optional), `api-login`, dev bootstrap |
 | [deploy/truenas.md](deploy/truenas.md) | TrueNAS install constraints and milestones |
 
 ## Quick links
 
-- **Current focus:** see [phases/README.md](phases/README.md); Phase 22 (TrueNAS personal install) is done — next is catalog (23)
+- **Current focus:** TrueNAS App Catalog ([phases/phase-23.md](phases/phase-23.md))
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)
@@ -28,12 +28,6 @@ docs/
 ├── deploy/
 │   └── truenas.md      ← TrueNAS deployment
 └── phases/
-    ├── README.md       ← single phase progress table
-    ├── phase-N.md      ← scope per phase
-    └── test-plans/     ← verification checklists
+    ├── README.md       ← remaining work
+    └── phase-23.md     ← TrueNAS catalog scope
 ```
-
-When a phase lands: update its [phases/phase-N.md](phases/phase-0.md) doc and the table in
-[phases/README.md](phases/README.md); copy
-[phases/test-plans/phase-test-plan-template.md](phases/test-plans/phase-test-plan-template.md) →
-`phases/test-plans/phase-N-test-plan.md`.

@@ -17,7 +17,7 @@
     <br />
     <a href="docs/architecture.md">Architecture</a>
     ·
-    <a href="docs/phases/README.md">Phase roadmap</a>
+    <a href="docs/phases/README.md">Roadmap</a>
     <br />
     <br />
     <a href="docs/testing.md">Testing guide</a>
@@ -63,7 +63,7 @@
 It replaces stitching together two separate projects — [letterboxd-plex-sync](https://github.com/CampAsAChamp/letterboxd-plex-sync) and [PlexTraktSync](https://github.com/Taxel/PlexTraktSync) — with one app, one UI, and one scheduler.
 
 See [docs/architecture.md](docs/architecture.md) for design and locked decisions.
-[docs/phases/](docs/phases/) has the roadmap; [docs/README.md](docs/README.md) is the doc index.
+[docs/phases/](docs/phases/) has remaining work; [docs/README.md](docs/README.md) is the doc index.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -155,10 +155,9 @@ Do not run `up` and `up-dev` at the same time — they both bind port 8000.
 ## Deploying on TrueNAS
 
 The intended install target is **TrueNAS SCALE** (custom app / "Launch Docker Image", `/data` on a ZFS
-dataset, single HTTP port, Cloudflare Tunnel for HTTPS). Personal install docs are in
-[Phase 22](docs/phases/phase-22.md); App Catalog publication is [Phase 23](docs/phases/phase-23.md).
-
-Full install steps: **[docs/deploy/truenas.md](docs/deploy/truenas.md)**.
+dataset, single HTTP port, Cloudflare Tunnel for HTTPS). Full install steps:
+**[docs/deploy/truenas.md](docs/deploy/truenas.md)**. App Catalog publication is
+[Phase 23](docs/phases/phase-23.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -190,8 +189,6 @@ After the first publish, set the GitHub Packages package visibility to **public*
 unauthenticated pulls (e.g. TrueNAS). Manual tags (`git push origin vX.Y.Z`) also publish via
 `.github/workflows/release.yml`. Prefer squash-merge on `main`.
 
-See [Phase 19](docs/phases/phase-19.md).
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- TESTS & CHECKS -->
@@ -213,8 +210,8 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Built incrementally — Phases 0–8, 11–15, and 18–19 are done; see [docs/phases/README.md](docs/phases/README.md)
-for the full phase index (status, scope, test plans). Settings includes an ad-hoc SQLite backup download;
+Product development is done; remaining work is TrueNAS App Catalog publication — see
+[docs/phases/README.md](docs/phases/README.md). Settings includes an ad-hoc SQLite backup download;
 on TrueNAS prefer ZFS snapshots of the `/data` dataset.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

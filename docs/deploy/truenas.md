@@ -1,12 +1,11 @@
 # Deploying on TrueNAS
 
-The intended install target is **TrueNAS SCALE**, not just any Docker host. The container has been
-kept dependency-free (single image, SQLite, one HTTP port) from Phase 0 so it drops into TrueNAS
-without rework.
+The intended install target is **TrueNAS SCALE**, not just any Docker host. The container is
+dependency-free (single image, SQLite, one HTTP port) so it drops into TrueNAS without rework.
 
-**Status:** Personal install ([Phase 22](../phases/phase-22.md)) is documented below. Catalog
-publication is [Phase 23](../phases/phase-23.md) — do not start until this install has been stable.
-[Phase 24](../phases/phase-24.md) (UI themes) is done — themes live under `/data/themes`.
+**Status:** Personal install is documented below. Catalog publication is
+[Phase 23](../phases/phase-23.md) — do not start until this install has been stable. UI themes
+live under `/data/themes`.
 
 ## Design constraints (all environments)
 
@@ -21,11 +20,11 @@ These apply whenever touching Dockerfile, compose, or entrypoint — not only at
   behaves on TrueNAS
 - Ship via TrueNAS **Apps** (custom app / "Launch Docker Image" workflow, or catalog app later)
 - **Secrets via app env / `.env`** — do not require [Doppler](https://www.doppler.com/). Doppler is
-  optional for maintainers in local/CI only ([Phase 15](../phases/phase-15.md))
+  optional for maintainers in local/CI only (see [dev-workflow.md](../dev-workflow.md))
 
 See [architecture.md](../architecture.md) for full stack context.
 
-## Milestone 1 — Personal install (Phase 22)
+## Milestone 1 — Personal install
 
 Run the published image on your own TrueNAS box via **custom app** / "Launch Docker Image". No
 catalog involvement — a working container + dataset mount on one machine.
@@ -33,7 +32,7 @@ catalog involvement — a working container + dataset mount on one machine.
 ## Milestone 2 — App Catalog (Phase 23)
 
 Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, heavier effort. Do
-**not** start until Phase 22 has run successfully on real hardware for a while.
+**not** start until the personal install has run successfully on real hardware for a while.
 
 **Catalog deliverables** (see [phase-23](../phases/phase-23.md)):
 
@@ -48,7 +47,7 @@ Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, he
 
 ---
 
-## GHCR image ([Phase 19](../phases/phase-19.md))
+## GHCR image
 
 Published on each GitHub Release:
 
@@ -183,7 +182,7 @@ app has its own session auth.
 
 ---
 
-## Optional UI themes volume ([Phase 24](../phases/phase-24.md))
+## Optional UI themes volume
 
 Custom theme CSS files are discovered from `{DATA_DIR}/themes/*.css` (same path as Settings
 upload). With the usual `/data` mount that is already `/data/themes` inside the container — no
@@ -196,7 +195,7 @@ volumes:
   # - /mnt/tank/apps/plextraktbox/themes:/data/themes
 ```
 
-Format notes: [phase-24.md](../phases/phase-24.md) and `frontend/src/themes/README.md`.
+Format notes: `frontend/src/themes/README.md`.
 
 ---
 
@@ -209,5 +208,3 @@ Format notes: [phase-24.md](../phases/phase-24.md) and `frontend/src/themes/READ
 | Volume | Host ZFS path → `/data` |
 | Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, recommended `PUID`/`PGID` |
 | HTTPS | Cloudflare Tunnel → `http://<host>:<port>` |
-
-Verification checklist: [phase-22 test plan](../phases/test-plans/phase-22-test-plan.md).
