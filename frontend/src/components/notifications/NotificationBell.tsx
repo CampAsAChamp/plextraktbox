@@ -19,9 +19,8 @@ import { CheckIcon } from "src/components/icons/CheckIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
 import { TrashIcon } from "src/components/icons/TrashIcon"
 import classes from "src/components/notifications/NotificationBell.module.css"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
 import { showToast } from "src/toast"
-import { formatDateTime } from "src/utils/dateTimeFormat"
 
 const SWIPE_DURATION_MS = 280
 const SWIPE_STAGGER_MS = 55
@@ -109,7 +108,6 @@ function NotificationItem({
   dimming: boolean
   dimDelay: number
 }) {
-  const { preferences } = useDisplayPreferences()
   const busy = swiping || dimming
 
   const deleteButton = (
@@ -165,9 +163,7 @@ function NotificationItem({
       <Text size="xs" c="dimmed" lineClamp={2}>
         {item.body}
       </Text>
-      <Text size="xs" c="dimmed">
-        {formatDateTime(item.created_at, preferences)}
-      </Text>
+      <TimestampLabel value={item.created_at} size="xs" />
     </Stack>
   )
 

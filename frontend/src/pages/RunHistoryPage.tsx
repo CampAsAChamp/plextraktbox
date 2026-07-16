@@ -14,10 +14,10 @@ import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
 import { SortableTh } from "src/components/table/SortableTh"
 import { sortedColumnCellClass } from "src/components/table/sortedColumnCellClass"
+import { TimestampLabel } from "src/components/TimestampLabel"
 import classes from "src/pages/RunHistoryPage.module.css"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
-import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat"
+import { formatDuration } from "src/utils/dateTimeFormat"
 import { filterRuns, parseRunStatuses, parseRunTrigger, RUN_TRIGGER_OPTIONS } from "src/utils/runFilters"
 import { nextSortState, sortRows, type SortState } from "src/utils/tableSort"
 
@@ -66,7 +66,6 @@ function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
 export function RunHistoryPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { preferences } = useDisplayPreferences()
   const [searchParams, setSearchParams] = useSearchParams()
   const [sort, setSort] = useState<SortState<RunSortColumn> | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -297,7 +296,7 @@ export function RunHistoryPage() {
                         <RunStatusBadge status={run.status} />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
-                        {formatDateTime(run.started_at, preferences)}
+                        <TimestampLabel value={run.started_at} size="xs" />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "duration")}>{duration}</Table.Td>
                     </Table.Tr>

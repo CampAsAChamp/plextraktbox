@@ -3,9 +3,9 @@ import { Group, Paper, Stack, Text, UnstyledButton } from "@mantine/core"
 import type { RunListItem } from "src/api/jobs"
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
-import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat"
+import { formatDuration } from "src/utils/dateTimeFormat"
 
 type RunListCardProps = {
   run: RunListItem
@@ -19,7 +19,6 @@ function runDurationMs(run: RunListItem): number | null {
 
 /** Mobile run card — tap opens run detail. */
 export function RunListCard({ run, onOpen }: RunListCardProps) {
-  const { preferences } = useDisplayPreferences()
   const durationMs = runDurationMs(run)
   const duration = durationMs === null ? "running…" : formatDuration(durationMs)
 
@@ -51,11 +50,9 @@ export function RunListCard({ run, onOpen }: RunListCardProps) {
               <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
             </Stack>
           ) : null}
-          <Group gap="xs" wrap="wrap">
+          <Group gap="xs" wrap="wrap" align="flex-start">
             <RunTriggerBadge trigger={run.trigger} />
-            <Text size="xs" c="dimmed">
-              {formatDateTime(run.started_at, preferences)}
-            </Text>
+            <TimestampLabel value={run.started_at} size="xs" />
             <Text size="xs" c="dimmed">
               · {duration}
             </Text>

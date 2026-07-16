@@ -110,3 +110,32 @@ export function formatDuration(ms: number): string {
   if (seconds > 0 || parts.length === 0) parts.push(`${seconds} s`)
   return parts.join(" ")
 }
+
+const RELATIVE_DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
+  { amount: 60, unit: "second" },
+  { amount: 60, unit: "minute" },
+  { amount: 24, unit: "hour" },
+  { amount: 7, unit: "day" },
+  { amount: 4.34524, unit: "week" },
+  { amount: 12, unit: "month" },
+  { amount: Number.POSITIVE_INFINITY, unit: "year" },
+]
+
+/** Relative time like "2h ago" / "in 45m". Returns null for empty/invalid values. */
+export function formatRelativeTime(value: string | null, options?: { now?: Date }): string | null {
+  if (!value) return null
+  const date = parseUtcTimestamp(value)
+  if (Number.isNaN(date.getTime())) return null
+
+  const now = options?.now ?? new Date()
+  let durationSeconds = (date.getTime() - now.getTime()) / 1000
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" })
+
+  for (const division of RELATIVE_DIVISIONS) {
+    if (Math.abs(durationSeconds) < division.amount) {
+      return rtf.format(Math.round(durationSeconds), division.unit)
+    }
+    durationSeconds /= division.amount
+  }
+  return rtf.format(Math.round(durationSeconds), "year")
+}

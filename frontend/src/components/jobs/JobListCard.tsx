@@ -8,9 +8,8 @@ import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
-import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 type JobListCardProps = {
   job: Job
@@ -21,27 +20,27 @@ type JobListCardProps = {
 }
 
 function ScheduleSummary({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences()
-  const nextLabel = !job.enabled
-    ? "Disabled — no next run"
-    : job.next_run_at
-      ? formatScheduleDateTime(job.next_run_at, preferences)
-      : "Next run unavailable"
-
   return (
     <Stack gap={2}>
       <Text size="sm" ff="monospace">
         {job.cron}
       </Text>
-      <Text size="xs" c="dimmed">
-        {nextLabel}
-      </Text>
+      {!job.enabled ? (
+        <Text size="xs" c="dimmed">
+          Disabled — no next run
+        </Text>
+      ) : job.next_run_at ? (
+        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" />
+      ) : (
+        <Text size="xs" c="dimmed">
+          Next run unavailable
+        </Text>
+      )}
     </Stack>
   )
 }
 
 function LastRunSummary({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences()
   const theme = useMantineTheme()
   const last = job.last_run
   if (!last) {
@@ -61,9 +60,7 @@ function LastRunSummary({ job }: { job: Job }) {
         <RunStatusBadge status={last.status} />
         <DryRunBadge dryRun={last.dry_run} />
       </Group>
-      <Text size="xs" c="dimmed">
-        {formatDateTime(last.finished_at ?? last.started_at, preferences)}
-      </Text>
+      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" />
       <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
   )
