@@ -11,7 +11,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { listRunLogs, type LogEntry } from "../../api/logs";
+import { listRunLogs, type LogEntry } from "src/api/logs";
 import {
   estimateLogLineHeight,
   formatContextValue,
@@ -24,16 +24,16 @@ import {
   shouldPrettyPrintContextValue,
   shouldRenderStatusBadge,
   shouldSyntaxHighlightContextValue,
-} from "./logFormat";
-import { ColoredJson, ColoredJsonSpans, JSON_SYNTAX_COLORS } from "./ColoredJson";
-import { RunStatusBadge } from "../runs/RunBadges";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { TimezonePreferenceControls } from "../../settings/TimezonePreferenceControls";
-import { formatTimestamp } from "../../utils/dateTimeFormat";
-import { LiveStreamAccent, LiveStreamIndicator } from "./LiveStreamIndicator";
-import { useLogStream } from "./useLogStream";
-import { LogLevelMultiSelect } from "./LogLevelMultiSelect";
-import { LogLevelBadge, type LogLevel } from "./logLevels";
+} from "src/components/LogViewer/logFormat";
+import { ColoredJson, ColoredJsonSpans, JSON_SYNTAX_COLORS } from "src/components/LogViewer/ColoredJson";
+import { RunStatusBadge } from "src/components/runs/RunBadges";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { TimezonePreferenceControls } from "src/settings/TimezonePreferenceControls";
+import { formatTimestamp } from "src/utils/dateTimeFormat";
+import { LiveStreamAccent, LiveStreamIndicator } from "src/components/LogViewer/LiveStreamIndicator";
+import { useLogStream } from "src/components/LogViewer/useLogStream";
+import { LogLevelMultiSelect } from "src/components/LogViewer/LogLevelMultiSelect";
+import { LogLevelBadge, type LogLevel } from "src/components/LogViewer/logLevels";
 
 type LogViewerProps = {
   runId: number;
@@ -150,7 +150,7 @@ function LogContextExpanded({ context }: { context: Record<string, unknown> }) {
   );
 }
 
-import type { DisplayPreferences } from "../../settings/displayPreferences";
+import type { DisplayPreferences } from "src/settings/displayPreferences";
 
 type LogLineProps = {
   line: LogEntry;
@@ -303,7 +303,11 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
         <Group justify="space-between" align="center" wrap="wrap" gap="xs">
           <Group gap="xs">
             {isLive ? (
-              <LiveStreamIndicator connected={stream.connected} ended={stream.ended} />
+              <LiveStreamIndicator
+                connected={stream.connected}
+                ended={stream.ended}
+                error={stream.error}
+              />
             ) : null}
             <Text size="sm" c="dimmed">
               {filteredLines.length} line{filteredLines.length === 1 ? "" : "s"}
@@ -331,7 +335,11 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
 
       <Box pos="relative">
         {isLive ? (
-          <LiveStreamAccent connected={stream.connected} ended={stream.ended} />
+          <LiveStreamAccent
+            connected={stream.connected}
+            ended={stream.ended}
+            error={stream.error}
+          />
         ) : null}
         <ScrollArea
           viewportRef={parentRef}

@@ -5,12 +5,18 @@ import classes from "./LiveStreamIndicator.module.css";
 type LiveStreamIndicatorProps = {
   connected: boolean;
   ended: boolean;
+  error?: string | null;
 };
 
-type LiveStreamState = "streaming" | "connecting" | "complete";
+type LiveStreamState = "streaming" | "connecting" | "complete" | "error";
 
-function getLiveStreamState(connected: boolean, ended: boolean): LiveStreamState {
+function getLiveStreamState(
+  connected: boolean,
+  ended: boolean,
+  error?: string | null,
+): LiveStreamState {
   if (ended) return "complete";
+  if (error) return "error";
   if (connected) return "streaming";
   return "connecting";
 }
@@ -40,6 +46,13 @@ const STATE_CONFIG: Record<
     ariaLabel: "Log stream complete",
     animate: false,
   },
+  error: {
+    color: "red",
+    dotClass: classes.dotRed,
+    label: "Disconnected",
+    ariaLabel: "Log stream disconnected",
+    animate: false,
+  },
 };
 
 function LiveStreamDot({
@@ -61,9 +74,9 @@ function LiveStreamDot({
   );
 }
 
-export function LiveStreamIndicator({ connected, ended }: LiveStreamIndicatorProps) {
+export function LiveStreamIndicator({ connected, ended, error }: LiveStreamIndicatorProps) {
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)") ?? false;
-  const state = getLiveStreamState(connected, ended);
+  const state = getLiveStreamState(connected, ended, error);
   const config = STATE_CONFIG[state];
 
   return (
@@ -79,11 +92,12 @@ export function LiveStreamIndicator({ connected, ended }: LiveStreamIndicatorPro
 type LiveStreamAccentProps = {
   connected: boolean;
   ended: boolean;
+  error?: string | null;
 };
 
-export function LiveStreamAccent({ connected, ended }: LiveStreamAccentProps) {
+export function LiveStreamAccent({ connected, ended, error }: LiveStreamAccentProps) {
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)") ?? false;
-  const state = getLiveStreamState(connected, ended);
+  const state = getLiveStreamState(connected, ended, error);
 
   if (state !== "streaming") return null;
 

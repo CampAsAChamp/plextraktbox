@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { renderWithProviders } from "../../test/render";
-import { LiveStreamAccent, LiveStreamIndicator } from "./LiveStreamIndicator";
+import { renderWithProviders } from "src/test/render";
+import { LiveStreamAccent, LiveStreamIndicator } from "src/components/LogViewer/LiveStreamIndicator";
 
 describe("LiveStreamIndicator", () => {
   it("shows a pulsing live state while connected", () => {
@@ -17,6 +17,13 @@ describe("LiveStreamIndicator", () => {
   it("shows complete state after the stream ends", () => {
     renderWithProviders(<LiveStreamIndicator connected={false} ended />);
     expect(screen.getByLabelText("Log stream complete")).toHaveTextContent("Complete");
+  });
+
+  it("shows disconnected state when the stream errors", () => {
+    renderWithProviders(
+      <LiveStreamIndicator connected={false} ended={false} error="Log stream disconnected" />,
+    );
+    expect(screen.getByLabelText("Log stream disconnected")).toHaveTextContent("Disconnected");
   });
 });
 

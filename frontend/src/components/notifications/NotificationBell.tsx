@@ -9,8 +9,9 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { showToast } from "../../toast";
+import { showToast } from "src/toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   getUnreadCount,
@@ -18,9 +19,9 @@ import {
   markAllInAppRead,
   markInAppRead,
   type InAppNotification,
-} from "../../api/notifications";
-import { useDisplayPreferences } from "../../settings/DisplayPreferencesProvider";
-import { formatDateTime } from "../../utils/dateTimeFormat";
+} from "src/api/notifications";
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { formatDateTime } from "src/utils/dateTimeFormat";
 
 function BellIcon({ size = 18 }: { size?: number }) {
   return (
@@ -52,6 +53,10 @@ function levelColor(level: InAppNotification["level"]) {
     default:
       return "blue";
   }
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }
 
 function NotificationItem({
@@ -104,6 +109,7 @@ function NotificationItem({
 
 export function NotificationBell() {
   const queryClient = useQueryClient();
+  const unreadErrorToasted = useRef(false);
   const unreadQuery = useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
@@ -115,10 +121,30 @@ export function NotificationBell() {
     enabled: false,
   });
 
+  useEffect(() => {
+    if (unreadQuery.isError) {
+      if (!unreadErrorToasted.current) {
+        unreadErrorToasted.current = true;
+        showToast({
+          color: "red",
+          message: errorMessage(unreadQuery.error, "Could not load notification count"),
+        });
+      }
+      return;
+    }
+    unreadErrorToasted.current = false;
+  }, [unreadQuery.isError, unreadQuery.error]);
+
   const markRead = useMutation({
     mutationFn: markInAppRead,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (error: unknown) => {
+      showToast({
+        color: "red",
+        message: errorMessage(error, "Could not mark notification read"),
+      });
     },
   });
 
@@ -127,6 +153,12 @@ export function NotificationBell() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["notifications"] });
       showToast({ color: "green", message: "All notifications marked read" });
+    },
+    onError: (error: unknown) => {
+      showToast({
+        color: "red",
+        message: errorMessage(error, "Could not mark notifications read"),
+      });
     },
   });
 
@@ -177,6 +209,10 @@ export function NotificationBell() {
           {listQuery.isFetching && !listQuery.data ? (
             <Text size="sm" c="dimmed" px="sm" py="md">
               Loading…
+            </Text>
+          ) : listQuery.isError ? (
+            <Text size="sm" c="red" px="sm" py="md">
+              {errorMessage(listQuery.error, "Could not load notifications")}
             </Text>
           ) : listQuery.data?.items.length ? (
             listQuery.data.items.map((item) => (

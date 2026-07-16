@@ -41,6 +41,10 @@
   background-color: var(--mantine-color-gray-6);
 }
 
+.dotRed .dotCore {
+  background-color: var(--mantine-color-red-6);
+}
+
 .animateRing {
   animation: pulse-ring 1.6s ease-out infinite;
 }
