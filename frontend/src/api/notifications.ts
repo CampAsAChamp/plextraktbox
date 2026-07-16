@@ -1,57 +1,18 @@
 import { api } from "src/api/client"
+import type { components } from "src/api/generated/schema"
 
-export type NotificationChannel = "discord" | "inapp"
-export type NotificationScope = "global" | "job"
-export type NotifyMode = "inherit" | "custom" | "disabled"
-export type InAppLevel = "info" | "success" | "warning" | "error"
+type Schemas = components["schemas"]
 
-export interface NotificationConfig {
-  id: number
-  channel: NotificationChannel
-  enabled: boolean
-  on_success: boolean
-  on_failure: boolean
-  scope: NotificationScope
-  job_id: number | null
-  config: Record<string, unknown>
-  has_secret: boolean
-}
-
-export interface DiscordConfigInput {
-  webhook_url?: string
-}
-
-export interface NotificationConfigCreateInput {
-  channel: NotificationChannel
-  enabled?: boolean
-  on_success?: boolean
-  on_failure?: boolean
-  scope?: NotificationScope
-  job_id?: number | null
-  discord?: DiscordConfigInput
-}
-
-export interface NotificationConfigUpdateInput {
-  enabled: boolean
-  on_success: boolean
-  on_failure: boolean
-  discord?: DiscordConfigInput
-}
-
-export interface InAppNotification {
-  id: number
-  created_at: string
-  level: InAppLevel
-  title: string
-  body: string
-  read: boolean
-  run_id: number | null
-}
-
-export interface InAppListResponse {
-  items: InAppNotification[]
-  unread_count: number
-}
+export type NotificationChannel = Schemas["NotificationChannel"]
+export type NotificationScope = Schemas["NotificationScope"]
+export type NotifyMode = Schemas["NotifyMode"]
+export type InAppLevel = Schemas["InAppLevel"]
+export type NotificationConfig = Schemas["NotificationConfigResponse"]
+export type DiscordConfigInput = Schemas["DiscordConfigInput"]
+export type NotificationConfigCreateInput = Schemas["NotificationConfigCreateRequest"]
+export type NotificationConfigUpdateInput = Schemas["NotificationConfigUpdateRequest"]
+export type InAppNotification = Schemas["InAppNotificationResponse"]
+export type InAppListResponse = Schemas["InAppListResponse"]
 
 export const CHANNEL_LABELS: Record<NotificationChannel, string> = {
   discord: "Discord",
@@ -82,7 +43,7 @@ export function deleteNotificationConfig(id: number) {
 }
 
 export function testNotificationConfig(id: number) {
-  return api.post<{ ok: boolean; message: string }>(`/notifications/configs/${id}/test`)
+  return api.post<Schemas["NotificationTestResponse"]>(`/notifications/configs/${id}/test`)
 }
 
 export function listInAppNotifications(unreadOnly = false) {
@@ -90,7 +51,7 @@ export function listInAppNotifications(unreadOnly = false) {
 }
 
 export function getUnreadCount() {
-  return api.get<{ unread_count: number }>("/notifications/inapp/unread-count")
+  return api.get<Schemas["UnreadCountResponse"]>("/notifications/inapp/unread-count")
 }
 
 export function markInAppRead(id: number) {

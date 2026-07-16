@@ -1,14 +1,10 @@
 import { api } from "src/api/client"
+import type { components } from "src/api/generated/schema"
 
-export interface ThemeInfo {
-  id: string
-  name: string
-  source: "builtin" | "custom" | string
-}
+type Schemas = components["schemas"]
 
-export interface ThemeActive {
-  theme_id: string
-}
+export type ThemeInfo = Schemas["ThemeInfoResponse"]
+export type ThemeActive = Schemas["ThemeActiveResponse"]
 
 export function listThemes(): Promise<ThemeInfo[]> {
   return api.get<ThemeInfo[]>("/themes")

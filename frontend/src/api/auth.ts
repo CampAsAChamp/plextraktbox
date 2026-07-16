@@ -1,21 +1,8 @@
-export interface User {
-  id: number
-  username: string
-  email: string
-  avatar_url: string
-}
+import type { components } from "src/api/generated/schema"
 
-export interface SetupStatus {
-  needs_setup: boolean
-}
+type Schemas = components["schemas"]
 
-export interface SetupUserInput {
-  username: string
-  email: string
-  password: string
-}
-
-export interface LoginInput {
-  username: string
-  password: string
-}
+export type User = Schemas["UserResponse"]
+export type SetupStatus = Schemas["SetupStatusResponse"]
+export type SetupUserInput = Schemas["SetupUserRequest"]
+export type LoginInput = Schemas["LoginRequest"]

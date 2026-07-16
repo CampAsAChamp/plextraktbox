@@ -1,47 +1,14 @@
 import { api } from "src/api/client"
+import type { components } from "src/api/generated/schema"
 
-export interface ExcludeIds {
-  tmdb: string[]
-  imdb: string[]
-  tvdb: string[]
-}
+type Schemas = components["schemas"]
 
-export interface AppSettings {
-  default_cron: string
-  cron_timezone: string
-  cron_timezone_resolved: string
-  log_retention_days: number
-  global_dry_run: boolean
-  exclude_ids: ExcludeIds
-  ui_theme: string
-  letterboxd_export_cache_ttl_hours: number
-  trakt_list_cache_ttl_minutes: number
-}
-
-export type AppSettingsInput = {
-  default_cron: string
-  cron_timezone: string
-  cron_local_zone?: string | null
-  log_retention_days: number
-  global_dry_run: boolean
-  exclude_ids: ExcludeIds
-  letterboxd_export_cache_ttl_hours: number
-  trakt_list_cache_ttl_minutes: number
-}
-
-export interface ClearSyncCachesInput {
-  letterboxd_export?: boolean
-  letterboxd_slug?: boolean
-  trakt_lists?: boolean
-  discover_keys?: boolean
-}
-
-export interface ClearSyncCachesResult {
-  letterboxd_export: number
-  letterboxd_slug: number
-  trakt_lists: number
-  discover_keys: number
-}
+export type ExcludeIds = Schemas["ExcludeIds"]
+export type AppSettings = Schemas["SettingsResponse"]
+export type AppSettingsInput = Schemas["SettingsUpdateRequest"]
+/** Request body fields are optional so callers can clear subsets (defaults apply). */
+export type ClearSyncCachesInput = Partial<Schemas["ClearSyncCachesRequest"]>
+export type ClearSyncCachesResult = Schemas["ClearSyncCachesResponse"]
 
 export function getSettings(): Promise<AppSettings> {
   return api.get<AppSettings>("/settings")
