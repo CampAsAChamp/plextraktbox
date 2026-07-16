@@ -12,6 +12,9 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/zscaler-root-ca.pem \
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
+# bash: entrypoint-dev-backend.sh uses #!/usr/bin/env bash (alpine has no bash by default).
+RUN apk add --no-cache bash
+
 WORKDIR /app/backend
 COPY backend/pyproject.toml backend/alembic.ini ./
 COPY backend/plextraktbox ./plextraktbox
