@@ -40,17 +40,8 @@ run = "bash scripts/generate-api-types.sh"
 
 [tasks."check-api-types"]
 description = "[META] Fail if committed OpenAPI TypeScript types are out of date"
-depends = ["generate-api-types"]
-run = '''
-if [[ ! -f frontend/src/api/generated/schema.d.ts ]]; then
-  echo "frontend/src/api/generated/schema.d.ts missing; run: mise run generate-api-types" >&2
-  exit 1
-fi
-if ! git diff --exit-code -- frontend/src/api/generated/schema.d.ts; then
-  echo "frontend/src/api/generated/schema.d.ts is out of date; run: mise run generate-api-types" >&2
-  exit 1
-fi
-'''
+depends = ["install-backend", "install-frontend"]
+run = "bash scripts/generate-api-types.sh --check"
 
 [tasks.lint]
 description = "[META] Run ruff, mypy, frontend lint/format/typecheck, and OpenAPI types drift check"
