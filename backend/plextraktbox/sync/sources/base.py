@@ -67,3 +67,47 @@ class Source(ABC):
         dry_run: bool,
     ) -> ApplyResult:
         raise NotImplementedError
+
+
+class ReadOnlySourceMixin:
+    """Mixin that rejects all apply_* calls with NotSupported."""
+
+    name: str
+
+    async def apply_watchlist(
+        self,
+        changes: list[PlannedChange],
+        *,
+        dry_run: bool,
+    ) -> ApplyResult:
+        raise NotSupported(f"{self.name} does not support watchlist writes")
+
+    async def apply_ratings(
+        self,
+        changes: list[PlannedChange],
+        *,
+        dry_run: bool,
+    ) -> ApplyResult:
+        raise NotSupported(f"{self.name} does not support ratings writes")
+
+    async def apply_watched(
+        self,
+        changes: list[PlannedChange],
+        *,
+        dry_run: bool,
+    ) -> ApplyResult:
+        raise NotSupported(f"{self.name} does not support watched writes")
+
+
+class ClientBackedSource(Source):
+    """Base for production sources backed by HTTP clients (no in-memory store)."""
+
+    def __init__(
+        self,
+        name: str,
+        *,
+        capabilities: SourceCapabilities | None = None,
+    ) -> None:
+        self.name = name
+        if capabilities is not None:
+            self.capabilities = capabilities

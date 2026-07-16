@@ -11,9 +11,7 @@ from plextraktbox.clients import letterboxd_client
 from plextraktbox.clients.letterboxd_client import LetterboxdExport
 from plextraktbox.services import letterboxd_export_cache
 from plextraktbox.sync.media_item import MediaItem
-from plextraktbox.sync.plans import ApplyResult, PlannedChange
-from plextraktbox.sync.sources.base import NotSupported, SourceCapabilities
-from plextraktbox.sync.sources.memory import MemorySource
+from plextraktbox.sync.sources.base import ClientBackedSource, ReadOnlySourceMixin, SourceCapabilities
 
 READ_ONLY = SourceCapabilities(
     watchlist_read=True,
@@ -28,7 +26,7 @@ IdentifierResolver = Callable[[str, str, str | None], dict[str, str] | None]
 _PROGRESS_INTERVAL = 25
 
 
-class LetterboxdSource(MemorySource):
+class LetterboxdSource(ReadOnlySourceMixin, ClientBackedSource):
     """Letterboxd is read-only — apply_* always raise NotSupported."""
 
     def __init__(
@@ -42,7 +40,7 @@ class LetterboxdSource(MemorySource):
         resolve_identifiers: IdentifierResolver | None = None,
         log: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
-        super().__init__(name="letterboxd", capabilities=READ_ONLY)
+        super().__init__("letterboxd", capabilities=READ_ONLY)
         self._username = username
         self._password = password
         self._connection_id = connection_id
@@ -183,30 +181,6 @@ class LetterboxdSource(MemorySource):
                 "watched", total=_csv_row_count(export.diary_csv)
             ),
         )
-
-    async def apply_watchlist(
-        self,
-        changes: list[PlannedChange],
-        *,
-        dry_run: bool,
-    ) -> ApplyResult:
-        raise NotSupported("letterboxd does not support watchlist writes")
-
-    async def apply_ratings(
-        self,
-        changes: list[PlannedChange],
-        *,
-        dry_run: bool,
-    ) -> ApplyResult:
-        raise NotSupported("letterboxd does not support ratings writes")
-
-    async def apply_watched(
-        self,
-        changes: list[PlannedChange],
-        *,
-        dry_run: bool,
-    ) -> ApplyResult:
-        raise NotSupported("letterboxd does not support watched writes")
 
 
 def _csv_row_count(csv_text: str | None) -> int:

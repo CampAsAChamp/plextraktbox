@@ -9,10 +9,10 @@ from plextraktbox.services import trakt_list_cache
 from plextraktbox.sync.media_item import MediaItem
 from plextraktbox.sync.plans import ApplyResult, ChangeAction, PlannedChange
 from plextraktbox.sync.sources.apply_helpers import apply_live
-from plextraktbox.sync.sources.memory import MemorySource
+from plextraktbox.sync.sources.base import ClientBackedSource
 
 
-class TraktSource(MemorySource):
+class TraktSource(ClientBackedSource):
     def __init__(
         self,
         *,
@@ -21,7 +21,7 @@ class TraktSource(MemorySource):
         list_cache_ttl_minutes: int = 30,
         force_list_refresh: bool = False,
     ) -> None:
-        super().__init__(name="trakt")
+        super().__init__("trakt")
         self._client_id = client_id
         self._access_token = access_token
         self._list_cache_ttl_minutes = list_cache_ttl_minutes

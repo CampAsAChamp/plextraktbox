@@ -8,10 +8,10 @@ from plextraktbox.clients import plex_client
 from plextraktbox.sync.media_item import MediaItem
 from plextraktbox.sync.plans import ApplyResult, ChangeAction, PlannedChange
 from plextraktbox.sync.sources.apply_helpers import apply_live
-from plextraktbox.sync.sources.memory import MemorySource
+from plextraktbox.sync.sources.base import ClientBackedSource
 
 
-class PlexSource(MemorySource):
+class PlexSource(ClientBackedSource):
     def __init__(
         self,
         *,
@@ -19,7 +19,7 @@ class PlexSource(MemorySource):
         token: str,
         library_ids: list[str] | None = None,
     ) -> None:
-        super().__init__(name="plex")
+        super().__init__("plex")
         self._url = url.rstrip("/")
         self._token = token
         self._library_ids = list(library_ids or [])
