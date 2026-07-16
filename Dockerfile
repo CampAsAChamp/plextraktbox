@@ -71,5 +71,6 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 VOLUME ["/data"]
+# Default listen port; override at runtime with PORT (see docker-compose.yml / entrypoint).
 EXPOSE 8000
 ENTRYPOINT ["/entrypoint.sh"]
