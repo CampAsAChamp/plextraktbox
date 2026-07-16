@@ -19,6 +19,7 @@ import { sortedColumnCellClass } from "src/components/table/sortedColumnCellClas
 import { TimestampLabel } from "src/components/TimestampLabel"
 import classes from "src/pages/RunHistoryPage.module.css"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
+import { showToast } from "src/toast"
 import { formatDuration } from "src/utils/dateTimeFormat"
 import { filterRuns, parseRunStatuses, parseRunTrigger, RUN_TRIGGER_OPTIONS } from "src/utils/runFilters"
 import { nextSortState, sortRows, type SortState } from "src/utils/tableSort"
@@ -112,7 +113,14 @@ export function RunHistoryPage() {
     setIsRefreshing(true)
     const started = performance.now()
     try {
-      await Promise.all([runsQuery.refetch(), jobsQuery.refetch()])
+      const [runsResult, jobsResult] = await Promise.all([runsQuery.refetch(), jobsQuery.refetch()])
+      const error = runsResult.error ?? jobsResult.error
+      if (error) {
+        const message = error instanceof Error ? error.message : "Failed to refresh runs"
+        showToast({ color: "red", message })
+        return
+      }
+      showToast({ color: "green", message: "Runs refreshed" })
     } finally {
       const remaining = Math.max(0, MIN_REFRESH_SPIN_MS - (performance.now() - started))
       if (remaining > 0) {
