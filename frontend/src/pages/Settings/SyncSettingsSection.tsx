@@ -167,8 +167,7 @@ export function SyncSettingsSection() {
   function persistCronTimezone(nextCronTimezone: string) {
     const data = settingsQuery.data
     if (!data || nextCronTimezone === cronTimezone) return
-    const timezoneOk =
-      nextCronTimezone === "UTC" || nextCronTimezone === "local" || isValidIanaTimezone(nextCronTimezone)
+    const timezoneOk = nextCronTimezone === "UTC" || nextCronTimezone === "local" || isValidIanaTimezone(nextCronTimezone)
     if (!timezoneOk) {
       setErrors({ cron_timezone: "Choose a valid timezone" })
       showToast({ color: "red", message: "Choose a valid timezone" })

@@ -204,12 +204,7 @@ export function ThemeSection() {
         </SimpleGrid>
 
         <Group gap="sm">
-          <Button
-            variant="light"
-            loading={themesQuery.isFetching}
-            onClick={() => void themesQuery.refetch()}
-            leftSection={<SyncIcon />}
-          >
+          <Button variant="light" loading={themesQuery.isFetching} onClick={() => void themesQuery.refetch()} leftSection={<SyncIcon />}>
             Refresh themes
           </Button>
           <FileButton onChange={(file) => void handleFile(file)} accept=".css,text/css">

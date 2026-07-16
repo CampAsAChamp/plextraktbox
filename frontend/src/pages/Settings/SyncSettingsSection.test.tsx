@@ -51,8 +51,6 @@ describe("SyncSettingsSection cron timezone", () => {
         }),
       )
     })
-    expect(toast.showToast).toHaveBeenCalledWith(
-      expect.objectContaining({ color: "green", message: "Cron timezone saved" }),
-    )
+    expect(toast.showToast).toHaveBeenCalledWith(expect.objectContaining({ color: "green", message: "Cron timezone saved" }))
   })
 })

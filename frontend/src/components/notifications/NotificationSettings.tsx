@@ -168,13 +168,7 @@ function ChannelSettings({
             <Button variant="light" loading={test.isPending} onClick={() => test.mutate()} leftSection={<BellIcon />}>
               Send test
             </Button>
-            <Button
-              variant="subtle"
-              color="red"
-              loading={remove.isPending}
-              onClick={() => remove.mutate()}
-              leftSection={<TrashIcon />}
-            >
+            <Button variant="subtle" color="red" loading={remove.isPending} onClick={() => remove.mutate()} leftSection={<TrashIcon />}>
               Remove
             </Button>
           </>

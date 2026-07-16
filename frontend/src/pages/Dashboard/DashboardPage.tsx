@@ -91,12 +91,7 @@ function jobActions(job: Job, isRunning: (job: Job, mode: RunMode) => boolean, o
   return (
     <Group gap={4} wrap="wrap">
       <Tooltip label="Run now">
-        <ActionIcon
-          variant="light"
-          aria-label={`Run ${job.name}`}
-          loading={isRunning(job, "run")}
-          onClick={() => onRun(job, "run")}
-        >
+        <ActionIcon variant="light" aria-label={`Run ${job.name}`} loading={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
           ▶
         </ActionIcon>
       </Tooltip>
@@ -296,9 +291,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                       <Table.Td>
                         <LastRunCell job={job} />
                       </Table.Td>
-                      <Table.Td>
-                        {jobActions(job, isRunning, onRun)}
-                      </Table.Td>
+                      <Table.Td>{jobActions(job, isRunning, onRun)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
