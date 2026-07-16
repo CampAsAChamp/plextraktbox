@@ -163,7 +163,7 @@ export function RunHistoryPage() {
   }
 
   return (
-    <Stack gap="md">
+    <Stack gap="md" maw={{ base: "100%", lg: "85%" }} mx="auto">
       <Group gap="sm">
         <Title order={3}>
           {selectedJob

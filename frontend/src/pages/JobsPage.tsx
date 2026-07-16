@@ -120,7 +120,7 @@ export function JobsPage() {
   }
 
   return (
-    <Stack gap="md">
+    <Stack gap="md" maw={{ base: "100%", lg: "85%" }} mx="auto">
       <Group justify="space-between" wrap="wrap" gap="sm">
         <Title order={3}>Sync jobs</Title>
         <Button component={Link} to="/jobs/new" leftSection={<PlusIcon />}>
