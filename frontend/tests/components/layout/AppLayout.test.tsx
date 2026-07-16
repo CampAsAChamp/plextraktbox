@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router-dom"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 import { AppLayout } from "src/components/layout/AppLayout"
-import { renderWithProviders } from "src/test/render"
+import { renderWithProviders } from "tests/render"
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

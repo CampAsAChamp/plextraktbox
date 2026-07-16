@@ -13,11 +13,13 @@ export default defineConfig({
   resolve: {
     alias: {
       src: path.resolve(root, "src"),
+      tests: path.resolve(root, "tests"),
     },
   },
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/test/setup.ts",
+    setupFiles: "./tests/setup.ts",
+    include: ["tests/**/*.test.{ts,tsx}"],
   },
 })

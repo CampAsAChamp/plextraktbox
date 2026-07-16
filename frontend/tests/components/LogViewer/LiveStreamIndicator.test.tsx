@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { LiveStreamAccent, LiveStreamIndicator } from "src/components/LogViewer/LiveStreamIndicator"
-import { renderWithProviders } from "src/test/render"
+import { renderWithProviders } from "tests/render"
 
 describe("LiveStreamIndicator", () => {
   it("shows a pulsing live state while connected", () => {

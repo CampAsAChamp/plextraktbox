@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, expect, test, vi } from "vitest"
 
 import { App } from "src/App"
-import { renderWithProviders } from "src/test/render"
+import { renderWithProviders } from "tests/render"
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

@@ -62,7 +62,7 @@ maintainers (`mise run check-doppler`); default CI does not require a Doppler to
   per data type; dry-run = zero writes
 - **HTTP:** `respx`
 - **API:** httpx AsyncClient + in-memory SQLite
-- **Frontend:** vitest + RTL
+- **Frontend:** vitest + RTL; specs under `frontend/tests/` (mirrors `src/`)
 - **Doppler:** `mise run up-dev` (default hot reload) / `up-doppler` / `check-doppler`; optional CI
   `DOPPLER_TOKEN` — secrets in Doppler, knobs in `.env` (see [dev-workflow.md](dev-workflow.md))
 - **TrueNAS:** personal install + catalog — see [deploy/truenas.md](deploy/truenas.md) and

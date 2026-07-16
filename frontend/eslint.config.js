@@ -11,7 +11,7 @@ export default tseslint.config(
   },
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
@@ -41,8 +41,8 @@ export default tseslint.config(
             ["^\\u0000"],
             // External packages.
             ["^@?\\w"],
-            // Absolute app imports.
-            ["^src/"],
+            // Absolute app and test imports.
+            ["^src/", "^tests/"],
             // Relative imports (CSS modules, etc.).
             ["^\\."],
           ],

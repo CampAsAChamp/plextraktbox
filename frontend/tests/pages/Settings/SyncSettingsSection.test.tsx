@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import * as settingsApi from "src/api/settings"
 import { SyncSettingsSection } from "src/pages/Settings/SyncSettingsSection"
-import { renderWithProviders } from "src/test/render"
 import * as toast from "src/toast"
+import { renderWithProviders } from "tests/render"
 
 const baseSettings: settingsApi.AppSettings = {
   default_cron: "0 3 * * *",

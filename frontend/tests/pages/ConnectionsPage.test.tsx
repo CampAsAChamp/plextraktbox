@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ConnectionsPage } from "src/pages/ConnectionsPage"
 import classes from "src/pages/OnboardingStepper.module.css"
-import { renderWithProviders } from "src/test/render"
+import { renderWithProviders } from "tests/render"
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

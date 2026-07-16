@@ -11,7 +11,7 @@ paths:
 - Forms: zod + local state; helpers in `components/connections/connectionFormHelpers.ts`
 - Prefer absolute `src/` imports (e.g. `import { x } from "api/client"`)
 - CSS modules for component styles (`*.module.css`)
-- Vitest + React Testing Library for unit tests
+- Vitest + React Testing Library; specs live under `frontend/tests/` (mirrors `src/`), not co-located in `src/`
 - Lint/format: ESLint + Prettier (`npm run lint`, `npm run format`) — included in `mise run lint` / `check`
 
 ## Dev

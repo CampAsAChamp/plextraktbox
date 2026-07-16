@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { LoginPage } from "src/pages/LoginPage"
-import { renderWithProviders } from "src/test/render"
 import * as toast from "src/toast"
+import { renderWithProviders } from "tests/render"
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
