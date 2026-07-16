@@ -1,6 +1,8 @@
-.column {
+/* Start hidden so staggered delays don't flash before ptbEmptyIn runs (forwards only). */
+.delay0,
+.delay1,
+.delay2 {
   opacity: 0;
-  animation: ptb-empty-in var(--ptb-duration-in) var(--ptb-ease) forwards;
 }
 
 .delay0 {
@@ -16,8 +18,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .column {
-    animation: none;
+  .delay0,
+  .delay1,
+  .delay2 {
     opacity: 1;
   }
 }

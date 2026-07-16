@@ -55,13 +55,13 @@ export function DashboardGlanceStrip({ jobs, runs }: DashboardGlanceStripProps) 
   return (
     <Paper withBorder radius="md" p="md">
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="lg">
-        <div className={`${classes.column} ${classes.delay0}`}>
+        <div className={`ptbEmptyIn ${classes.delay0}`}>
           <WindowStats label="Last 24 hours" window="24h" jobs={jobs} runs={runs} />
         </div>
-        <div className={`${classes.column} ${classes.delay1}`}>
+        <div className={`ptbEmptyIn ${classes.delay1}`}>
           <WindowStats label="Last 7 days" window="7d" jobs={jobs} runs={runs} />
         </div>
-        <div className={`${classes.column} ${classes.delay2}`}>
+        <div className={`ptbEmptyIn ${classes.delay2}`}>
           <Stack gap={6}>
             <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
               Next scheduled
