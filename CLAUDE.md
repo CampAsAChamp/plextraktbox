@@ -71,7 +71,7 @@ the user asks.
 4. **Per-item fault isolation** — one failed apply must not abort the whole run.
 5. **Secrets** — never commit `.env`; tokens Fernet-encrypted in DB; structlog redacts sensitive values.
 6. **Tests** — add meaningful tests for behavior changes; run `mise run check` before finishing.
-7. **Lint-before-done** — Cursor `stop` / `subagentStop` hooks run `mise run lint-fix` when `backend/` or `frontend/` is dirty; resolve any follow-up failures before finishing.
+7. **Lint-before-done** — Cursor `stop` hook silently runs `mise run lint-fix` when `backend/` or `frontend/` is dirty (no auto-follow-up). Still run it yourself before finishing if you changed code.
 
 ## Sync engine conventions
 
