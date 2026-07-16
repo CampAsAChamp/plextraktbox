@@ -3,18 +3,16 @@
 from __future__ import annotations
 
 from plextraktbox.sync.context import SyncContext
-from plextraktbox.sync.matcher import MediaMatcher
 from plextraktbox.sync.plans import ChangeAction, DataType, PlannedChange, ReconcilePlan
 from plextraktbox.sync.reconcilers.base import Reconciler
+from plextraktbox.sync.reconcilers.helpers import build_matcher, iter_writable_targets
+from plextraktbox.utils.rating import letterboxd_to_normalized
 
 TRUTH_SOURCE = "letterboxd"
 TARGET_SOURCES = ("plex", "trakt")
 RATING_TOLERANCE = 0.01
 
-
-def letterboxd_to_normalized(stars: float) -> float:
-    """Convert Letterboxd 0.5–5 stars to Plex/Trakt 0–10 scale."""
-    return round(stars * 2, 1)
+__all__ = ["RatingsReconciler", "letterboxd_to_normalized"]
 
 
 class RatingsReconciler(Reconciler):
@@ -29,16 +27,11 @@ class RatingsReconciler(Reconciler):
         ]
         changes: list[PlannedChange] = []
 
-        for target_name in TARGET_SOURCES:
-            if target_name not in ctx.sources:
-                continue
-            target = ctx.sources[target_name]
-            if not target.capabilities.ratings_write:
-                continue
-
+        for target_name, _target in iter_writable_targets(
+            ctx, TARGET_SOURCES, write_capability="ratings_write"
+        ):
             target_items = await ctx.fetch(target_name, self.data_type)
-            matcher = MediaMatcher()
-            matcher.add_many(target_items)
+            matcher = build_matcher(target_items)
 
             for truth_item in truth_items:
                 desired = truth_item.rating

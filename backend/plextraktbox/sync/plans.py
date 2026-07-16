@@ -64,15 +64,39 @@ class RunSummary:
     episodes_watched: int = 0
     unmatched: list[UnmatchedItem] = field(default_factory=list)
 
-    def merge_apply(self, result: ApplyResult, *, action: ChangeAction) -> None:
+    def merge_apply(
+        self,
+        result: ApplyResult,
+        *,
+        data_type: DataType,
+        action: ChangeAction,
+        changes: list[PlannedChange],
+    ) -> None:
+        """Fold an apply batch into summary counters (including TV breakdown)."""
+        from plextraktbox.sync.media_item import MediaType
+
         if action == ChangeAction.ADD:
             self.added += result.applied
         elif action == ChangeAction.REMOVE:
             self.removed += result.applied
         elif action == ChangeAction.UPDATE:
-            pass
+            if data_type == DataType.RATINGS:
+                self.rated += result.applied
+            elif data_type == DataType.WATCHED:
+                self.watched += result.applied
         self.skipped += result.skipped
         self.errors += result.errors
+
+        # TV breakdown — only when the whole batch applied (incl. dry-run).
+        if result.applied == len(changes) and changes:
+            if data_type == DataType.WATCHLIST and action == ChangeAction.ADD:
+                self.shows_added += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
+            elif data_type == DataType.WATCHLIST and action == ChangeAction.REMOVE:
+                self.shows_removed += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
+            elif data_type == DataType.WATCHED and action == ChangeAction.UPDATE:
+                self.episodes_watched += sum(
+                    1 for change in changes if change.item.media_type == MediaType.EPISODE
+                )
 
     def to_dict(self) -> dict[str, int | list[dict[str, str]]]:
         return {

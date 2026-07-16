@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from plextraktbox.sync.context import SyncContext
-from plextraktbox.sync.matcher import MediaMatcher
 from plextraktbox.sync.plans import ChangeAction, DataType, PlannedChange, ReconcilePlan
 from plextraktbox.sync.reconcilers.base import Reconciler
+from plextraktbox.sync.reconcilers.helpers import build_matcher, iter_writable_targets
 
 TRUTH_SOURCE = "plex"
 TARGET_SOURCES = ("trakt",)
@@ -23,18 +23,13 @@ class WatchlistReconciler(Reconciler):
 
         # Letterboxd watchlist is ignored (Plex is truth; LB has no write API).
 
-        for target_name in TARGET_SOURCES:
-            if target_name not in ctx.sources:
-                continue
-            target = ctx.sources[target_name]
-            if not target.capabilities.watchlist_write:
-                continue
-
+        for target_name, _target in iter_writable_targets(
+            ctx, TARGET_SOURCES, write_capability="watchlist_write"
+        ):
             target_items = await ctx.fetch(target_name, self.data_type)
             target_watchlisted = [item for item in target_items if item.watchlisted]
 
-            matcher = MediaMatcher()
-            matcher.add_many(target_watchlisted)
+            matcher = build_matcher(target_watchlisted)
 
             for truth_item in truth_items:
                 if matcher.find(truth_item) is not None:
@@ -52,8 +47,7 @@ class WatchlistReconciler(Reconciler):
                     )
                 )
 
-            truth_matcher = MediaMatcher()
-            truth_matcher.add_many(truth_items)
+            truth_matcher = build_matcher(truth_items)
             for target_item in target_watchlisted:
                 if truth_matcher.find(target_item) is not None:
                     continue

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from plextraktbox.sync.context import SyncContext
-from plextraktbox.sync.matcher import MediaMatcher
 from plextraktbox.sync.plans import ChangeAction, DataType, PlannedChange, ReconcilePlan
 from plextraktbox.sync.reconcilers.base import Reconciler
+from plextraktbox.sync.reconcilers.helpers import build_matcher, iter_writable_targets
 
 TRUTH_SOURCE = "trakt"
 TARGET_SOURCES = ("plex",)
@@ -21,16 +21,11 @@ class WatchedReconciler(Reconciler):
         truth_items = [item for item in await ctx.fetch(TRUTH_SOURCE, self.data_type) if item.watched]
         changes: list[PlannedChange] = []
 
-        for target_name in TARGET_SOURCES:
-            if target_name not in ctx.sources:
-                continue
-            target = ctx.sources[target_name]
-            if not target.capabilities.watched_write:
-                continue
-
+        for target_name, _target in iter_writable_targets(
+            ctx, TARGET_SOURCES, write_capability="watched_write"
+        ):
             target_items = await ctx.fetch(target_name, self.data_type)
-            matcher = MediaMatcher()
-            matcher.add_many(target_items)
+            matcher = build_matcher(target_items)
 
             for truth_item in truth_items:
                 target_item = matcher.find(truth_item)

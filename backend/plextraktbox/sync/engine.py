@@ -7,7 +7,6 @@ from collections import defaultdict
 import structlog
 
 from plextraktbox.sync.context import SyncContext
-from plextraktbox.sync.matcher import MediaMatcher
 from plextraktbox.sync.plans import (
     ApplyResult,
     ChangeAction,
@@ -18,6 +17,7 @@ from plextraktbox.sync.plans import (
 )
 from plextraktbox.sync.reconcilers import DEFAULT_RECONCILERS
 from plextraktbox.sync.reconcilers.base import Reconciler
+from plextraktbox.sync.reconcilers.helpers import build_matcher
 
 
 async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None) -> RunSummary:
@@ -134,7 +134,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                 dry_run=ctx.dry_run,
             )
 
-            _merge_summary(summary, data_type, action, result, changes)
+            summary.merge_apply(result, data_type=data_type, action=action, changes=changes)
 
     return summary
 
@@ -164,39 +164,6 @@ async def _apply_changes(
 
 def _count_matched(changes: list[PlannedChange]) -> int:
     return sum(1 for change in changes if change.action == ChangeAction.UPDATE)
-
-
-def _merge_summary(
-    summary: RunSummary,
-    data_type: DataType,
-    action: ChangeAction,
-    result: ApplyResult,
-    changes: list[PlannedChange],
-) -> None:
-    from plextraktbox.sync.media_item import MediaType
-
-    if action == ChangeAction.ADD:
-        summary.added += result.applied
-    elif action == ChangeAction.REMOVE:
-        summary.removed += result.applied
-    elif action == ChangeAction.UPDATE:
-        if data_type == DataType.RATINGS:
-            summary.rated += result.applied
-        elif data_type == DataType.WATCHED:
-            summary.watched += result.applied
-    summary.skipped += result.skipped
-    summary.errors += result.errors
-
-    # TV breakdown — only when the whole batch applied (incl. dry-run).
-    if result.applied == len(changes) and changes:
-        if data_type == DataType.WATCHLIST and action == ChangeAction.ADD:
-            summary.shows_added += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
-        elif data_type == DataType.WATCHLIST and action == ChangeAction.REMOVE:
-            summary.shows_removed += sum(1 for change in changes if change.item.media_type == MediaType.SHOW)
-        elif data_type == DataType.WATCHED and action == ChangeAction.UPDATE:
-            summary.episodes_watched += sum(
-                1 for change in changes if change.item.media_type == MediaType.EPISODE
-            )
 
 
 async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: RunSummary) -> None:
@@ -231,8 +198,7 @@ async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: Run
     if data_type == DataType.WATCHLIST and "plex" in ctx.sources and "trakt" in ctx.sources:
         truth = [i for i in await ctx.fetch("plex", data_type) if i.watchlisted]
         target = [i for i in await ctx.fetch("trakt", data_type) if i.watchlisted]
-        matcher = MediaMatcher()
-        matcher.add_many(target)
+        matcher = build_matcher(target)
         for item in truth:
             if item.identifiers and matcher.find(item) is None:
                 add(item, source="plex", reason="no trakt match")
@@ -243,8 +209,7 @@ async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: Run
             if target_name not in ctx.sources:
                 continue
             target_items = await ctx.fetch(target_name, data_type)
-            matcher = MediaMatcher()
-            matcher.add_many(target_items)
+            matcher = build_matcher(target_items)
             for item in truth:
                 if not item.identifiers or matcher.find(item) is not None:
                     continue
@@ -255,8 +220,7 @@ async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: Run
     if data_type == DataType.WATCHED and "trakt" in ctx.sources and "plex" in ctx.sources:
         truth = [i for i in await ctx.fetch("trakt", data_type) if i.watched]
         target_items = await ctx.fetch("plex", data_type)
-        matcher = MediaMatcher()
-        matcher.add_many(target_items)
+        matcher = build_matcher(target_items)
         for item in truth:
             if item.identifiers and matcher.find(item) is None:
                 add(item, source="trakt", reason="no plex match")
