@@ -1,3 +1,25 @@
+# [0.8.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.3...v0.8.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* improve One Dark Pro primary shade and badge contrast ([127eeb9](https://github.com/CampAsAChamp/plextraktbox/commit/127eeb9b51b9f7a78d5d060af14c025ac8f9a937))
+* install bash in dev-backend image for entrypoint ([5d064df](https://github.com/CampAsAChamp/plextraktbox/commit/5d064df59556c93f74298f9d0fa35c23d599833f))
+* persist cron timezone on change and collapse exclude IDs ([903186d](https://github.com/CampAsAChamp/plextraktbox/commit/903186d37b19696803e89ee8d08670b09f1efe74))
+* remove home screen access restriction ([3564239](https://github.com/CampAsAChamp/plextraktbox/commit/356423910bf7fa3accd90460aae1b6b85f0fb913))
+* send application logs to stdout ([23fd09e](https://github.com/CampAsAChamp/plextraktbox/commit/23fd09e87c2aadbc5c162fb62c14b154284d8914))
+* show RoundedTable scrollbars only when needed ([307359f](https://github.com/CampAsAChamp/plextraktbox/commit/307359f7a2dbd802cb6a492fdcd50b1853777f4d))
+* stop uvicorn.access from propagating to root ([b2870f1](https://github.com/CampAsAChamp/plextraktbox/commit/b2870f16c1b082d83116619ba6ddeea66f5937cd))
+* wrap Plex library list HTTP errors as ValueError ([1695cf3](https://github.com/CampAsAChamp/plextraktbox/commit/1695cf3cdeda6f9ef43525af3d329f3fb8c1dd50))
+
+
+### Features
+
+* add delete and clear-all for in-app notifications ([d34e272](https://github.com/CampAsAChamp/plextraktbox/commit/d34e27238c7f3c05f35756e7184a4c8365ca640e))
+* add flaresolverr support ([1db3ad5](https://github.com/CampAsAChamp/plextraktbox/commit/1db3ad5cd8398f5742da3b541ca047c980270542))
+* add toast preview controls on Theme settings ([98234d0](https://github.com/CampAsAChamp/plextraktbox/commit/98234d04bf64b4eb348f419b7918e9fb9e5ae155))
+* replace job row action menus with icon buttons ([f53669d](https://github.com/CampAsAChamp/plextraktbox/commit/f53669d39b73140de7db1165e41d96cb1a4b6a60))
+
 ## [0.7.3](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.2...v0.7.3) (2026-07-16)
 
 
