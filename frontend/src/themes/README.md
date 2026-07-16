@@ -1,12 +1,16 @@
 # UI themes
 
 Built-in palettes live as `createTheme()` modules in this directory. Custom themes are CSS
-files under `{DATA_DIR}/themes/` (upload via Settings or mount a volume).
+files under `{DATA_DIR}/themes/` (edit via Settings → Theme → **Custom CSS**, or mount a volume).
 
 ## Custom CSS format
 
-Start from [`example-theme.css`](./example-theme.css) (also available via **Load example** in
-Settings → Theme). Headers plus a `:root[data-ptb-theme="…"]` block are required:
+Settings has one Custom CSS editor: paste, **Load example**, **Import file** (into the editor), then
+**Save theme**. Saved customs appear in the theme picker with preview colors taken from
+`--mantine-color-dark-9`, `--mantine-color-dark-7`/`-8`, and `--mantine-primary-color-filled`.
+
+Start from [`example-theme.css`](./example-theme.css). Headers plus a `:root[data-ptb-theme="…"]`
+block are required — `@id` becomes `{id}.css` on disk:
 
 ```css
 /* @name: Harbor Dusk */

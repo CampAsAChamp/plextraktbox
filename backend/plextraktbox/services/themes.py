@@ -23,6 +23,9 @@ BUILTIN_IDS: frozenset[str] = frozenset(theme_id for theme_id, _ in BUILTIN_THEM
 _ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 _META_ID_RE = re.compile(r"@id:\s*([a-z0-9][a-z0-9-]{0,62})", re.IGNORECASE)
 _META_NAME_RE = re.compile(r"@name:\s*(.+?)(?:\*/|$)", re.IGNORECASE)
+_CSS_HEX_VAR_RE = re.compile(r"--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8})\b")
+
+_FALLBACK_SWATCHES: tuple[str, str, str] = ("#282C34", "#3E4452", "#61AFEF")
 
 
 @dataclass(frozen=True)
@@ -30,6 +33,37 @@ class ThemeInfo:
     id: str
     name: str
     source: str  # "builtin" | "custom"
+    swatches: list[str] | None = None
+
+
+def _normalize_hex(value: str) -> str:
+    """Expand #RGB / #RRGGBB / #RRGGBBAA to #RRGGBB uppercase."""
+    raw = value.lstrip("#")
+    if len(raw) == 3:
+        raw = "".join(ch * 2 for ch in raw)
+    elif len(raw) == 8:
+        raw = raw[:6]
+    return f"#{raw.upper()}"
+
+
+def preview_swatches(css: str) -> list[str]:
+    """Extract up to three hex preview colors from custom theme CSS variables."""
+    found: dict[str, str] = {}
+    for match in _CSS_HEX_VAR_RE.finditer(css):
+        found[match.group(1).lower()] = _normalize_hex(match.group(2))
+
+    deep = found.get("mantine-color-dark-9")
+    mid = found.get("mantine-color-dark-7") or found.get("mantine-color-dark-8")
+    accent = found.get("mantine-primary-color-filled")
+
+    picks = [deep, mid, accent]
+    result = [color for color in picks if color is not None]
+    for fallback in _FALLBACK_SWATCHES:
+        if len(result) >= 3:
+            break
+        if fallback not in result:
+            result.append(fallback)
+    return result[:3]
 
 
 def themes_dir() -> Path:
@@ -88,7 +122,14 @@ def list_custom_themes() -> list[ThemeInfo]:
                 continue
             # Prefer filename id when metadata disagrees — one file per id on disk.
             disk_id = sanitize_theme_id(path.stem)
-            results.append(ThemeInfo(id=disk_id, name=name, source="custom"))
+            results.append(
+                ThemeInfo(
+                    id=disk_id,
+                    name=name,
+                    source="custom",
+                    swatches=preview_swatches(css),
+                )
+            )
         except OSError, UnicodeDecodeError, ValueError:
             continue
     return results
@@ -145,7 +186,7 @@ def save_custom_theme(css: str, *, filename: str | None = None) -> ThemeInfo:
 
     path = _safe_custom_path(theme_id)
     path.write_text(css, encoding="utf-8")
-    return ThemeInfo(id=theme_id, name=name, source="custom")
+    return ThemeInfo(id=theme_id, name=name, source="custom", swatches=preview_swatches(css))
 
 
 def delete_custom_theme(theme_id: str) -> None:

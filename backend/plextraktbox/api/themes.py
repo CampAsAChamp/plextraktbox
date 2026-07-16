@@ -12,9 +12,13 @@ from plextraktbox.services import themes as themes_svc
 router = APIRouter(prefix="/themes", tags=["themes"])
 
 
+def _to_response(info: themes_svc.ThemeInfo) -> ThemeInfoResponse:
+    return ThemeInfoResponse(id=info.id, name=info.name, source=info.source, swatches=info.swatches)
+
+
 @router.get("", response_model=list[ThemeInfoResponse])
 def list_themes(_user: CurrentUserDep) -> list[ThemeInfoResponse]:
-    return [ThemeInfoResponse(id=t.id, name=t.name, source=t.source) for t in themes_svc.list_themes()]
+    return [_to_response(t) for t in themes_svc.list_themes()]
 
 
 @router.post(
@@ -27,7 +31,7 @@ def upload_theme(body: ThemeUploadRequest, _user: CurrentUserDep) -> ThemeInfoRe
         info = themes_svc.save_custom_theme(body.css, filename=body.filename)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return ThemeInfoResponse(id=info.id, name=info.name, source=info.source)
+    return _to_response(info)
 
 
 @router.get("/{theme_id}/css", response_class=PlainTextResponse)

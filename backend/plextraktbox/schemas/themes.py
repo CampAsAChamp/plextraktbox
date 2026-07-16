@@ -9,6 +9,7 @@ class ThemeInfoResponse(BaseModel):
     id: str
     name: str
     source: str
+    swatches: list[str] | None = None
 
 
 class ThemeUploadRequest(BaseModel):

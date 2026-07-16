@@ -1645,6 +1645,8 @@ export interface components {
             name: string;
             /** Source */
             source: string;
+            /** Swatches */
+            swatches?: string[] | null;
         };
         /** ThemeUpdateRequest */
         ThemeUpdateRequest: {

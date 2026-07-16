@@ -11,6 +11,8 @@ SAMPLE_CSS = """\
 /* @id: ocean-night */
 :root[data-ptb-theme="ocean-night"] {
   --mantine-color-dark-9: #0a1628;
+  --mantine-color-dark-7: #12263f;
+  --mantine-primary-color-filled: #3b82f6;
   --ptb-body-gradient: linear-gradient(165deg, #0a1628 0%, #12263f 100%);
 }
 """
@@ -68,10 +70,13 @@ def test_put_theme_and_upload_cycle(client: TestClient) -> None:
         "id": "ocean-night",
         "name": "Ocean Night",
         "source": "custom",
+        "swatches": ["#0A1628", "#12263F", "#3B82F6"],
     }
 
     listed = client.get("/api/themes").json()
-    assert any(t["id"] == "ocean-night" and t["source"] == "custom" for t in listed)
+    ocean = next(t for t in listed if t["id"] == "ocean-night")
+    assert ocean["source"] == "custom"
+    assert ocean["swatches"] == ["#0A1628", "#12263F", "#3B82F6"]
 
     css = client.get("/api/themes/ocean-night/css")
     assert css.status_code == 200

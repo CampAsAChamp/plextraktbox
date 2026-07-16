@@ -24,6 +24,24 @@ def test_parse_metadata() -> None:
     assert name == "Soft Gray"
 
 
+def test_preview_swatches_prefers_dark_and_primary() -> None:
+    css = """
+    :root {
+      --mantine-color-dark-9: #0a1628;
+      --mantine-color-dark-7: #12263f;
+      --mantine-primary-color-filled: #2dd4bf;
+    }
+    """
+    assert themes_svc.preview_swatches(css) == ["#0A1628", "#12263F", "#2DD4BF"]
+
+
+def test_preview_swatches_falls_back_when_sparse() -> None:
+    css = ":root { --mantine-color-dark-9: #abc; }\n"
+    swatches = themes_svc.preview_swatches(css)
+    assert swatches[0] == "#AABBCC"
+    assert len(swatches) == 3
+
+
 def test_save_and_delete_custom(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     # Reload settings if cached — get_settings typically reads env each call via lru.

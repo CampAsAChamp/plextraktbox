@@ -10,7 +10,6 @@ import {
   Stack,
   Text,
   Textarea,
-  TextInput,
   Tooltip,
   UnstyledButton,
 } from "@mantine/core"
@@ -32,7 +31,7 @@ import { iconForToastColor, showToast } from "src/toast"
 
 /** Keep the refresh spinner visible on fast local refetches. */
 const MIN_REFRESH_SPIN_MS = 500
-const EXAMPLE_THEME_FILENAME = "harbor-dusk.css"
+const FALLBACK_SWATCHES = ["#282C34", "#3E4452", "#61AFEF"]
 
 function ThemeSwatch({
   theme,
@@ -46,7 +45,7 @@ function ThemeSwatch({
   onDelete?: () => void
 }) {
   const builtin = getBuiltinTheme(theme.id)
-  const swatches = builtin?.swatches ?? ["#282C34", "#3E4452", "#61AFEF"]
+  const swatches = builtin?.swatches ?? theme.swatches ?? FALLBACK_SWATCHES
 
   return (
     <Box pos="relative">
@@ -111,7 +110,8 @@ function ThemeSwatch({
 export function ThemeSection() {
   const queryClient = useQueryClient()
   const [pasteCss, setPasteCss] = useState("")
-  const [pasteName, setPasteName] = useState("custom-theme.css")
+  /** Basename fallback for save when CSS lacks `@id` (set by Import file only). */
+  const [importFilename, setImportFilename] = useState<string | undefined>(undefined)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const themesQuery = useQuery({
@@ -146,11 +146,28 @@ export function ThemeSection() {
     mutationFn: ({ css, filename }: { css: string; filename?: string }) => uploadTheme(css, filename),
     onSuccess: async (info) => {
       setPasteCss("")
+      setImportFilename(undefined)
+      queryClient.setQueryData<ThemeInfo[]>(["themes"], (prev) => {
+        const current = prev ?? []
+        const without = current.filter((t) => t.id !== info.id)
+        return [...without, info]
+      })
       await queryClient.invalidateQueries({ queryKey: ["themes"] })
-      showToast({ color: "green", message: `Uploaded ${info.name}` })
+      try {
+        const active = await updateActiveTheme(info.id)
+        writeCachedThemeId(active.theme_id)
+        queryClient.setQueryData(["settings"], (prev: { ui_theme?: string } | undefined) =>
+          prev ? { ...prev, ui_theme: active.theme_id } : prev,
+        )
+        await queryClient.invalidateQueries({ queryKey: ["settings"] })
+        showToast({ color: "green", message: `Saved and applied ${info.name}` })
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Theme saved but failed to activate"
+        showToast({ color: "orange", message })
+      }
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Upload failed"
+      const message = error instanceof Error ? error.message : "Failed to save theme"
       showToast({ color: "red", message })
     },
   })
@@ -177,12 +194,14 @@ export function ThemeSection() {
       id: t.id,
       name: t.name,
       source: "builtin" as const,
+      swatches: t.swatches,
     }))
 
-  async function handleFile(file: File | null) {
+  async function handleImportFile(file: File | null) {
     if (!file) return
     const css = await file.text()
-    uploadMutation.mutate({ css, filename: file.name })
+    setPasteCss(css)
+    setImportFilename(file.name)
   }
 
   async function handleRefreshThemes() {
@@ -213,7 +232,7 @@ export function ThemeSection() {
       <Stack gap="lg">
         <SettingsSectionTitle icon={<PaletteIcon size={18} />}>Theme</SettingsSectionTitle>
         <Text size="sm" c="dimmed">
-          Choose a built-in palette or upload a custom CSS theme. Active theme is stored in settings and applied for this install. Optional
+          Choose a built-in palette or save a custom CSS theme. Active theme is stored in settings and applied for this install. Optional
           host volume: <code>/data/themes</code>.
         </Text>
 
@@ -237,13 +256,6 @@ export function ThemeSection() {
           <Button variant="light" loading={isRefreshing} onClick={() => void handleRefreshThemes()} leftSection={<SyncIcon />}>
             Refresh themes
           </Button>
-          <FileButton onChange={(file) => void handleFile(file)} accept=".css,text/css">
-            {(props) => (
-              <Button variant="light" loading={uploadMutation.isPending} leftSection={<UploadIcon />} {...props}>
-                Upload CSS
-              </Button>
-            )}
-          </FileButton>
         </Group>
 
         <Stack gap="xs">
@@ -288,9 +300,10 @@ export function ThemeSection() {
         </Stack>
 
         <Stack gap="xs">
-          <Text fw={500}>Paste custom CSS</Text>
+          <Text fw={500}>Custom CSS</Text>
           <Text size="sm" c="dimmed">
-            Include <code>/* @name: … */</code> and <code>/* @id: … */</code> headers. Load the starter below to tweak colors, or see{" "}
+            Include <code>/* @name: … */</code> and <code>/* @id: … */</code> headers — the id becomes <code>{`{id}.css`}</code> under{" "}
+            <code>/data/themes</code>. Load the starter to tweak colors, import a file into the editor, or see{" "}
             <Anchor
               href="https://github.com/CampAsAChamp/plextraktbox/blob/main/frontend/src/themes/README.md"
               target="_blank"
@@ -306,29 +319,38 @@ export function ThemeSection() {
             autosize
             maxRows={18}
             value={pasteCss}
-            onChange={(event) => setPasteCss(event.currentTarget.value)}
+            onChange={(event) => {
+              setPasteCss(event.currentTarget.value)
+              setImportFilename(undefined)
+            }}
             placeholder={exampleThemeCss}
             styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
           />
-          <Group align="flex-end">
+          <Group>
             <Button
               variant="light"
               onClick={() => {
                 setPasteCss(exampleThemeCss)
-                setPasteName(EXAMPLE_THEME_FILENAME)
+                setImportFilename(undefined)
               }}
             >
               Load example
             </Button>
+            <FileButton onChange={(file) => void handleImportFile(file)} accept=".css,text/css">
+              {(props) => (
+                <Button variant="light" leftSection={<UploadIcon />} {...props}>
+                  Import file
+                </Button>
+              )}
+            </FileButton>
             <Button
               disabled={!pasteCss.trim()}
               loading={uploadMutation.isPending}
               leftSection={<SaveIcon />}
-              onClick={() => uploadMutation.mutate({ css: pasteCss, filename: pasteName || undefined })}
+              onClick={() => uploadMutation.mutate({ css: pasteCss, filename: importFilename })}
             >
-              Save pasted theme
+              Save theme
             </Button>
-            <TextInput label="Filename hint" value={pasteName} onChange={(event) => setPasteName(event.currentTarget.value)} w={220} />
           </Group>
         </Stack>
       </Stack>
