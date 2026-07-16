@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from sqlmodel import Session, select
 
 from plextraktbox.clients import letterboxd_client, plex_client, tmdb_client, trakt_client
 from plextraktbox.clients.base import ConnectionTestResult
+from plextraktbox.clients.plex_auth import PlexPinStart
+from plextraktbox.clients.trakt_client import TraktDeviceStart
 from plextraktbox.config import get_settings
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.connection import Connection, ConnectionStatus, Service
@@ -23,6 +26,184 @@ ALL_SERVICES = (
     Service.LETTERBOXD,
     Service.TMDB,
 )
+
+
+@dataclass(frozen=True)
+class OAuthPollResult:
+    status: Literal["pending", "ok"]
+    connection: Connection | None = None
+
+
+def start_plex_pin() -> PlexPinStart:
+    try:
+        client_id = get_settings().plex_client_identifier
+        start = plex_client.start_pin_flow(client_id)
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"Could not start Plex authorization: {exc}") from exc
+    log.info(
+        "connection.plex.pin.start",
+        service="plex",
+        pin_id=start.pin_id,
+        expires_in=start.expires_in,
+        poll_interval_s=start.interval,
+    )
+    return start
+
+
+def poll_plex_pin(session: Session, *, pin_id: int, pin_code: str) -> OAuthPollResult:
+    try:
+        client_id = get_settings().plex_client_identifier
+        poll_status, account_token = plex_client.poll_pin_token(
+            client_id,
+            pin_id,
+            pin_code,
+        )
+    except ValueError as exc:
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=pin_id,
+            stage="poll",
+            error=str(exc),
+        )
+        raise
+    except Exception as exc:  # noqa: BLE001
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=pin_id,
+            stage="poll",
+            error=str(exc),
+        )
+        raise ValueError(f"Plex authorization failed: {exc}") from exc
+
+    if poll_status == "pending" or account_token is None:
+        log.info(
+            "connection.plex.pin.poll",
+            service="plex",
+            pin_id=pin_id,
+            status="pending",
+            authorized=False,
+        )
+        return OAuthPollResult(status="pending")
+
+    try:
+        connection = save_plex_from_pin(
+            session,
+            account_token=account_token,
+            client_identifier=client_id,
+        )
+    except ValueError as exc:
+        log.warning(
+            "connection.plex.pin.poll_failed",
+            pin_id=pin_id,
+            stage="save",
+            error=str(exc),
+        )
+        raise
+
+    config = connection.public_config()
+    log.info(
+        "connection.plex.pin.poll",
+        service="plex",
+        pin_id=pin_id,
+        status="ok",
+        authorized=True,
+        url=config.get("url"),
+        friendly_name=config.get("friendly_name"),
+        machine_id=config.get("machine_id"),
+    )
+    return OAuthPollResult(status="ok", connection=connection)
+
+
+def start_trakt_device() -> TraktDeviceStart:
+    try:
+        client_id, _ = get_settings().require_trakt_credentials()
+        start = trakt_client.start_device_flow(client_id)
+    except ValueError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"Could not start Trakt authorization: {exc}") from exc
+    log.info(
+        "connection.trakt.device.start",
+        service="trakt",
+        user_code=start.user_code,
+        expires_in=start.expires_in,
+        poll_interval_s=start.interval,
+    )
+    return start
+
+
+def poll_trakt_device(session: Session, *, device_code: str) -> OAuthPollResult:
+    try:
+        client_id, client_secret = get_settings().require_trakt_credentials()
+        poll_status, tokens = trakt_client.poll_device_token(
+            client_id,
+            client_secret,
+            device_code,
+        )
+    except ValueError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"Trakt authorization failed: {exc}") from exc
+
+    if poll_status == "pending" or tokens is None:
+        log.info(
+            "connection.trakt.device.poll",
+            service="trakt",
+            status="pending",
+            authorized=False,
+        )
+        return OAuthPollResult(status="pending")
+
+    connection = save_trakt_tokens(
+        session,
+        access_token=tokens.access_token,
+        refresh_token=tokens.refresh_token,
+        expires_at=tokens.expires_at,
+    )
+    log.info(
+        "connection.trakt.device.poll",
+        service="trakt",
+        status="ok",
+        authorized=True,
+        connection_status=connection.status.value,
+    )
+    return OAuthPollResult(status="ok", connection=connection)
+
+
+def test_plex_draft_or_saved(
+    session: Session,
+    *,
+    url: str | None,
+    token: str | None,
+) -> ConnectionTestResult:
+    if url is not None and token:
+        return plex_client.test_connection(url, token)
+    return test_saved_connection(session, Service.PLEX)
+
+
+def test_letterboxd_draft_or_saved(
+    session: Session,
+    *,
+    username: str | None,
+    password: str | None,
+) -> ConnectionTestResult:
+    if not username:
+        return test_saved_connection(session, Service.LETTERBOXD)
+    try:
+        resolved_password = resolve_letterboxd_password(session, password)
+    except ValueError as exc:
+        return ConnectionTestResult(ok=False, message=str(exc))
+    return letterboxd_client.test_connection(username, resolved_password)
+
+
+def test_tmdb_draft_or_saved(
+    session: Session,
+    *,
+    api_key: str | None,
+) -> ConnectionTestResult:
+    if api_key:
+        return tmdb_client.test_connection(api_key)
+    return test_saved_connection(session, Service.TMDB)
 
 
 def get_connection(session: Session, service: Service) -> Connection | None:

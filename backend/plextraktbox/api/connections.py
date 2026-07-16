@@ -7,9 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
-from plextraktbox.clients import letterboxd_client, plex_client, tmdb_client, trakt_client
 from plextraktbox.config import get_settings
-from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.connection import Service
 from plextraktbox.schemas.connection import (
     ConnectionsStatusResponse,
@@ -34,9 +32,14 @@ from plextraktbox.schemas.connection import (
 )
 from plextraktbox.services import connections as conn_svc
 
-log = get_logger(__name__)
-
 router = APIRouter(prefix="/connections", tags=["connections"])
+
+
+def _value_error_to_http(exc: ValueError, *, trakt_not_configured_503: bool = False) -> HTTPException:
+    detail = str(exc)
+    if trakt_not_configured_503 and "not configured" in detail.lower():
+        return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
+    return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
 
 
 @router.get("/status", response_model=ConnectionsStatusResponse)
@@ -71,7 +74,7 @@ def save_plex(
             token=body.token,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
     return ConnectionSummary.from_connection(connection, Service.PLEX)
 
 
@@ -82,20 +85,9 @@ def save_plex(
 )
 def plex_pin_start() -> PlexPinStartResponse:
     try:
-        client_id = get_settings().plex_client_identifier
-        start = plex_client.start_pin_flow(client_id)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not start Plex authorization: {exc}",
-        ) from exc
-    log.info(
-        "connection.plex.pin.start",
-        service="plex",
-        pin_id=start.pin_id,
-        expires_in=start.expires_in,
-        poll_interval_s=start.interval,
-    )
+        start = conn_svc.start_plex_pin()
+    except ValueError as exc:
+        raise _value_error_to_http(exc) from exc
     return PlexPinStartResponse(
         pin_id=start.pin_id,
         pin_code=start.pin_code,
@@ -117,68 +109,14 @@ def plex_pin_poll(
     session: SessionDep,
 ) -> PlexPinPollResponse:
     try:
-        client_id = get_settings().plex_client_identifier
-        poll_status, account_token = plex_client.poll_pin_token(
-            client_id,
-            body.pin_id,
-            body.pin_code,
-        )
+        result = conn_svc.poll_plex_pin(session, pin_id=body.pin_id, pin_code=body.pin_code)
     except ValueError as exc:
-        log.warning(
-            "connection.plex.pin.poll_failed",
-            pin_id=body.pin_id,
-            stage="poll",
-            error=str(exc),
-        )
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
-        log.warning(
-            "connection.plex.pin.poll_failed",
-            pin_id=body.pin_id,
-            stage="poll",
-            error=str(exc),
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Plex authorization failed: {exc}",
-        ) from exc
+        raise _value_error_to_http(exc) from exc
 
-    if poll_status == "pending" or account_token is None:
-        log.info(
-            "connection.plex.pin.poll",
-            service="plex",
-            pin_id=body.pin_id,
-            status="pending",
-            authorized=False,
-        )
+    if result.status == "pending":
         return PlexPinPollResponse(status="pending", connection=None)
 
-    try:
-        connection = conn_svc.save_plex_from_pin(
-            session,
-            account_token=account_token,
-            client_identifier=client_id,
-        )
-    except ValueError as exc:
-        log.warning(
-            "connection.plex.pin.poll_failed",
-            pin_id=body.pin_id,
-            stage="save",
-            error=str(exc),
-        )
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-
-    summary = ConnectionSummary.from_connection(connection, Service.PLEX)
-    log.info(
-        "connection.plex.pin.poll",
-        service="plex",
-        pin_id=body.pin_id,
-        status="ok",
-        authorized=True,
-        url=summary.config.get("url"),
-        friendly_name=summary.config.get("friendly_name"),
-        machine_id=summary.config.get("machine_id"),
-    )
+    summary = ConnectionSummary.from_connection(result.connection, Service.PLEX)
     return PlexPinPollResponse(status="ok", connection=summary)
 
 
@@ -190,7 +128,7 @@ def list_plex_libraries(_user: CurrentUserDep, session: SessionDep) -> PlexLibra
     try:
         libraries = conn_svc.list_plex_libraries(session)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
 
     connection = conn_svc.get_connection(session, Service.PLEX)
     config = connection.public_config() if connection else {}
@@ -219,7 +157,7 @@ def update_plex_libraries(
     try:
         connection = conn_svc.update_plex_libraries(session, body.library_ids)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
     return ConnectionSummary.from_connection(connection, Service.PLEX)
 
 
@@ -240,7 +178,7 @@ def save_letterboxd(
             password=body.password,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
     return ConnectionSummary.from_connection(connection, Service.LETTERBOXD)
 
 
@@ -257,7 +195,7 @@ def save_tmdb(
     try:
         connection = conn_svc.save_tmdb(session, api_key=body.api_key)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
     return ConnectionSummary.from_connection(connection, Service.TMDB)
 
 
@@ -271,10 +209,11 @@ def test_plex(
     session: SessionDep,
     body: Annotated[PlexConnectionTestRequest, Body()] = PlexConnectionTestRequest(),
 ) -> ConnectionTestResponse:
-    if body.url is not None and body.token:
-        result = plex_client.test_connection(str(body.url), body.token)
-    else:
-        result = conn_svc.test_saved_connection(session, Service.PLEX)
+    result = conn_svc.test_plex_draft_or_saved(
+        session,
+        url=str(body.url) if body.url is not None else None,
+        token=body.token,
+    )
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 
 
@@ -288,15 +227,11 @@ def test_letterboxd(
     session: SessionDep,
     body: Annotated[LetterboxdConnectionTestRequest, Body()] = LetterboxdConnectionTestRequest(),
 ) -> ConnectionTestResponse:
-    if not body.username:
-        result = conn_svc.test_saved_connection(session, Service.LETTERBOXD)
-        return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
-
-    try:
-        password = conn_svc.resolve_letterboxd_password(session, body.password)
-    except ValueError as exc:
-        return ConnectionTestResponse(ok=False, message=str(exc))
-    result = letterboxd_client.test_connection(body.username, password)
+    result = conn_svc.test_letterboxd_draft_or_saved(
+        session,
+        username=body.username,
+        password=body.password,
+    )
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 
 
@@ -310,10 +245,7 @@ def test_tmdb(
     session: SessionDep,
     body: Annotated[TmdbConnectionTestRequest, Body()] = TmdbConnectionTestRequest(),
 ) -> ConnectionTestResponse:
-    if body.api_key:
-        result = tmdb_client.test_connection(body.api_key)
-    else:
-        result = conn_svc.test_saved_connection(session, Service.TMDB)
+    result = conn_svc.test_tmdb_draft_or_saved(session, api_key=body.api_key)
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 
 
@@ -341,7 +273,7 @@ def save_trakt_tokens_dev(
             expires_at=None,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise _value_error_to_http(exc) from exc
     return ConnectionSummary.from_connection(connection, Service.TRAKT)
 
 
@@ -352,22 +284,12 @@ def save_trakt_tokens_dev(
 )
 def trakt_device_start() -> TraktDeviceStartResponse:
     try:
-        client_id, _ = get_settings().require_trakt_credentials()
-        start = trakt_client.start_device_flow(client_id)
+        start = conn_svc.start_trakt_device()
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not start Trakt authorization: {exc}",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
         ) from exc
-    log.info(
-        "connection.trakt.device.start",
-        service="trakt",
-        user_code=start.user_code,
-        expires_in=start.expires_in,
-        poll_interval_s=start.interval,
-    )
     return TraktDeviceStartResponse(
         user_code=start.user_code,
         device_code=start.device_code,
@@ -388,50 +310,14 @@ def trakt_device_poll(
     session: SessionDep,
 ) -> TraktDevicePollResponse:
     try:
-        client_id, client_secret = get_settings().require_trakt_credentials()
-        poll_status, tokens = trakt_client.poll_device_token(
-            client_id,
-            client_secret,
-            body.device_code,
-        )
+        result = conn_svc.poll_trakt_device(session, device_code=body.device_code)
     except ValueError as exc:
-        detail = str(exc)
-        if "not configured" in detail.lower():
-            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail) from exc
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail) from exc
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Trakt authorization failed: {exc}",
-        ) from exc
+        raise _value_error_to_http(exc, trakt_not_configured_503=True) from exc
 
-    if poll_status == "pending" or tokens is None:
-        log.info(
-            "connection.trakt.device.poll",
-            service="trakt",
-            status="pending",
-            authorized=False,
-        )
+    if result.status == "pending":
         return TraktDevicePollResponse(status="pending", connection=None)
 
-    try:
-        connection = conn_svc.save_trakt_tokens(
-            session,
-            access_token=tokens.access_token,
-            refresh_token=tokens.refresh_token,
-            expires_at=tokens.expires_at,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-
-    summary = ConnectionSummary.from_connection(connection, Service.TRAKT)
-    log.info(
-        "connection.trakt.device.poll",
-        service="trakt",
-        status="ok",
-        authorized=True,
-        connection_status=summary.status,
-    )
+    summary = ConnectionSummary.from_connection(result.connection, Service.TRAKT)
     return TraktDevicePollResponse(status="ok", connection=summary)
 
 
