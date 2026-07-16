@@ -19,11 +19,14 @@ import { useState } from "react"
 import { getSettings } from "src/api/settings"
 import { deleteTheme, listThemes, type ThemeInfo, updateActiveTheme, uploadTheme } from "src/api/themes"
 import { PaletteIcon } from "src/components/icons/PaletteIcon"
+import { SaveIcon } from "src/components/icons/SaveIcon"
+import { SyncIcon } from "src/components/icons/SyncIcon"
 import { TrashIcon } from "src/components/icons/TrashIcon"
+import { UploadIcon } from "src/components/icons/UploadIcon"
 import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
 import { BUILTIN_THEMES, getBuiltinTheme } from "src/themes/registry"
 import { writeCachedThemeId } from "src/themes/themePreference"
-import { showToast } from "src/toast"
+import { iconForToastColor, showToast } from "src/toast"
 
 function ThemeSwatch({
   theme,
@@ -201,17 +204,63 @@ export function ThemeSection() {
         </SimpleGrid>
 
         <Group gap="sm">
-          <Button variant="light" loading={themesQuery.isFetching} onClick={() => void themesQuery.refetch()}>
+          <Button
+            variant="light"
+            loading={themesQuery.isFetching}
+            onClick={() => void themesQuery.refetch()}
+            leftSection={<SyncIcon />}
+          >
             Refresh themes
           </Button>
           <FileButton onChange={(file) => void handleFile(file)} accept=".css,text/css">
             {(props) => (
-              <Button variant="light" loading={uploadMutation.isPending} {...props}>
+              <Button variant="light" loading={uploadMutation.isPending} leftSection={<UploadIcon />} {...props}>
                 Upload CSS
               </Button>
             )}
           </FileButton>
         </Group>
+
+        <Stack gap="xs">
+          <Text fw={500}>Test toasts</Text>
+          <Text size="sm" c="dimmed">
+            Preview success, info, warning, and error notifications with the active theme.
+          </Text>
+          <Group gap="sm">
+            <Button
+              variant="light"
+              color="green"
+              leftSection={iconForToastColor("green")}
+              onClick={() => showToast({ color: "green", title: "Success", message: "Theme preview: success toast" })}
+            >
+              Success
+            </Button>
+            <Button
+              variant="light"
+              color="blue"
+              leftSection={iconForToastColor("blue")}
+              onClick={() => showToast({ color: "blue", title: "Info", message: "Theme preview: info toast" })}
+            >
+              Info
+            </Button>
+            <Button
+              variant="light"
+              color="orange"
+              leftSection={iconForToastColor("orange")}
+              onClick={() => showToast({ color: "orange", title: "Warning", message: "Theme preview: warning toast" })}
+            >
+              Warning
+            </Button>
+            <Button
+              variant="light"
+              color="red"
+              leftSection={iconForToastColor("red")}
+              onClick={() => showToast({ color: "red", title: "Error", message: "Theme preview: error toast" })}
+            >
+              Error
+            </Button>
+          </Group>
+        </Stack>
 
         <Stack gap="xs">
           <Text fw={500}>Paste custom CSS</Text>
@@ -233,6 +282,7 @@ export function ThemeSection() {
             <Button
               disabled={!pasteCss.trim()}
               loading={uploadMutation.isPending}
+              leftSection={<SaveIcon />}
               onClick={() => uploadMutation.mutate({ css: pasteCss, filename: pasteName || undefined })}
             >
               Save pasted theme
