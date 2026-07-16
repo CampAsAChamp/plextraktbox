@@ -40,12 +40,16 @@ const dark: MantineColorsTuple = [
 export const oneDarkProTheme = createTheme({
   ...sharedTheme,
   primaryColor: "blue",
+  // Shade 8 is near-navy (switches look disabled); 6 matches a clear "on" track
+  // and gives filled buttons the same accent.
+  primaryShade: { light: 6, dark: 6 },
   colors: {
     blue,
     dark,
   },
   black: "#1B1F25",
-  white: "#ABB2BF",
+  // Near-white for glyphs on filled badges (toasts, buttons). Body text stays dark[0].
+  white: "#F5F7FA",
   defaultGradient: { from: "blue.4", to: "blue.6", deg: 135 },
   other: {
     ...sharedTheme.other,
