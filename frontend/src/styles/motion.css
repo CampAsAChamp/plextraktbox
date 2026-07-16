@@ -1,0 +1,101 @@
+/* Shared motion tokens and utilities. Honors prefers-reduced-motion. */
+
+:root {
+  --ptb-duration-fast: 160ms;
+  --ptb-duration-in: 240ms;
+  --ptb-ease: ease;
+}
+
+@keyframes ptb-empty-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ptb-pulse-opacity {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes ptb-route-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ptb-success-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ptb-icon-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ptbEmptyIn {
+  animation: ptb-empty-in var(--ptb-duration-in) var(--ptb-ease) forwards;
+}
+
+.ptbAuthEnter {
+  animation: ptb-empty-in 280ms var(--ptb-ease) forwards;
+}
+
+.ptbSuccessIn {
+  animation: ptb-success-in 320ms var(--ptb-ease) forwards;
+}
+
+.ptbRouteFade {
+  animation: ptb-route-fade var(--ptb-duration-fast) var(--ptb-ease) forwards;
+}
+
+.ptbPulseOpacity {
+  animation: ptb-pulse-opacity 1.6s ease-in-out infinite;
+}
+
+.ptbIconPop {
+  animation: ptb-icon-pop 200ms var(--ptb-ease) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptbEmptyIn,
+  .ptbAuthEnter,
+  .ptbSuccessIn,
+  .ptbRouteFade,
+  .ptbPulseOpacity,
+  .ptbIconPop {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

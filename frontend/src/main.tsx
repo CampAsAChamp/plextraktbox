@@ -5,6 +5,7 @@ import "@fontsource/nunito/700.css"
 import "@mantine/core/styles.css"
 import "@mantine/notifications/styles.css"
 import "src/styles/app.css"
+import "src/styles/motion.css"
 
 import { Notifications } from "@mantine/notifications"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
