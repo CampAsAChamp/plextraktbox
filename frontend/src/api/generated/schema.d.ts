@@ -1260,12 +1260,7 @@ export interface components {
             started_at: string;
             /** Finished At */
             finished_at: string | null;
-            /** Summary */
-            summary: {
-                [key: string]: number | {
-                    [key: string]: string;
-                }[];
-            };
+            summary: components["schemas"]["RunSummaryOut"];
             /** Error */
             error: string | null;
         };
@@ -1523,12 +1518,7 @@ export interface components {
             started_at: string;
             /** Finished At */
             finished_at: string | null;
-            /** Summary */
-            summary: {
-                [key: string]: number | {
-                    [key: string]: string;
-                }[];
-            };
+            summary: components["schemas"]["RunSummaryOut"];
             /** Error */
             error: string | null;
         };
@@ -1540,6 +1530,71 @@ export interface components {
             limit: number;
             /** Offset */
             offset: number;
+        };
+        /** RunSummaryOut */
+        RunSummaryOut: {
+            /**
+             * Matched
+             * @default 0
+             */
+            matched: number;
+            /**
+             * Added
+             * @default 0
+             */
+            added: number;
+            /**
+             * Removed
+             * @default 0
+             */
+            removed: number;
+            /**
+             * Rated
+             * @default 0
+             */
+            rated: number;
+            /**
+             * Watched
+             * @default 0
+             */
+            watched: number;
+            /**
+             * Skipped
+             * @default 0
+             */
+            skipped: number;
+            /**
+             * Errors
+             * @default 0
+             */
+            errors: number;
+            /**
+             * Planned
+             * @default 0
+             */
+            planned: number;
+            /**
+             * Shows Added
+             * @default 0
+             */
+            shows_added: number;
+            /**
+             * Shows Removed
+             * @default 0
+             */
+            shows_removed: number;
+            /**
+             * Episodes Watched
+             * @default 0
+             */
+            episodes_watched: number;
+            /**
+             * Unmatched Count
+             * @default 0
+             */
+            unmatched_count: number;
+            /** Unmatched */
+            unmatched?: components["schemas"]["UnmatchedItemOut"][];
         };
         /**
          * RunTrigger
@@ -1703,6 +1758,23 @@ export interface components {
             access_token: string;
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** UnmatchedItemOut */
+        UnmatchedItemOut: {
+            /** Source */
+            source: string;
+            /** Data Type */
+            data_type: string;
+            /** Title */
+            title: string;
+            /** Source Key */
+            source_key: string;
+            /** Reason */
+            reason: string;
+            /** Identifiers */
+            identifiers?: {
+                [key: string]: string;
+            };
         };
         /** UnreadCountResponse */
         UnreadCountResponse: {

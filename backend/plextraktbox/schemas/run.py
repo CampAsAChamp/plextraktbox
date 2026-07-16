@@ -2,11 +2,36 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from plextraktbox.models.job import SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
 from plextraktbox.utils.datetime import UtcDatetime
+
+
+class UnmatchedItemOut(BaseModel):
+    source: str
+    data_type: str
+    title: str
+    source_key: str
+    reason: str
+    identifiers: dict[str, str] = Field(default_factory=dict)
+
+
+class RunSummaryOut(BaseModel):
+    matched: int = 0
+    added: int = 0
+    removed: int = 0
+    rated: int = 0
+    watched: int = 0
+    skipped: int = 0
+    errors: int = 0
+    planned: int = 0
+    shows_added: int = 0
+    shows_removed: int = 0
+    episodes_watched: int = 0
+    unmatched_count: int = 0
+    unmatched: list[UnmatchedItemOut] = Field(default_factory=list)
 
 
 class RunListItem(BaseModel):
@@ -19,7 +44,7 @@ class RunListItem(BaseModel):
     status: JobRunStatus
     started_at: UtcDatetime
     finished_at: UtcDatetime | None
-    summary: dict[str, int | list[dict[str, str]]]
+    summary: RunSummaryOut
     error: str | None
 
     @classmethod
@@ -40,7 +65,7 @@ class RunListItem(BaseModel):
             status=run.status,
             started_at=run.started_at,
             finished_at=run.finished_at,
-            summary=run.summary().to_dict(),
+            summary=RunSummaryOut.model_validate(run.summary().to_dict()),
             error=run.error,
         )
 

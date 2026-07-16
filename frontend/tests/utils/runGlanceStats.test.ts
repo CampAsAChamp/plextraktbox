@@ -12,10 +12,24 @@ function run(partial: Partial<RunListItem> & Pick<RunListItem, "id" | "status" |
     trigger: "manual",
     dry_run: false,
     finished_at: partial.started_at,
-    summary: { planned: 3, matched: 0, added: 0, removed: 0, rated: 0, watched: 0, skipped: 0, errors: 0 },
+    summary: {
+      planned: 3,
+      matched: 0,
+      added: 0,
+      removed: 0,
+      rated: 0,
+      watched: 0,
+      skipped: 0,
+      errors: 0,
+      shows_added: 0,
+      shows_removed: 0,
+      episodes_watched: 0,
+      unmatched_count: 0,
+      unmatched: [],
+    },
     error: null,
     ...partial,
-  } as RunListItem
+  }
 }
 
 describe("aggregateGlanceStats", () => {

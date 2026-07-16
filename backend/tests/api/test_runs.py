@@ -95,6 +95,66 @@ def test_run_history_after_job_run(client: TestClient, monkeypatch: pytest.Monke
     assert after_delete.json()["items"][0]["source_pair"] is None
 
 
+def test_list_runs_with_unmatched_summary(client: TestClient) -> None:
+    """Runs with nested unmatched identifiers must serialize without ValidationError."""
+    _create_user_and_login(client)
+
+    from plextraktbox.sync.plans import RunSummary, UnmatchedItem
+
+    summary = RunSummary(
+        matched=1,
+        planned=2,
+        unmatched=[
+            UnmatchedItem(
+                source="plex",
+                data_type="watchlist",
+                title="Some Movie",
+                source_key="plex:1",
+                reason="no match",
+                identifiers={"tmdb": "123"},
+            ),
+            UnmatchedItem(
+                source="trakt",
+                data_type="watchlist",
+                title="Other Movie",
+                source_key="trakt:2",
+                reason="no match",
+                identifiers={},
+            ),
+        ],
+    )
+
+    with Session(db.engine) as session:
+        run = JobRun(
+            job_id=1,
+            job_name="Unmatched run",
+            trigger=RunTrigger.MANUAL,
+            dry_run=True,
+            status=JobRunStatus.PARTIAL,
+            started_at=datetime.now(UTC),
+            finished_at=datetime.now(UTC),
+        )
+        run.set_summary(summary)
+        session.add(run)
+        session.commit()
+        session.refresh(run)
+        run_id = run.id
+        assert run_id is not None
+
+    list_resp = client.get("/api/runs")
+    assert list_resp.status_code == 200
+    items = list_resp.json()["items"]
+    assert len(items) == 1
+    assert items[0]["id"] == run_id
+    assert items[0]["summary"]["unmatched_count"] == 2
+    assert items[0]["summary"]["unmatched"][0]["identifiers"] == {"tmdb": "123"}
+    assert items[0]["summary"]["unmatched"][1]["identifiers"] == {}
+
+    detail = client.get(f"/api/runs/{run_id}")
+    assert detail.status_code == 200
+    assert detail.json()["summary"]["unmatched_count"] == 2
+
+
 def test_mark_run_failed(client: TestClient) -> None:
     _create_user_and_login(client)
 

@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 from plextraktbox.cron import validate_cron_expression
 from plextraktbox.models.job import Job, NotifyMode, SourcePair
 from plextraktbox.models.job_run import JobRun, JobRunStatus, RunTrigger
+from plextraktbox.schemas.run import RunSummaryOut
 from plextraktbox.schemas.settings import ExcludeIds
 from plextraktbox.sync.excludes import EXCLUDE_ID_KEYS, dump_exclude_ids, normalize_exclude_ids
 from plextraktbox.sync.plans import DataType
@@ -141,7 +142,7 @@ class JobRunResponse(BaseModel):
     status: JobRunStatus
     started_at: UtcDatetime
     finished_at: UtcDatetime | None
-    summary: dict[str, int | list[dict[str, str]]]
+    summary: RunSummaryOut
     error: str | None
 
     @classmethod
@@ -154,7 +155,7 @@ class JobRunResponse(BaseModel):
             status=run.status,
             started_at=run.started_at,
             finished_at=run.finished_at,
-            summary=run.summary().to_dict(),
+            summary=RunSummaryOut.model_validate(run.summary().to_dict()),
             error=run.error,
         )
 

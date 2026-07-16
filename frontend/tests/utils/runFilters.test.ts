@@ -3,6 +3,22 @@ import { describe, expect, it } from "vitest"
 import type { RunListItem } from "src/api/jobs"
 import { filterRuns, parseRunStatuses, parseRunTrigger } from "src/utils/runFilters"
 
+const emptySummary: RunListItem["summary"] = {
+  matched: 0,
+  added: 0,
+  removed: 0,
+  rated: 0,
+  watched: 0,
+  skipped: 0,
+  errors: 0,
+  planned: 0,
+  shows_added: 0,
+  shows_removed: 0,
+  episodes_watched: 0,
+  unmatched_count: 0,
+  unmatched: [],
+}
+
 const sampleRuns: RunListItem[] = [
   {
     id: 1,
@@ -14,7 +30,7 @@ const sampleRuns: RunListItem[] = [
     status: "success",
     started_at: "2026-01-01T00:00:00Z",
     finished_at: "2026-01-01T00:00:05Z",
-    summary: {},
+    summary: emptySummary,
     error: null,
   },
   {
@@ -27,7 +43,7 @@ const sampleRuns: RunListItem[] = [
     status: "failed",
     started_at: "2026-01-02T00:00:00Z",
     finished_at: "2026-01-02T00:00:10Z",
-    summary: {},
+    summary: emptySummary,
     error: "boom",
   },
 ]

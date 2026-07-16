@@ -99,7 +99,7 @@ class RunSummary:
                     1 for change in changes if change.item.media_type == MediaType.EPISODE
                 )
 
-    def to_dict(self) -> dict[str, int | list[dict[str, object]]]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "matched": self.matched,
             "added": self.added,
