@@ -1,3 +1,20 @@
+# [0.10.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.9.0...v0.10.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* stop leaking uvicorn color_message into console logs ([7ff8ad9](https://github.com/CampAsAChamp/plextraktbox/commit/7ff8ad9503b06ffdf965b27d0f14f59adfaebff4))
+
+
+### Features
+
+* add dashboard glance strip and shared job actions ([1d0273f](https://github.com/CampAsAChamp/plextraktbox/commit/1d0273f2a7d2c1b106385272caf6a851200bad74))
+* add TimestampLabel with relative time tooltips ([252e0a0](https://github.com/CampAsAChamp/plextraktbox/commit/252e0a08874fc4e664e71758627a91956d141f37))
+* append exclude ids from unmatched items ([af83640](https://github.com/CampAsAChamp/plextraktbox/commit/af836408d7a648e3a5a928fbf1ffaa6fae6b8e26))
+* enqueue manual runs and cancel in-flight syncs ([c20930b](https://github.com/CampAsAChamp/plextraktbox/commit/c20930ba220b8d69a819c79f1ac6615991f7c858))
+* make Cinema Night the default theme ([30afe6f](https://github.com/CampAsAChamp/plextraktbox/commit/30afe6f26826bead29eeb69aadd17543adfc946f))
+* show source-of-truth callout on the job form ([72ceb97](https://github.com/CampAsAChamp/plextraktbox/commit/72ceb9773deffedd20462c9a7d9bab8955d9549e))
+
 # [0.9.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.8.0...v0.9.0) (2026-07-16)
 
 
