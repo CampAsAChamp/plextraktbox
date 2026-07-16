@@ -264,13 +264,11 @@ def run_job(
     session.refresh(run)
 
     try:
-        run = get_scheduler_manager().trigger_now(
+        run = get_scheduler_manager().enqueue_now(
             job_id,
             dry_run_override=dry_run_override,
             run=run,
         )
-    except TimeoutError as exc:
-        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except Exception as exc:

@@ -14,6 +14,7 @@ from tests.api.test_jobs import (
     _configure_connections,
     _create_user_and_login,
     _mock_live_fetch,
+    wait_for_run,
 )
 
 
@@ -31,7 +32,9 @@ def _run_job_and_get_id(client: TestClient) -> int:
     job_id = create.json()["id"]
     run = client.post(f"/api/jobs/{job_id}/run", headers=HEADERS)
     assert run.status_code == 200
-    return run.json()["id"]
+    run_id = run.json()["id"]
+    wait_for_run(client, run_id)
+    return run_id
 
 
 def test_run_logs_require_auth(client: TestClient) -> None:

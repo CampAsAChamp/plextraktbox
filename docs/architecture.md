@@ -151,7 +151,12 @@ Sequence diagram: [app-flows.md § Live log streaming](app-flows.md#live-log-str
 `scheduler/manager.py`: AsyncIOScheduler + SQLAlchemyJobStore, started in FastAPI lifespan; on startup register a CronTrigger per enabled job using Settings `cron_timezone` (default UTC); job CRUD calls `sync_job()` to add/reschedule/remove live; changing `cron_timezone` reloads all job triggers; `max_instances=1`+`coalesce=True` (no self-overlap).
 `scheduler/runner.py` is the single entry for **all** executions: create JobRun(running) → bind per-run logger → `run_sync(ctx)` → finalize (status/summary/error) → close log channel → dispatch notifications.
 
-- **Run now:** `POST /api/jobs/{id}/run` → `scheduler.add_job(next_run_time=now)` so manual + scheduled serialize under `max_instances=1`.
+- **Run now:** `POST /api/jobs/{id}/run` enqueues via APScheduler and **returns immediately** with
+  the `JobRun` still `running` so the UI can open live logs. Completion is observed via run detail
+  polling + SSE. Manual + scheduled still serialize under `max_instances=1`.
+- **Cancel:** `POST /api/runs/{id}/cancel` sets a cooperative cancel flag, marks the run failed
+  (`Cancelled by user`), and closes the log stream. The sync engine stops at the next safe
+  checkpoint (between data types / apply items). `mark-failed` remains for stuck runs with no worker.
 - **Dry-run resolved** per run: `override ?? job.dry_run` (global dry-run seeds new jobs at create time). If `require_dry_run_first` and no successful dry-run exists yet, live runs are coerced to dry-run. Exclude ids (global ∪ job) filter items in `SyncContext.fetch`.
 
 

@@ -14,6 +14,7 @@ from plextraktbox.models.job_run import JobRun, JobRunStatus
 log = get_logger(__name__)
 
 MARKED_FAILED_ERROR = "Marked as failed by user"
+CANCELLED_ERROR = "Cancelled by user"
 
 
 def list_runs(
@@ -68,13 +69,17 @@ def resolve_job_name(session: Session, run: JobRun) -> str | None:
     return get_job_name(session, run.job_id)
 
 
-def mark_run_failed(session: Session, run: JobRun) -> JobRun:
-    """Mark a stuck/running run as failed. Does not interrupt an in-flight sync worker."""
+def mark_run_failed(session: Session, run: JobRun, *, error: str = MARKED_FAILED_ERROR) -> JobRun:
+    """Mark a stuck/running run as failed and close the log stream.
+
+    Does not interrupt an in-flight sync worker by itself — pair with
+    ``request_cancel`` for cooperative cancel.
+    """
     if run.status != JobRunStatus.RUNNING:
         raise ValueError(f"Run {run.id} is not running (status={run.status.value})")
 
     run.status = JobRunStatus.FAILED
-    run.error = MARKED_FAILED_ERROR
+    run.error = error
     run.finished_at = datetime.now(UTC)
     session.add(run)
     session.commit()
@@ -85,7 +90,18 @@ def mark_run_failed(session: Session, run: JobRun) -> JobRun:
         "sync.run.marked_failed",
         run_id=run_id,
         job_id=run.job_id,
-        message=MARKED_FAILED_ERROR,
+        message=error,
     )
     get_log_hub().close(run_id, status=JobRunStatus.FAILED.value)
     return run
+
+
+def cancel_run(session: Session, run: JobRun) -> JobRun:
+    """Request cooperative cancel and mark the run failed."""
+    from plextraktbox.sync.cancellation import request_cancel
+
+    run_id = run.id
+    if run_id is None:
+        raise ValueError("Run has no id")
+    request_cancel(run_id)
+    return mark_run_failed(session, run, error=CANCELLED_ERROR)

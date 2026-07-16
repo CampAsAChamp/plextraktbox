@@ -20,6 +20,13 @@ from plextraktbox.notifications import dispatch_notifications
 from plextraktbox.services import settings as settings_svc
 from plextraktbox.services.dry_run import resolve_dry_run
 from plextraktbox.services.source_factory import build_sources
+from plextraktbox.sync.cancellation import (
+    RunCancelled,
+    clear_cancel_event,
+    register_cancel_event,
+    reset_active_cancel_event,
+    set_active_cancel_event,
+)
 from plextraktbox.sync.context import SyncContext
 from plextraktbox.sync.engine import run_sync
 from plextraktbox.sync.excludes import merge_exclude_ids, normalize_exclude_ids
@@ -31,8 +38,10 @@ _job_locks: dict[int, threading.Lock] = {}
 _job_locks_guard = threading.Lock()
 
 
-def _apply_dev_run_delay(run_logger) -> None:
+def _apply_dev_run_delay(run_logger, cancel_event: threading.Event | None = None) -> None:
     """Sleep between log ticks so dev runs stay open long enough to test live streaming."""
+    from plextraktbox.sync.cancellation import check_cancelled
+
     settings = get_settings()
     if settings.env != "local" or settings.sync_run_delay_seconds <= 0:
         return
@@ -43,6 +52,7 @@ def _apply_dev_run_delay(run_logger) -> None:
 
     run_logger.info("sync.run.dev_delay.start", seconds=total)
     for second in range(1, total + 1):
+        check_cancelled(cancel_event)
         time.sleep(1)
         run_logger.info("sync.run.dev_delay.tick", elapsed=second, total=total)
 
@@ -117,14 +127,17 @@ def _execute_run_in_session(
         session.refresh(run)
 
     run_logger = log.bind(job_id=job.id, run_id=run.id)
-    get_log_hub().open(run.id or 0)
+    run_id_value = run.id or 0
+    cancel_event = register_cancel_event(run_id_value)
+    cancel_token = set_active_cancel_event(cancel_event)
+    get_log_hub().open(run_id_value)
     # So client/helper loggers (e.g. plex_client apply progress) attach to this run
     # and show up in the UI log stream — not only in the process console.
     structlog.contextvars.bind_contextvars(job_id=job.id, run_id=run.id)
 
     final_status = JobRunStatus.FAILED.value
     try:
-        _apply_dev_run_delay(run_logger)
+        _apply_dev_run_delay(run_logger, cancel_event)
         if coerced:
             run_logger.warning(
                 "sync.run.dry_run_coerced",
@@ -153,6 +166,7 @@ def _execute_run_in_session(
             dry_run=dry_run,
             log=run_logger,
             exclude_ids=exclude_ids,
+            cancel_event=cancel_event,
         )
         summary = asyncio.run(run_sync(ctx))
         if not _finalize_if_still_running(
@@ -176,6 +190,19 @@ def _execute_run_in_session(
         )
         dispatch_notifications(session, job, run)
         return run.id or 0
+    except RunCancelled as exc:
+        run_logger.info("sync.run.cancelled", error=str(exc))
+        session.refresh(run)
+        final_status = run.status.value
+        if run.status == JobRunStatus.RUNNING and _finalize_if_still_running(
+            session,
+            run,
+            status=JobRunStatus.FAILED,
+            error=str(exc),
+        ):
+            final_status = run.status.value
+            dispatch_notifications(session, job, run)
+        return run.id or 0
     except Exception as exc:
         if not _finalize_if_still_running(
             session,
@@ -196,6 +223,8 @@ def _execute_run_in_session(
         dispatch_notifications(session, job, run)
         raise
     finally:
+        reset_active_cancel_event(cancel_token)
+        clear_cancel_event(run_id_value)
         structlog.contextvars.unbind_contextvars("job_id", "run_id")
         if run.id is not None:
             get_log_hub().close(run.id, status=final_status)

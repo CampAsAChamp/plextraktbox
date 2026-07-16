@@ -159,14 +159,14 @@ class SchedulerManager:
             return nxt.replace(tzinfo=UTC)
         return nxt.astimezone(UTC)
 
-    def trigger_now(
+    def enqueue_now(
         self,
         job_id: int,
         *,
         dry_run_override: bool | None = None,
         run: JobRun,
     ) -> JobRun:
-        """Enqueue a manual run and block until it finishes."""
+        """Enqueue a manual run and return immediately (status still running)."""
         if self._scheduler is None:
             raise RuntimeError("Scheduler has not been started")
         if run.id is None:
@@ -187,15 +187,37 @@ class SchedulerManager:
             max_instances=1,
             replace_existing=True,
         )
+        return run
+
+    def trigger_now(
+        self,
+        job_id: int,
+        *,
+        dry_run_override: bool | None = None,
+        run: JobRun,
+        wait: bool = True,
+    ) -> JobRun:
+        """Enqueue a manual run; optionally block until it finishes."""
+        current = self.enqueue_now(
+            job_id,
+            dry_run_override=dry_run_override,
+            run=run,
+        )
+        if not wait:
+            return current
+
+        run_id = current.id
+        if run_id is None:
+            raise ValueError("JobRun must be persisted before triggering")
 
         deadline = time.monotonic() + MANUAL_WAIT_TIMEOUT_S
         while time.monotonic() < deadline:
             with Session(db.engine) as session:
-                current = session.get(JobRun, run_id)
-                if current is None:
+                polled = session.get(JobRun, run_id)
+                if polled is None:
                     raise ValueError(f"JobRun {run_id} not found")
-                if current.status != JobRunStatus.RUNNING:
-                    return current
+                if polled.status != JobRunStatus.RUNNING:
+                    return polled
             time.sleep(MANUAL_POLL_INTERVAL_S)
 
         raise TimeoutError(f"Job run {run_id} did not complete within {MANUAL_WAIT_TIMEOUT_S}s")

@@ -16,6 +16,7 @@ from tests.api.test_jobs import (
     _configure_connections,
     _create_user_and_login,
     _mock_live_fetch,
+    wait_for_run,
 )
 
 
@@ -62,6 +63,9 @@ def test_run_history_after_job_run(client: TestClient, monkeypatch: pytest.Monke
     run = client.post(f"/api/jobs/{job_id}/run", headers=HEADERS)
     assert run.status_code == 200
     run_id = run.json()["id"]
+    assert run.json()["status"] == "running"
+    finished = wait_for_run(client, run_id)
+    assert finished["status"] == "success"
 
     list_resp = client.get("/api/runs")
     assert list_resp.status_code == 200
@@ -125,3 +129,37 @@ def test_mark_run_failed_not_found(client: TestClient) -> None:
     _create_user_and_login(client)
     resp = client.post("/api/runs/999/mark-failed", headers=HEADERS)
     assert resp.status_code == 404
+
+
+def test_cancel_run(client: TestClient) -> None:
+    _create_user_and_login(client)
+
+    with Session(db.engine) as session:
+        run = JobRun(
+            job_id=1,
+            job_name="Running job",
+            trigger=RunTrigger.MANUAL,
+            dry_run=True,
+            status=JobRunStatus.RUNNING,
+            started_at=datetime.now(UTC),
+        )
+        session.add(run)
+        session.commit()
+        session.refresh(run)
+        run_id = run.id
+        assert run_id is not None
+
+    from plextraktbox.sync.cancellation import register_cancel_event
+
+    event = register_cancel_event(run_id)
+    assert not event.is_set()
+
+    resp = client.post(f"/api/runs/{run_id}/cancel", headers=HEADERS)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "failed"
+    assert body["error"] == "Cancelled by user"
+    assert event.is_set()
+
+    again = client.post(f"/api/runs/{run_id}/cancel", headers=HEADERS)
+    assert again.status_code == 409

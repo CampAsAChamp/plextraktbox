@@ -58,3 +58,21 @@ async def test_apply_live_isolates_per_item_failures() -> None:
     assert "sync.apply.batch_failed" in events
     assert "sync.apply.item_failed" in events
     assert any(entry.get("title") == "Bad" for entry in logs)
+
+
+@pytest.mark.asyncio
+async def test_apply_live_raises_on_cancel() -> None:
+    import threading
+
+    from plextraktbox.sync.cancellation import RunCancelled
+
+    event = threading.Event()
+    event.set()
+
+    with pytest.raises(RunCancelled):
+        await apply_live(
+            [_change("A"), _change("B")],
+            dry_run=False,
+            apply_batch=lambda _c: None,
+            cancel_event=event,
+        )

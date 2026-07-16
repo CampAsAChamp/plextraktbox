@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import structlog
 
+from plextraktbox.sync.cancellation import RunCancelled
 from plextraktbox.sync.context import SyncContext
 from plextraktbox.sync.plans import (
     ApplyResult,
@@ -28,6 +29,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
     active_by_type = {reconciler.data_type: reconciler for reconciler in active}
 
     for data_type in (DataType.WATCHLIST, DataType.RATINGS, DataType.WATCHED):
+        ctx.raise_if_cancelled()
         if data_type not in ctx.data_types:
             continue
         reconciler = active_by_type.get(data_type)
@@ -42,6 +44,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
         )
 
         plan = await reconciler.plan(ctx)
+        ctx.raise_if_cancelled()
         summary.planned += len(plan.changes)
         summary.matched += _count_matched(plan.changes)
         await _collect_unmatched(ctx, data_type, summary)
@@ -73,6 +76,7 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
 
         grouped = _group_by_target_and_action(plan.changes)
         for (target_name, action), changes in grouped.items():
+            ctx.raise_if_cancelled()
             source = ctx.sources.get(target_name)
             if source is None:
                 summary.errors += len(changes)
@@ -98,7 +102,14 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
             )
 
             try:
-                result = await _apply_changes(source, data_type, changes, dry_run=ctx.dry_run)
+                result = await _apply_changes(
+                    source,
+                    data_type,
+                    changes,
+                    dry_run=ctx.dry_run,
+                )
+            except RunCancelled:
+                raise
             except Exception as exc:
                 log.warning(
                     "sync.apply.failed",
@@ -186,6 +197,11 @@ async def _collect_unmatched(ctx: SyncContext, data_type: DataType, summary: Run
                 title=item.title,
                 source_key=item.source_key or item.match_key() or item.title,
                 reason=reason,
+                identifiers={
+                    key: value
+                    for key, value in item.identifiers.items()
+                    if key in ("tmdb", "imdb", "tvdb") and value
+                },
             )
         )
 

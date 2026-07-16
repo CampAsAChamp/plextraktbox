@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import structlog
 
+from plextraktbox.sync.cancellation import check_cancelled
 from plextraktbox.sync.excludes import EXCLUDE_ID_KEYS, filter_excluded_items
 from plextraktbox.sync.plans import DataType
 
@@ -21,10 +23,16 @@ class SyncContext:
     dry_run: bool
     log: structlog.stdlib.BoundLogger = field(default_factory=lambda: structlog.get_logger("sync"))
     exclude_ids: dict[str, set[str]] = field(default_factory=lambda: {key: set() for key in EXCLUDE_ID_KEYS})
+    cancel_event: threading.Event | None = None
     _cache: dict[tuple[str, DataType], list] = field(default_factory=dict, repr=False)
+
+    def raise_if_cancelled(self) -> None:
+        check_cancelled(self.cancel_event)
 
     async def fetch(self, source_name: str, data_type: DataType) -> list:
         from plextraktbox.sync.media_item import MediaItem
+
+        self.raise_if_cancelled()
 
         cache_key = (source_name, data_type)
         if cache_key in self._cache:

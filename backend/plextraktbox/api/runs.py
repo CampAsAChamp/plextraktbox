@@ -62,3 +62,24 @@ def mark_run_failed(run_id: int, _user: CurrentUserDep, session: SessionDep) -> 
         job_name=run_svc.resolve_job_name(session, run),
         source_pair=run_svc.get_job_source_pair(session, run.job_id),
     )
+
+
+@router.post(
+    "/{run_id}/cancel",
+    response_model=RunListItem,
+    dependencies=[Depends(require_csrf)],
+)
+def cancel_run(run_id: int, _user: CurrentUserDep, session: SessionDep) -> RunListItem:
+    """Cancel a running sync at the next safe checkpoint and mark the run failed."""
+    run = run_svc.get_run(session, run_id)
+    if run is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
+    try:
+        run = run_svc.cancel_run(session, run)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    return RunListItem.from_model(
+        run,
+        job_name=run_svc.resolve_job_name(session, run),
+        source_pair=run_svc.get_job_source_pair(session, run.job_id),
+    )

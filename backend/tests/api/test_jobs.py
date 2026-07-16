@@ -2,12 +2,36 @@
 
 from __future__ import annotations
 
+import time
+
 import httpx
 import pytest
 import respx
 from fastapi.testclient import TestClient
 
 HEADERS = {"X-Requested-With": "XMLHttpRequest"}
+
+_TERMINAL_STATUSES = frozenset({"success", "failed", "partial"})
+
+
+def wait_for_run(
+    client: TestClient,
+    run_id: int,
+    *,
+    timeout_s: float = 10.0,
+    interval_s: float = 0.05,
+) -> dict:
+    """Poll GET /api/runs/{id} until the run leaves running status."""
+    deadline = time.monotonic() + timeout_s
+    last: dict | None = None
+    while time.monotonic() < deadline:
+        resp = client.get(f"/api/runs/{run_id}")
+        assert resp.status_code == 200
+        last = resp.json()
+        if last["status"] in _TERMINAL_STATUSES:
+            return last
+        time.sleep(interval_s)
+    raise AssertionError(f"Run {run_id} did not finish within {timeout_s}s (last={last})")
 
 
 def _mock_live_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -200,9 +224,13 @@ def test_create_and_run_plex_trakt_job(client: TestClient, monkeypatch: pytest.M
     run = client.post(f"/api/jobs/{job['id']}/run", headers=HEADERS)
     assert run.status_code == 200
     body = run.json()
-    assert body["status"] == "success"
+    assert body["status"] == "running"
     assert body["dry_run"] is True
-    assert body["summary"]["planned"] >= 0
+
+    finished = wait_for_run(client, body["id"])
+    assert finished["status"] == "success"
+    assert finished["dry_run"] is True
+    assert finished["summary"]["planned"] >= 0
 
 
 def test_create_job_validates_data_types(client: TestClient) -> None:
@@ -385,13 +413,15 @@ def test_job_list_includes_last_run(client: TestClient, monkeypatch: pytest.Monk
     run = client.post(f"/api/jobs/{job_id}/run", headers=HEADERS)
     assert run.status_code == 200
     run_body = run.json()
+    assert run_body["status"] == "running"
+    finished = wait_for_run(client, run_body["id"])
 
     listed = client.get("/api/jobs")
     assert listed.status_code == 200
     last_run = listed.json()[0]["last_run"]
     assert last_run is not None
-    assert last_run["id"] == run_body["id"]
-    assert last_run["status"] == run_body["status"]
+    assert last_run["id"] == finished["id"]
+    assert last_run["status"] == finished["status"]
     assert last_run["dry_run"] is True
     assert "matched" in last_run
     assert "added" in last_run
@@ -399,7 +429,7 @@ def test_job_list_includes_last_run(client: TestClient, monkeypatch: pytest.Monk
 
     get_resp = client.get(f"/api/jobs/{job_id}")
     assert get_resp.status_code == 200
-    assert get_resp.json()["last_run"]["id"] == run_body["id"]
+    assert get_resp.json()["last_run"]["id"] == finished["id"]
 
 
 def test_schedule_preview(client: TestClient) -> None:

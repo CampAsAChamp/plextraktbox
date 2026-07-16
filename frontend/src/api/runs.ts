@@ -19,3 +19,7 @@ export function getRun(id: number) {
 export function markRunFailed(id: number) {
   return api.post<RunListItem>(`/runs/${id}/mark-failed`)
 }
+
+export function cancelRun(id: number) {
+  return api.post<RunListItem>(`/runs/${id}/cancel`)
+}

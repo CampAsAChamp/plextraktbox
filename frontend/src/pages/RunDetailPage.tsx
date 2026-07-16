@@ -4,16 +4,15 @@ import { Link, useLocation, useParams } from "react-router-dom"
 
 import { ApiError } from "src/api/client"
 import { downloadRunLogs, type LogExportFormat } from "src/api/logs"
-import { getRun, markRunFailed } from "src/api/runs"
+import { cancelRun, getRun } from "src/api/runs"
 import { DownloadIcon } from "src/components/icons/DownloadIcon"
 import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon"
 import { LogViewer } from "src/components/LogViewer/LogViewer"
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
 import { UnmatchedItemsSection } from "src/components/runs/UnmatchedItemsSection"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { TimestampLabel } from "src/components/TimestampLabel"
 import { showToast } from "src/toast"
-import { formatDateTime } from "src/utils/dateTimeFormat"
 
 const SUMMARY_LABELS: Record<string, string> = {
   matched: "Matched",
@@ -50,7 +49,6 @@ export function RunDetailPage() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const id = Number(runId)
-  const { preferences } = useDisplayPreferences()
   const backTo =
     typeof (location.state as { from?: unknown } | null)?.from === "string" ? (location.state as { from: string }).from : "/runs"
 
@@ -61,15 +59,16 @@ export function RunDetailPage() {
     refetchInterval: (query) => (query.state.data?.status === "running" ? 2000 : false),
   })
 
-  const markFailedMutation = useMutation({
-    mutationFn: () => markRunFailed(id),
+  const cancelMutation = useMutation({
+    mutationFn: () => cancelRun(id),
     onSuccess: (run) => {
       queryClient.setQueryData(["runs", id], run)
       void queryClient.invalidateQueries({ queryKey: ["runs"] })
-      showToast({ color: "orange", message: `Run #${run.id} marked as failed` })
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] })
+      showToast({ color: "orange", message: `Run #${run.id} cancelled` })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed"
+      const message = error instanceof ApiError ? String(error.message) : "Could not cancel run"
       showToast({ color: "red", message })
     },
   })
@@ -117,18 +116,18 @@ export function RunDetailPage() {
               <Button
                 color="red"
                 variant="light"
-                loading={markFailedMutation.isPending}
+                loading={cancelMutation.isPending}
                 onClick={() => {
                   if (
                     window.confirm(
-                      "Mark this run as failed? If sync work is still in progress on the server, it may continue until it finishes, but this run will stay marked failed.",
+                      "Cancel this run? Sync work stops at the next safe checkpoint (between data types or items). The run will be marked failed.",
                     )
                   ) {
-                    markFailedMutation.mutate()
+                    cancelMutation.mutate()
                   }
                 }}
               >
-                Mark as failed
+                Cancel run
               </Button>
             ) : null}
             <Button component={Link} to={`/runs?job_id=${run.job_id}`} variant="light">
@@ -155,11 +154,13 @@ export function RunDetailPage() {
           {run.source_pair ? <SourcePairLabel sourcePair={run.source_pair} variant="icons" /> : <Text c="dimmed">—</Text>}
         </Group>
         <Text>
-          <strong>Started:</strong> {formatDateTime(run.started_at, preferences)}
+          <strong>Started:</strong>
         </Text>
+        <TimestampLabel value={run.started_at} />
         <Text>
-          <strong>Finished:</strong> {formatDateTime(run.finished_at, preferences)}
+          <strong>Finished:</strong>
         </Text>
+        <TimestampLabel value={run.finished_at} />
       </Stack>
 
       {run.error ? (
@@ -189,7 +190,7 @@ export function RunDetailPage() {
         </SimpleGrid>
       </Stack>
 
-      <UnmatchedItemsSection items={run.summary.unmatched} />
+      <UnmatchedItemsSection items={run.summary.unmatched} jobId={run.job_id} />
 
       <Stack gap="xs">
         <Group justify="space-between">

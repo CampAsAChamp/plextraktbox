@@ -47,6 +47,7 @@ class UnmatchedItem:
     title: str
     source_key: str
     reason: str
+    identifiers: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -98,7 +99,7 @@ class RunSummary:
                     1 for change in changes if change.item.media_type == MediaType.EPISODE
                 )
 
-    def to_dict(self) -> dict[str, int | list[dict[str, str]]]:
+    def to_dict(self) -> dict[str, int | list[dict[str, object]]]:
         return {
             "matched": self.matched,
             "added": self.added,
@@ -119,6 +120,7 @@ class RunSummary:
                     "title": item.title,
                     "source_key": item.source_key,
                     "reason": item.reason,
+                    "identifiers": dict(item.identifiers),
                 }
                 for item in self.unmatched
             ],

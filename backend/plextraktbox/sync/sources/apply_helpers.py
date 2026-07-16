@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 from collections.abc import Callable
 
 from plextraktbox.logging_setup import get_logger
+from plextraktbox.sync.cancellation import check_cancelled
 from plextraktbox.sync.plans import ApplyResult, PlannedChange
 
 log = get_logger("sync.apply")
@@ -17,6 +19,7 @@ async def apply_live(
     dry_run: bool,
     apply_batch: Callable[[list[PlannedChange]], None],
     apply_one: Callable[[PlannedChange], None] | None = None,
+    cancel_event: threading.Event | None = None,
 ) -> ApplyResult:
     """Apply planned changes with dry-run support and per-item fault isolation."""
     result = ApplyResult()
@@ -26,6 +29,7 @@ async def apply_live(
         result.applied = len(changes)
         return result
 
+    check_cancelled(cancel_event)
     single = apply_one or (lambda change: apply_batch([change]))
     try:
         await asyncio.to_thread(apply_batch, changes)
@@ -40,6 +44,7 @@ async def apply_live(
         )
 
     for change in changes:
+        check_cancelled(cancel_event)
         try:
             await asyncio.to_thread(single, change)
             result.applied += 1
