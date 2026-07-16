@@ -39,9 +39,14 @@ describe("SyncSettingsSection cron timezone", () => {
     const user = userEvent.setup()
     renderWithProviders(<SyncSettingsSection />)
 
-    await screen.findByText("Cron timezone")
+    // Wait until settings hydrate — persistCronTimezone no-ops while data is undefined,
+    // and the SegmentedControl stays disabled during isLoading (flaky under full-suite load).
+    const localRadio = await screen.findByRole("radio", { name: /Local/i })
+    await waitFor(() => {
+      expect(localRadio).toBeEnabled()
+    })
 
-    await user.click(screen.getByRole("radio", { name: /Local/i }))
+    await user.click(localRadio)
 
     await waitFor(() => {
       expect(settingsApi.updateSettings).toHaveBeenCalledWith(
