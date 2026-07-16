@@ -183,28 +183,10 @@ podman compose down
 rm -rf data
 '''
 
-[tasks.rebuild]
-description = "[DOCKER-PROD] Wipe ./data, rebuild image, and start fresh"
-run = '''
-podman compose down
-rm -rf data
-podman compose build
-podman compose up --build
-'''
-
-[tasks."build-image"]
-description = "[DOCKER-PROD] Build the Docker image (no compose)"
-depends = ["build-frontend"]
-run = "podman compose build"
-
 # --- DOCKER-DEV: dev containers with hot reload ---
 
 [tasks."up-dev"]
 description = "[DOCKER-DEV] Start hot-reload stack with secrets from Doppler (backend :8000, frontend :5173)"
-run = "bash scripts/compose-up-dev.sh"
-
-[tasks."up-dev-doppler"]
-description = "[DOCKER-DEV] Alias for up-dev (Doppler + hot reload)"
 run = "bash scripts/compose-up-dev.sh"
 
 [tasks."up-dev-env"]
