@@ -72,6 +72,20 @@ def test_list_libraries_sorts_alphabetically() -> None:
 
 
 @respx.mock
+def test_list_libraries_raises_value_error_on_connect_failure() -> None:
+    respx.get("http://plex.local:32400/library/sections").mock(
+        side_effect=httpx.ConnectError("Connection refused")
+    )
+
+    try:
+        plex_client.list_libraries("http://plex.local:32400", "plex-token")
+    except ValueError as exc:
+        assert "Plex library list failed" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+@respx.mock
 def test_find_connectable_server_tries_fallback_urls() -> None:
     calls: list[str] = []
 

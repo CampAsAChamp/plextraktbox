@@ -138,13 +138,16 @@ def list_libraries(url: str, token: str) -> list[PlexLibraryInfo]:
     """Return Plex libraries on the connected Plex server."""
     base = url.rstrip("/")
     verify = plex_server_ssl_verify(base)
-    resp = httpx.get(
-        f"{base}/library/sections",
-        headers={"X-Plex-Token": token, "Accept": "application/xml"},
-        timeout=30.0,
-        verify=verify,
-    )
-    resp.raise_for_status()
+    try:
+        resp = httpx.get(
+            f"{base}/library/sections",
+            headers={"X-Plex-Token": token, "Accept": "application/xml"},
+            timeout=30.0,
+            verify=verify,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise ValueError(f"Plex library list failed: {exc}") from exc
 
     try:
         root = ET.fromstring(resp.text)
