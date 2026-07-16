@@ -21,13 +21,13 @@ Settings → Theme). Headers plus a `:root[data-ptb-theme="…"]` block are requ
 
 Useful variables:
 
-| Variable | Role |
-| -------- | ---- |
-| `--mantine-color-dark-0` … `-9` | Text → deepest surface |
-| `--mantine-primary-color-filled` / `-filled-hover` | Primary buttons & accents |
-| `--mantine-primary-color-light*` | Soft primary backgrounds |
-| `--mantine-primary-color-0` … `-9` | Full primary scale |
-| `--ptb-body-gradient` | Full-page background atmosphere |
+| Variable                                           | Role                            |
+| -------------------------------------------------- | ------------------------------- |
+| `--mantine-color-dark-0` … `-9`                    | Text → deepest surface          |
+| `--mantine-primary-color-filled` / `-filled-hover` | Primary buttons & accents       |
+| `--mantine-primary-color-light*`                   | Soft primary backgrounds        |
+| `--mantine-primary-color-0` … `-9`                 | Full primary scale              |
+| `--ptb-body-gradient`                              | Full-page background atmosphere |
 
 - `@id` must be unique, lowercase, and not collide with built-ins (`cinema-night`,
   `one-dark-pro`, `nord`, `dracula`)

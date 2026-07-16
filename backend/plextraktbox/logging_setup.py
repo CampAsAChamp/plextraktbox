@@ -147,7 +147,7 @@ def _uvicorn_color_message(*, colors: bool) -> structlog.types.Processor:
                 event_dict["event"] = color_message % record.args
             elif "%" not in color_message.replace("%%", ""):
                 event_dict["event"] = color_message
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             pass
         return event_dict
 
