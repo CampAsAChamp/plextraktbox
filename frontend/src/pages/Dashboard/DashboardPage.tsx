@@ -48,7 +48,7 @@ function ScheduleCell({ job }: { job: Job }) {
           Disabled — no next run
         </Text>
       ) : job.next_run_at ? (
-        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" />
+        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" relativeOnly />
       ) : (
         <Text size="xs" c="dimmed">
           Next run unavailable
@@ -77,7 +77,7 @@ function LastRunCell({ job }: { job: Job }) {
         <RunStatusBadge status={last.status} />
         <DryRunBadge dryRun={last.dry_run} />
       </Group>
-      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" />
+      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" relativeOnly />
       <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
   )
@@ -231,7 +231,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
           <>
             <Stack gap="sm" hiddenFrom="sm">
               {jobs.map((job) => (
-                <JobListCard key={job.id} job={job} showLastRun actions={jobRowActions(job)} />
+                <JobListCard key={job.id} job={job} showLastRun relativeTimestamps actions={jobRowActions(job)} />
               ))}
             </Stack>
 

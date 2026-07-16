@@ -17,9 +17,11 @@ type JobListCardProps = {
   actions: ReactNode
   /** When true, show last-run summary (Dashboard). */
   showLastRun?: boolean
+  /** When true, show relative timestamps with absolute on hover. */
+  relativeTimestamps?: boolean
 }
 
-function ScheduleSummary({ job }: { job: Job }) {
+function ScheduleSummary({ job, relativeOnly }: { job: Job; relativeOnly: boolean }) {
   return (
     <Stack gap={2}>
       <Text size="sm" ff="monospace">
@@ -30,7 +32,7 @@ function ScheduleSummary({ job }: { job: Job }) {
           Disabled — no next run
         </Text>
       ) : job.next_run_at ? (
-        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" />
+        <TimestampLabel value={job.next_run_at} variant="schedule" size="xs" relativeOnly={relativeOnly} />
       ) : (
         <Text size="xs" c="dimmed">
           Next run unavailable
@@ -40,7 +42,7 @@ function ScheduleSummary({ job }: { job: Job }) {
   )
 }
 
-function LastRunSummary({ job }: { job: Job }) {
+function LastRunSummary({ job, relativeOnly }: { job: Job; relativeOnly: boolean }) {
   const theme = useMantineTheme()
   const last = job.last_run
   if (!last) {
@@ -60,14 +62,14 @@ function LastRunSummary({ job }: { job: Job }) {
         <RunStatusBadge status={last.status} />
         <DryRunBadge dryRun={last.dry_run} />
       </Group>
-      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" />
+      <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" relativeOnly={relativeOnly} />
       <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
   )
 }
 
 /** Mobile job card — used below `sm` on Jobs and Dashboard. */
-export function JobListCard({ job, actions, showLastRun = false }: JobListCardProps) {
+export function JobListCard({ job, actions, showLastRun = false, relativeTimestamps = false }: JobListCardProps) {
   return (
     <Paper withBorder radius="lg" p="md" className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
       <Stack gap="sm">
@@ -106,7 +108,7 @@ export function JobListCard({ job, actions, showLastRun = false }: JobListCardPr
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
             Schedule
           </Text>
-          <ScheduleSummary job={job} />
+          <ScheduleSummary job={job} relativeOnly={relativeTimestamps} />
         </Stack>
 
         {showLastRun ? (
@@ -114,7 +116,7 @@ export function JobListCard({ job, actions, showLastRun = false }: JobListCardPr
             <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
               Last run
             </Text>
-            <LastRunSummary job={job} />
+            <LastRunSummary job={job} relativeOnly={relativeTimestamps} />
           </Stack>
         ) : null}
       </Stack>

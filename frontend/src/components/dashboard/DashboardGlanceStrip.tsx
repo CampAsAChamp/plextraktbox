@@ -54,7 +54,7 @@ export function DashboardGlanceStrip({ jobs, runs }: DashboardGlanceStripProps) 
             Next scheduled
           </Text>
           {nextRunAt ? (
-            <TimestampLabel value={nextRunAt} variant="schedule" size="sm" />
+            <TimestampLabel value={nextRunAt} variant="schedule" size="sm" relativeOnly />
           ) : (
             <Text size="sm" c="dimmed">
               None
