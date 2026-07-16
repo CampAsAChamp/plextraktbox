@@ -1,3 +1,10 @@
+## [0.7.2](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.1...v0.7.2) (2026-07-16)
+
+
+### Bug Fixes
+
+* allow insecure cookies on LAN ([f454865](https://github.com/CampAsAChamp/plextraktbox/commit/f4548651a6353c8af8d1144b2dbf98cf0ee359ee))
+
 # [0.7.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.6.0...v0.7.0) (2026-07-16)
 
 
