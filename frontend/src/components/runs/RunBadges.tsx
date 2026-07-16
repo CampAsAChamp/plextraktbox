@@ -32,12 +32,21 @@ function runTriggerColor(trigger: string) {
   return "gray"
 }
 
-export function RunStatusBadge({ status, onRemove }: { status: string; onRemove?: () => void }) {
+export function RunStatusBadge({
+  status,
+  onRemove,
+  pulse = false,
+}: {
+  status: string
+  onRemove?: () => void
+  /** Breathing animation for live runs in the runs list — keep off in filters/chrome. */
+  pulse?: boolean
+}) {
   return (
     <Badge
       color={runStatusColor(status)}
       variant="light"
-      className={status === "running" ? "ptbPulseOpacity" : undefined}
+      className={pulse && status === "running" ? "ptbPulseOpacity" : undefined}
       pr={onRemove ? 3 : undefined}
       rightSection={
         onRemove ? (

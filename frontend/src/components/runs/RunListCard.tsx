@@ -35,7 +35,7 @@ export function RunListCard({ run, onOpen }: RunListCardProps) {
               Run #{run.id}
             </Text>
             <Group gap="xs" wrap="wrap">
-              <RunStatusBadge status={run.status} />
+              <RunStatusBadge status={run.status} pulse />
               <DryRunBadge dryRun={run.dry_run} />
             </Group>
           </Group>

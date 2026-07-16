@@ -308,7 +308,7 @@ export function RunHistoryPage() {
                         <DryRunBadge dryRun={run.dry_run} compact />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "status")}>
-                        <RunStatusBadge status={run.status} />
+                        <RunStatusBadge status={run.status} pulse />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
                         <TimestampLabel value={run.started_at} size="xs" />
