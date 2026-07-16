@@ -5,10 +5,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.letterboxd_slug_cache import LetterboxdSlugCache
+from plextraktbox.services.cache_helpers import clear_all_rows, ensure_utc, get_engine
 
 log = get_logger(__name__)
 
@@ -17,27 +18,8 @@ DEFAULT_MISS_TTL_HOURS = 1
 Resolver = Callable[[str, str, str | None], dict[str, str] | None]
 
 
-def _engine():
-    from plextraktbox import db
-
-    return db.engine
-
-
 def clear_slug_cache(session: Session | None = None) -> int:
-    owns = session is None
-    if owns:
-        session = Session(_engine())
-    assert session is not None
-    try:
-        rows = list(session.exec(select(LetterboxdSlugCache)).all())
-        count = len(rows)
-        for row in rows:
-            session.delete(row)
-        session.commit()
-        return count
-    finally:
-        if owns:
-            session.close()
+    return clear_all_rows(LetterboxdSlugCache, session)
 
 
 def lookup_slug(session: Session, slug: str) -> LetterboxdSlugCache | None:
@@ -103,10 +85,7 @@ def cached_identifiers(row: LetterboxdSlugCache) -> dict[str, str] | None:
 def is_negative_cache_active(row: LetterboxdSlugCache) -> bool:
     if row.miss_until is None:
         return False
-    miss_until = row.miss_until
-    if miss_until.tzinfo is None:
-        miss_until = miss_until.replace(tzinfo=UTC)
-    return datetime.now(UTC) < miss_until
+    return datetime.now(UTC) < ensure_utc(row.miss_until)
 
 
 def wrap_resolver(
@@ -121,7 +100,7 @@ def wrap_resolver(
 
     def resolve(slug: str, title: str, year: str | None = None) -> dict[str, str] | None:
         nonlocal hits, misses, newly_resolved
-        with Session(_engine()) as session:
+        with Session(get_engine()) as session:
             row = lookup_slug(session, slug)
             if row is not None:
                 if is_negative_cache_active(row):

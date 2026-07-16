@@ -8,10 +8,11 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.trakt_list_cache import TraktListCache
+from plextraktbox.services.cache_helpers import clear_all_rows, get_engine, is_within_ttl
 from plextraktbox.sync.media_item import MediaItem, MediaType
 
 log = get_logger(__name__)
@@ -19,12 +20,6 @@ log = get_logger(__name__)
 LIST_WATCHLIST = "watchlist"
 LIST_RATINGS = "ratings"
 LIST_WATCHED = "watched"
-
-
-def _engine():
-    from plextraktbox import db
-
-    return db.engine
 
 
 def account_key_for_token(access_token: str) -> str:
@@ -93,25 +88,12 @@ def _deserialize_items(raw: str) -> list[MediaItem]:
 
 
 def clear_trakt_list_cache(session: Session | None = None) -> int:
-    owns = session is None
-    if owns:
-        session = Session(_engine())
-    assert session is not None
-    try:
-        rows = list(session.exec(select(TraktListCache)).all())
-        count = len(rows)
-        for row in rows:
-            session.delete(row)
-        session.commit()
-        return count
-    finally:
-        if owns:
-            session.close()
+    return clear_all_rows(TraktListCache, session)
 
 
 def invalidate_list(list_kind: str, access_token: str) -> None:
     key = account_key_for_token(access_token)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         row = session.get(TraktListCache, (list_kind, key))
         if row is not None:
             session.delete(row)
@@ -135,21 +117,18 @@ def get_cached_list(
     ttl_minutes: int,
 ) -> list[MediaItem] | None:
     key = account_key_for_token(access_token)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         row = session.get(TraktListCache, (list_kind, key))
         if row is None:
             return None
-        fetched_at = row.fetched_at
-        if fetched_at.tzinfo is None:
-            fetched_at = fetched_at.replace(tzinfo=UTC)
-        if datetime.now(UTC) - fetched_at > timedelta(minutes=ttl_minutes):
+        if not is_within_ttl(row.fetched_at, ttl=timedelta(minutes=ttl_minutes)):
             return None
         return _deserialize_items(row.items_json)
 
 
 def store_list(list_kind: str, access_token: str, items: list[MediaItem]) -> None:
     key = account_key_for_token(access_token)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         row = session.get(TraktListCache, (list_kind, key))
         if row is None:
             row = TraktListCache(

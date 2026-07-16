@@ -4,19 +4,14 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.plex_discover_key_cache import PlexDiscoverKeyCache
+from plextraktbox.services.cache_helpers import clear_all_rows, get_engine
 from plextraktbox.sync.media_item import MediaItem, MediaType
 
 log = get_logger(__name__)
-
-
-def _engine():
-    from plextraktbox import db
-
-    return db.engine
 
 
 def _libtype_for(item: MediaItem) -> str:
@@ -33,25 +28,12 @@ def _cache_keys(item: MediaItem) -> list[tuple[str, str]]:
 
 
 def clear_discover_key_cache(session: Session | None = None) -> int:
-    owns = session is None
-    if owns:
-        session = Session(_engine())
-    assert session is not None
-    try:
-        rows = list(session.exec(select(PlexDiscoverKeyCache)).all())
-        count = len(rows)
-        for row in rows:
-            session.delete(row)
-        session.commit()
-        return count
-    finally:
-        if owns:
-            session.close()
+    return clear_all_rows(PlexDiscoverKeyCache, session)
 
 
 def lookup_discover_key(item: MediaItem) -> str | None:
     libtype = _libtype_for(item)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         for provider, external_id in _cache_keys(item):
             row = session.get(PlexDiscoverKeyCache, (provider, external_id, libtype))
             if row is not None and row.discover_key:
@@ -69,7 +51,7 @@ def lookup_discover_key(item: MediaItem) -> str | None:
 def store_discover_key(item: MediaItem, discover_key: str) -> None:
     libtype = _libtype_for(item)
     now = datetime.now(UTC)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         for provider, external_id in _cache_keys(item):
             row = session.get(PlexDiscoverKeyCache, (provider, external_id, libtype))
             if row is None:
@@ -95,7 +77,7 @@ def store_discover_key(item: MediaItem, discover_key: str) -> None:
 
 def invalidate_discover_key(item: MediaItem) -> None:
     libtype = _libtype_for(item)
-    with Session(_engine()) as session:
+    with Session(get_engine()) as session:
         for provider, external_id in _cache_keys(item):
             row = session.get(PlexDiscoverKeyCache, (provider, external_id, libtype))
             if row is not None:
