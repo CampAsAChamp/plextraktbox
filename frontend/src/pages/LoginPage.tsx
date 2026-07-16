@@ -22,9 +22,24 @@ export function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const login = useMutation({
-    mutationFn: (body: LoginInput) => api.post<User>("/auth/login", body),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+    mutationFn: async (body: LoginInput) => {
+      await api.post<User>("/auth/login", body)
+      // Login can return 200 while the browser drops a Secure cookie on plain HTTP.
+      try {
+        return await api.get<User>("/auth/me")
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          const httpsHint =
+            window.location.protocol === "http:"
+              ? " If you force Secure cookies (SESSION_HTTPS_ONLY=true), use HTTPS or set SESSION_HTTPS_ONLY=false/auto."
+              : " Allow cookies for this site and try again."
+          throw new ApiError(401, `Login succeeded but the session cookie was not stored.${httpsHint}`)
+        }
+        throw error
+      }
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["auth", "me"], user)
       navigate("/", { replace: true })
     },
     onError: (error: unknown) => {

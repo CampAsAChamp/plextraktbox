@@ -119,3 +119,29 @@ def test_logout_clears_session(client: TestClient) -> None:
     logout = client.post("/api/auth/logout", headers=HEADERS)
     assert logout.status_code == 204
     assert client.get("/api/auth/me").status_code == 401
+
+
+def test_login_cookie_not_secure_on_plain_http(client: TestClient) -> None:
+    _create_user(client)
+    login = client.post(
+        "/api/auth/login",
+        json={"username": "nick", "password": "supersecret"},
+        headers=HEADERS,
+    )
+    assert login.status_code == 200
+    set_cookie = login.headers.get("set-cookie", "")
+    assert "plextraktbox_session=" in set_cookie
+    assert "secure" not in set_cookie.lower()
+
+
+def test_login_cookie_secure_behind_forwarded_https(client: TestClient) -> None:
+    _create_user(client)
+    login = client.post(
+        "/api/auth/login",
+        json={"username": "nick", "password": "supersecret"},
+        headers={**HEADERS, "X-Forwarded-Proto": "https"},
+    )
+    assert login.status_code == 200
+    set_cookie = login.headers.get("set-cookie", "")
+    assert "plextraktbox_session=" in set_cookie
+    assert "secure" in set_cookie.lower()

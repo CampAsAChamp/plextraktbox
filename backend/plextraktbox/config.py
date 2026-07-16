@@ -30,6 +30,17 @@ class Settings(BaseSettings):
     )
     data_dir: Path = Field(default=Path("./data"), description="Directory for the SQLite DB and caches.")
     session_cookie: str = "plextraktbox_session"
+    session_https_only: bool | None = Field(
+        default=None,
+        description=(
+            "Secure session cookie policy. "
+            "Unset (default): auto — set Secure when the client uses HTTPS "
+            "(including X-Forwarded-Proto from Cloudflare Tunnel), so LAN HTTP "
+            "and HTTPS both work. "
+            "true: always Secure (HTTPS-only). "
+            "false: never Secure."
+        ),
+    )
     log_level: str = "INFO"
     log_format: str = Field(
         default="auto",
@@ -58,6 +69,15 @@ class Settings(BaseSettings):
             self.secret_key = "dev-insecure-secret-key-do-not-use-in-production"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         return self
+
+    @property
+    def session_https_only_mode(self) -> Literal["auto", "always", "never"]:
+        """Resolved Secure-cookie policy for AdaptiveSessionMiddleware."""
+        if self.session_https_only is True:
+            return "always"
+        if self.session_https_only is False:
+            return "never"
+        return "auto"
 
     @property
     def db_path(self) -> Path:

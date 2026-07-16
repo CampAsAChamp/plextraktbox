@@ -1,6 +1,6 @@
 """Password hashing and symmetric encryption of secrets at rest.
 
-Session handling is provided by Starlette's ``SessionMiddleware`` (configured in
+Session handling is provided by ``AdaptiveSessionMiddleware`` (configured in
 ``main.py``); this module owns password hashing (bcrypt) and Fernet
 encryption/decryption for third-party tokens.
 """

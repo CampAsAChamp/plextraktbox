@@ -16,7 +16,6 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
 from plextraktbox.api import (
     auth,
@@ -38,6 +37,7 @@ from plextraktbox.http_access import AccessLogMiddleware
 from plextraktbox.logging_setup import configure_logging, get_logger
 from plextraktbox.logstream import get_log_hub, get_log_writer
 from plextraktbox.scheduler import get_scheduler_manager
+from plextraktbox.session_middleware import AdaptiveSessionMiddleware
 from plextraktbox.ssl_compat import create_default_context_is_relaxed
 from plextraktbox.version_info import __version__
 
@@ -73,10 +73,10 @@ def create_app() -> FastAPI:
     app = FastAPI(title="plextraktbox", version=__version__, lifespan=lifespan)
 
     app.add_middleware(
-        SessionMiddleware,
+        AdaptiveSessionMiddleware,
         secret_key=settings.secret_key,
         session_cookie=settings.session_cookie,
-        https_only=settings.env == "prod",
+        https_only=settings.session_https_only_mode,
         same_site="lax",
     )
     app.add_middleware(AccessLogMiddleware)

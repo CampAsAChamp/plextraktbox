@@ -110,7 +110,8 @@ value** (compose does `${PORT:-8000}:${PORT:-8000}`; TrueNAS custom apps need bo
 | `SECRET_KEY` | Yes | Long random string; signs sessions and encrypts stored tokens. Generate once and keep stable: `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
 | `TRAKT_CLIENT_ID` | Yes | From your Trakt API app |
 | `TRAKT_CLIENT_SECRET` | Yes | From your Trakt API app |
-| `ENV` | No | Image default is `prod` (Secure session cookies). Do not set `local` on TrueNAS |
+| `ENV` | No | Image default is `prod`. Do not set `local` on TrueNAS |
+| `SESSION_HTTPS_ONLY` | No | Default `auto`: Secure cookies on HTTPS (incl. Cloudflare Tunnel via `X-Forwarded-Proto`), plain cookies on LAN HTTP. Set `true`/`false` to force always/never Secure |
 | `DATA_DIR` | No | Default `/data` — leave unset when using the mount above |
 | `PORT` | No | HTTP listen port inside the container (default `8000`). If set, publish the same host port |
 | `PUID` | Recommended | Host UID that should own files on the dataset (e.g. `568`) |
@@ -153,12 +154,18 @@ Bump the image tag to the new `vX.Y.Z` (or re-pull `:latest`) and recreate the a
 
 ## HTTPS via Cloudflare Tunnel
 
-Prod images set `ENV=prod`, which enables **Secure** session cookies (`https_only`). The browser
-must use an **HTTPS** hostname for login to stick — raw `http://nas:8000` will not keep the session
-cookie.
+Session cookies use **adaptive Secure** by default (`SESSION_HTTPS_ONLY` unset / `auto`):
 
-Recommended path for this project: **Cloudflare Tunnel** (`cloudflared`) already running on TrueNAS
-(or another always-on host), with a public hostname pointing at the plextraktbox origin.
+| How you open the app | Cookie |
+| -------------------- | ------ |
+| LAN `http://nas:<port>` | Not Secure — login works |
+| Cloudflare Tunnel HTTPS | Secure (via `X-Forwarded-Proto: https`) — login works |
+
+You can use **both** at once without changing env. Optional overrides: `SESSION_HTTPS_ONLY=true`
+(HTTPS-only) or `false` (never Secure).
+
+Recommended public path: **Cloudflare Tunnel** (`cloudflared`) on TrueNAS (or another always-on
+host), with a public hostname pointing at the plextraktbox origin.
 
 ### Tunnel route
 
@@ -211,5 +218,5 @@ Format notes: `frontend/src/themes/README.md`.
 | Image | `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (or `:latest`) |
 | Port | `PORT` (default 8000) → app HTTP; host mapping must match |
 | Volume | Host ZFS path → `/data` |
-| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PORT`, recommended `PUID`/`PGID` |
+| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PORT`, `SESSION_HTTPS_ONLY`, recommended `PUID`/`PGID` |
 | HTTPS | Cloudflare Tunnel → `http://<host>:<port>` |
