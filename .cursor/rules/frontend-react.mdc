@@ -14,6 +14,15 @@ alwaysApply: false
 - Vitest + React Testing Library for unit tests
 - Lint/format: ESLint + Prettier (`npm run lint`, `npm run format`) — included in `mise run lint` / `check`
 
+## Components
+
+- Named `function` declarations only — `export function Foo(...)`, not `export const Foo = () => ...`
+- Named exports only — no `export default`
+- Props: `interface FooProps` when non-trivial; inline `{ size?: number }` for tiny icons/badges — never `React.FC` / `FC<Props>`
+- Private subcomponents: unexported `function Bar(...)` in the same file
+- Skip `memo` / `forwardRef` unless there is a measured need
+- Hooks: `export function useFoo()` in `.ts` files
+
 ## Dev
 
 Vite dev server proxies API to backend :8000. Open http://localhost:5173 during native dev.
