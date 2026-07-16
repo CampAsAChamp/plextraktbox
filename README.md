@@ -53,6 +53,7 @@
     <li><a href="#releases">Releases</a></li>
     <li><a href="#tests--checks">Tests &amp; Checks</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#license">License</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -210,9 +211,17 @@ mise run test-frontend
 <!-- ROADMAP -->
 ## Roadmap
 
-Product development is done; remaining work is TrueNAS App Catalog publication — see
-[docs/phases/README.md](docs/phases/README.md). Settings includes an ad-hoc SQLite backup download;
-on TrueNAS prefer ZFS snapshots of the `/data` dataset.
+Product development is done. Remaining work: TrueNAS App Catalog ([Phase 23](docs/phases/phase-23.md))
+— see [docs/phases/README.md](docs/phases/README.md). Settings supports SQLite backup download and
+restore; on TrueNAS prefer ZFS snapshots of the `/data` dataset for routine backups.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- LICENSE -->
+## License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details. Security reports:
+[`SECURITY.md`](SECURITY.md).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
