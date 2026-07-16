@@ -159,11 +159,8 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
         <Stack gap={4}>
           <Title order={3}>Dashboard</Title>
-          <Text size="sm" c="dimmed">
-            Signed in as <strong>{user.username}</strong> · job health at a glance
-          </Text>
         </Stack>
-        <Button component={Link} to="/jobs/new" variant="light" size="sm" leftSection={<PlusIcon />}>
+        <Button component={Link} to="/jobs/new" leftSection={<PlusIcon />}>
           New job
         </Button>
       </Group>
@@ -223,11 +220,11 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
         <Group justify="space-between" wrap="wrap" gap="sm">
           <Group gap="sm">
             <Text fw={500}>Jobs</Text>
-            <Badge color="blue" variant="light">
+            <Badge color="blue" variant="filled">
               {jobs.length}
             </Badge>
           </Group>
-          <Button component={Link} to="/jobs" variant="light" size="xs" leftSection={<ListIcon />}>
+          <Button component={Link} to="/jobs" size="xs" leftSection={<ListIcon />}>
             Manage jobs
           </Button>
         </Group>
