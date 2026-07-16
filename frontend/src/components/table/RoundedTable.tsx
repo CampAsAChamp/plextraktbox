@@ -37,7 +37,7 @@ export function RoundedTable({ children, fitContent = false, minWidth = 720, sty
       {fitContent ? (
         table
       ) : (
-        <ScrollArea type="scroll" offsetScrollbars scrollbarSize={8}>
+        <ScrollArea type="auto" scrollbarSize={8}>
           {table}
         </ScrollArea>
       )}
