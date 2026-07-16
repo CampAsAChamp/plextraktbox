@@ -15,5 +15,5 @@ export function SaveIcon({ size = 14 }: { size?: number }) {
       <path d="M17 21v-8H7v8" />
       <path d="M7 3v5h8" />
     </svg>
-  );
+  )
 }

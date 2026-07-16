@@ -1,5 +1,5 @@
-import { Badge, CloseButton, Group } from "@mantine/core";
-import type { SelectProps } from "@mantine/core";
+import type { SelectProps } from "@mantine/core"
+import { Badge, CloseButton, Group } from "@mantine/core"
 
 function CheckIcon({ size = 14 }: { size?: number }) {
   return (
@@ -16,21 +16,21 @@ function CheckIcon({ size = 14 }: { size?: number }) {
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  );
+  )
 }
 
 export function runStatusColor(status: string) {
-  if (status === "success") return "green";
-  if (status === "failed") return "red";
-  if (status === "partial") return "orange";
-  if (status === "running") return "blue";
-  return "gray";
+  if (status === "success") return "green"
+  if (status === "failed") return "red"
+  if (status === "partial") return "orange"
+  if (status === "running") return "blue"
+  return "gray"
 }
 
 export function runTriggerColor(trigger: string) {
-  if (trigger === "scheduled") return "violet";
-  if (trigger === "manual") return "teal";
-  return "gray";
+  if (trigger === "scheduled") return "violet"
+  if (trigger === "manual") return "teal"
+  return "gray"
 }
 
 export function RunStatusBadge({ status, onRemove }: { status: string; onRemove?: () => void }) {
@@ -54,7 +54,7 @@ export function RunStatusBadge({ status, onRemove }: { status: string; onRemove?
     >
       {status}
     </Badge>
-  );
+  )
 }
 
 export function RunTriggerBadge({ trigger }: { trigger: string }) {
@@ -62,7 +62,7 @@ export function RunTriggerBadge({ trigger }: { trigger: string }) {
     <Badge color={runTriggerColor(trigger)} variant="light">
       {trigger}
     </Badge>
-  );
+  )
 }
 
 export function DryRunBadge({ dryRun, compact = false }: { dryRun: boolean; compact?: boolean }) {
@@ -71,15 +71,15 @@ export function DryRunBadge({ dryRun, compact = false }: { dryRun: boolean; comp
       <Badge color={dryRun ? "blue" : "gray"} variant="light">
         {dryRun ? "yes" : "no"}
       </Badge>
-    );
+    )
   }
 
-  if (!dryRun) return null;
+  if (!dryRun) return null
   return (
     <Badge color="blue" variant="light">
       dry run
     </Badge>
-  );
+  )
 }
 
 export function RunStatusOptionRow({ status, checked }: { status: string; checked: boolean }) {
@@ -92,13 +92,11 @@ export function RunStatusOptionRow({ status, checked }: { status: string; checke
         </span>
       ) : null}
     </Group>
-  );
+  )
 }
 
 export const renderRunStatusOption: SelectProps["renderOption"] = ({ option, checked }) => (
   <RunStatusOptionRow status={option.value} checked={!!checked} />
-);
+)
 
-export const renderRunTriggerOption: SelectProps["renderOption"] = ({ option }) => (
-  <RunTriggerBadge trigger={option.value} />
-);
+export const renderRunTriggerOption: SelectProps["renderOption"] = ({ option }) => <RunTriggerBadge trigger={option.value} />

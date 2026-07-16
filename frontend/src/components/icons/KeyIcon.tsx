@@ -15,5 +15,5 @@ export function KeyIcon({ size = 14 }: { size?: number }) {
       <path d="m21 2-9.6 9.6" />
       <circle cx="7.5" cy="15.5" r="5.5" />
     </svg>
-  );
+  )
 }

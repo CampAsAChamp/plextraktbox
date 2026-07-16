@@ -3,9 +3,10 @@
  *
  * Colors from https://www.nordtheme.com/docs/colors-and-palettes (MIT).
  */
-import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "src/themes/shared";
-import type { BuiltinThemeDefinition } from "src/themes/types";
+import { createTheme, type MantineColorsTuple } from "@mantine/core"
+
+import { sharedTheme } from "src/themes/shared"
+import type { BuiltinThemeDefinition } from "src/themes/types"
 
 /** Nord frost / polar — primary around `#88C0D0` / `#81A1C1`. */
 const cyan: MantineColorsTuple = [
@@ -19,7 +20,7 @@ const cyan: MantineColorsTuple = [
   "#3B5473",
   "#2A3B52",
   "#1A2534",
-];
+]
 
 /** Nord polar night surfaces. */
 const dark: MantineColorsTuple = [
@@ -33,7 +34,7 @@ const dark: MantineColorsTuple = [
   "#3B4252",
   "#2E3440",
   "#242933",
-];
+]
 
 export const nordTheme = createTheme({
   ...sharedTheme,
@@ -49,11 +50,11 @@ export const nordTheme = createTheme({
     ...sharedTheme.other,
     bodyGradient: "linear-gradient(165deg, #242933 0%, #2E3440 42%, #3B4252 100%)",
   },
-});
+})
 
 export const nordDefinition: BuiltinThemeDefinition = {
   id: "nord",
   name: "Nord",
   swatches: ["#2E3440", "#3B4252", "#88C0D0"],
   theme: nordTheme,
-};
+}

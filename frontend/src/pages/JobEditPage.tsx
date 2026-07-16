@@ -1,39 +1,40 @@
-import { Button, Group, Loader, Stack, Text, Title } from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import type { JobInput } from "src/api/jobs";
-import { ApiError } from "src/api/client";
-import { getJob, updateJob } from "src/api/jobApi";
-import { JobForm } from "src/components/JobForm/JobForm";
+import { Button, Group, Loader, Stack, Text, Title } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link, useNavigate, useParams } from "react-router-dom"
+
+import { ApiError } from "src/api/client"
+import { getJob, updateJob } from "src/api/jobApi"
+import type { JobInput } from "src/api/jobs"
+import { JobForm } from "src/components/JobForm/JobForm"
+import { showToast } from "src/toast"
 
 export function JobEditPage() {
-  const { jobId } = useParams();
-  const id = Number(jobId);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { jobId } = useParams()
+  const id = Number(jobId)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const jobQuery = useQuery({
     queryKey: ["jobs", id],
     queryFn: () => getJob(id),
     enabled: Number.isFinite(id),
-  });
+  })
 
   const updateMutation = useMutation({
     mutationFn: (input: JobInput) => updateJob(id, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      showToast({ color: "green", message: "Job updated" });
-      navigate("/jobs", { replace: true });
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] })
+      showToast({ color: "green", message: "Job updated" })
+      navigate("/jobs", { replace: true })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Update failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Update failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   if (!Number.isFinite(id)) {
-    return <Text c="red">Invalid job id.</Text>;
+    return <Text c="red">Invalid job id.</Text>
   }
 
   if (jobQuery.isLoading) {
@@ -42,11 +43,11 @@ export function JobEditPage() {
         <Loader size="sm" />
         <Text>Loading job…</Text>
       </Group>
-    );
+    )
   }
 
   if (jobQuery.isError || !jobQuery.data) {
-    return <Text c="red">Job not found.</Text>;
+    return <Text c="red">Job not found.</Text>
   }
 
   return (
@@ -64,5 +65,5 @@ export function JobEditPage() {
         onCancel={() => navigate("/jobs")}
       />
     </Stack>
-  );
+  )
 }

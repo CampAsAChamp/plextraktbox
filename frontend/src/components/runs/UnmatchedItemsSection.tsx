@@ -1,36 +1,37 @@
-import { Accordion, Badge, Group, ScrollArea, Table, Text } from "@mantine/core";
-import type { DataType } from "src/api/jobs";
-import type { Service } from "src/api/connections";
-import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
-import { ServiceLogo } from "src/components/connections/ServiceLogo";
-import { DataTypeBadge } from "src/components/services/DataTypeBadge";
-import { RoundedTable } from "src/components/table/RoundedTable";
+import { Accordion, Badge, Group, ScrollArea, Table, Text } from "@mantine/core"
+
+import type { Service } from "src/api/connections"
+import type { DataType } from "src/api/jobs"
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus"
+import { ServiceLogo } from "src/components/connections/ServiceLogo"
+import { DataTypeBadge } from "src/components/services/DataTypeBadge"
+import { RoundedTable } from "src/components/table/RoundedTable"
 
 export interface UnmatchedItem {
-  source: string;
-  data_type: string;
-  title: string;
-  source_key: string;
-  reason: string;
+  source: string
+  data_type: string
+  title: string
+  source_key: string
+  reason: string
 }
 
-const DATA_TYPES = new Set<DataType>(["watchlist", "ratings", "watched"]);
+const DATA_TYPES = new Set<DataType>(["watchlist", "ratings", "watched"])
 
 function isService(value: string): value is Service {
-  return value in SERVICE_LABELS;
+  return value in SERVICE_LABELS
 }
 
 function isDataType(value: string): value is DataType {
-  return DATA_TYPES.has(value as DataType);
+  return DATA_TYPES.has(value as DataType)
 }
 
 function parseUnmatchedItems(raw: unknown): UnmatchedItem[] {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) return []
 
   return raw.flatMap((entry) => {
-    if (!entry || typeof entry !== "object") return [];
-    const item = entry as Record<string, unknown>;
-    if (typeof item.title !== "string" || typeof item.reason !== "string") return [];
+    if (!entry || typeof entry !== "object") return []
+    const item = entry as Record<string, unknown>
+    if (typeof item.title !== "string" || typeof item.reason !== "string") return []
 
     return [
       {
@@ -40,17 +41,17 @@ function parseUnmatchedItems(raw: unknown): UnmatchedItem[] {
         source_key: typeof item.source_key === "string" ? item.source_key : item.title,
         reason: item.reason,
       },
-    ];
-  });
+    ]
+  })
 }
 
 interface UnmatchedItemsSectionProps {
-  items: unknown;
+  items: unknown
 }
 
 export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
-  const parsedItems = parseUnmatchedItems(items);
-  if (parsedItems.length === 0) return null;
+  const parsedItems = parseUnmatchedItems(items)
+  if (parsedItems.length === 0) return null
 
   return (
     <Accordion variant="contained" chevronPosition="left">
@@ -118,5 +119,5 @@ export function UnmatchedItemsSection({ items }: UnmatchedItemsSectionProps) {
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
-  );
+  )
 }

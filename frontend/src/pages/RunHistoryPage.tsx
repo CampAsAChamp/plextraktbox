@@ -1,76 +1,38 @@
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Button,
-  Group,
-  Loader,
-  Select,
-  SimpleGrid,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import type { RunListItem } from "src/api/jobs";
-import { SOURCE_PAIR_LABELS } from "src/api/jobs";
-import { listJobs } from "src/api/jobApi";
-import { listRuns } from "src/api/runs";
-import {
-  RUN_TRIGGER_OPTIONS,
-  filterRuns,
-  parseRunStatuses,
-  parseRunTrigger,
-} from "src/utils/runFilters";
-import {
-  DryRunBadge,
-  renderRunTriggerOption,
-  RunStatusBadge,
-  RunTriggerBadge,
-} from "src/components/runs/RunBadges";
-import { RunListCard } from "src/components/runs/RunListCard";
-import { RunStatusMultiSelect } from "src/components/runs/RunStatusMultiSelect";
-import { SourcePairLabel } from "src/components/services/SourcePairLabel";
-import { RoundedTable } from "src/components/table/RoundedTable";
-import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat";
-import { nextSortState, sortRows, type SortState } from "src/utils/tableSort";
-import dryRunRowClasses from "../styles/dryRunRow.module.css";
-import classes from "./RunHistoryPage.module.css";
+import { ActionIcon, Alert, Box, Button, Group, Loader, Select, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
+
+import { listJobs } from "src/api/jobApi"
+import type { RunListItem } from "src/api/jobs"
+import { SOURCE_PAIR_LABELS } from "src/api/jobs"
+import { listRuns } from "src/api/runs"
+import { DryRunBadge, renderRunTriggerOption, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
+import { RunListCard } from "src/components/runs/RunListCard"
+import { RunStatusMultiSelect } from "src/components/runs/RunStatusMultiSelect"
+import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { RoundedTable } from "src/components/table/RoundedTable"
+import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh"
+import classes from "src/pages/RunHistoryPage.module.css"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import dryRunRowClasses from "src/styles/dryRunRow.module.css"
+import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat"
+import { filterRuns, parseRunStatuses, parseRunTrigger, RUN_TRIGGER_OPTIONS } from "src/utils/runFilters"
+import { nextSortState, sortRows, type SortState } from "src/utils/tableSort"
 
 /** One full rotation of `.spin` — keeps the icon visible on fast local refetches. */
-const MIN_REFRESH_SPIN_MS = 800;
+const MIN_REFRESH_SPIN_MS = 800
 
-type RunSortColumn =
-  | "id"
-  | "job_name"
-  | "source_pair"
-  | "trigger"
-  | "dry_run"
-  | "status"
-  | "started_at"
-  | "duration";
+type RunSortColumn = "id" | "job_name" | "source_pair" | "trigger" | "dry_run" | "status" | "started_at" | "duration"
 
 function runDurationMs(run: RunListItem): number | null {
   if (!run.finished_at) {
-    return null;
+    return null
   }
-  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
+  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()
 }
 
-function StrokeIcon({
-  size = 14,
-  className,
-  children,
-}: {
-  size?: number;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function StrokeIcon({ size = 14, className, children }: { size?: number; className?: string; children: React.ReactNode }) {
   return (
     <svg
       className={className}
@@ -86,7 +48,7 @@ function StrokeIcon({
     >
       {children}
     </svg>
-  );
+  )
 }
 
 function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
@@ -97,66 +59,66 @@ function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
       <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
       <path d="M16 16h5v5" />
     </StrokeIcon>
-  );
+  )
 }
 
 export function RunHistoryPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { preferences } = useDisplayPreferences();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [sort, setSort] = useState<SortState<RunSortColumn> | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const jobIdParam = searchParams.get("job_id");
-  const jobId = jobIdParam && !Number.isNaN(Number(jobIdParam)) ? Number(jobIdParam) : undefined;
-  const statusFilters = parseRunStatuses(searchParams.get("status"));
-  const triggerFilter = parseRunTrigger(searchParams.get("trigger"));
-  const hasFilters = jobId !== undefined || statusFilters.length > 0 || triggerFilter !== undefined;
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { preferences } = useDisplayPreferences()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [sort, setSort] = useState<SortState<RunSortColumn> | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const jobIdParam = searchParams.get("job_id")
+  const jobId = jobIdParam && !Number.isNaN(Number(jobIdParam)) ? Number(jobIdParam) : undefined
+  const statusFilters = parseRunStatuses(searchParams.get("status"))
+  const triggerFilter = parseRunTrigger(searchParams.get("trigger"))
+  const hasFilters = jobId !== undefined || statusFilters.length > 0 || triggerFilter !== undefined
 
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
-  });
+  })
 
   const runsQuery = useQuery({
     queryKey: ["runs", { job_id: jobId }],
     queryFn: () => listRuns({ job_id: jobId, limit: 100 }),
-  });
+  })
 
   function updateSearchParam(key: string, value: string | null) {
-    const next = new URLSearchParams(searchParams);
+    const next = new URLSearchParams(searchParams)
     if (value) {
-      next.set(key, value);
+      next.set(key, value)
     } else {
-      next.delete(key);
+      next.delete(key)
     }
-    setSearchParams(next);
+    setSearchParams(next)
   }
 
   function updateSearchParamList(key: string, values: string[]) {
-    const next = new URLSearchParams(searchParams);
+    const next = new URLSearchParams(searchParams)
     if (values.length > 0) {
-      next.set(key, values.join(","));
+      next.set(key, values.join(","))
     } else {
-      next.delete(key);
+      next.delete(key)
     }
-    setSearchParams(next);
+    setSearchParams(next)
   }
 
   async function refreshRuns() {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    const started = performance.now();
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    const started = performance.now()
     try {
-      await Promise.all([runsQuery.refetch(), jobsQuery.refetch()]);
+      await Promise.all([runsQuery.refetch(), jobsQuery.refetch()])
     } finally {
-      const remaining = Math.max(0, MIN_REFRESH_SPIN_MS - (performance.now() - started));
+      const remaining = Math.max(0, MIN_REFRESH_SPIN_MS - (performance.now() - started))
       if (remaining > 0) {
         await new Promise<void>((resolve) => {
-          window.setTimeout(resolve, remaining);
-        });
+          window.setTimeout(resolve, remaining)
+        })
       }
-      setIsRefreshing(false);
+      setIsRefreshing(false)
     }
   }
 
@@ -166,40 +128,33 @@ export function RunHistoryPage() {
         <Loader size="sm" />
         <Text>Loading run history…</Text>
       </Group>
-    );
+    )
   }
 
   if (runsQuery.isError) {
-    return <Text c="red">Could not load runs.</Text>;
+    return <Text c="red">Could not load runs.</Text>
   }
 
-  const jobs = jobsQuery.data ?? [];
-  const selectedJob = jobId !== undefined ? jobs.find((job) => job.id === jobId) : undefined;
-  const deletedJob = jobId !== undefined && selectedJob === undefined;
-  const allRuns = runsQuery.data?.items ?? [];
-  const runs = sortRows(
-    filterRuns(allRuns, { statuses: statusFilters, trigger: triggerFilter }),
-    sort,
-    {
-      id: (run) => run.id,
-      job_name: (run) => run.job_name ?? `Job #${run.job_id}`,
-      source_pair: (run) => (run.source_pair ? SOURCE_PAIR_LABELS[run.source_pair] : null),
-      trigger: (run) => run.trigger,
-      dry_run: (run) => run.dry_run,
-      status: (run) => run.status,
-      started_at: (run) => new Date(run.started_at).getTime(),
-      duration: (run) => runDurationMs(run),
-    },
-  );
-  const deletedJobName = allRuns.find((run) => run.job_id === jobId)?.job_name ?? null;
+  const jobs = jobsQuery.data ?? []
+  const selectedJob = jobId !== undefined ? jobs.find((job) => job.id === jobId) : undefined
+  const deletedJob = jobId !== undefined && selectedJob === undefined
+  const allRuns = runsQuery.data?.items ?? []
+  const runs = sortRows(filterRuns(allRuns, { statuses: statusFilters, trigger: triggerFilter }), sort, {
+    id: (run) => run.id,
+    job_name: (run) => run.job_name ?? `Job #${run.job_id}`,
+    source_pair: (run) => (run.source_pair ? SOURCE_PAIR_LABELS[run.source_pair] : null),
+    trigger: (run) => run.trigger,
+    dry_run: (run) => run.dry_run,
+    status: (run) => run.status,
+    started_at: (run) => new Date(run.started_at).getTime(),
+    duration: (run) => runDurationMs(run),
+  })
+  const deletedJobName = allRuns.find((run) => run.job_id === jobId)?.job_name ?? null
 
-  const jobOptions = [
-    { value: "", label: "All jobs" },
-    ...jobs.map((job) => ({ value: String(job.id), label: job.name })),
-  ];
+  const jobOptions = [{ value: "", label: "All jobs" }, ...jobs.map((job) => ({ value: String(job.id), label: job.name }))]
 
   function handleSort(column: RunSortColumn) {
-    setSort((current) => nextSortState(current, column));
+    setSort((current) => nextSortState(current, column))
   }
 
   return (
@@ -216,15 +171,7 @@ export function RunHistoryPage() {
                 ? `Runs for job #${jobId}`
                 : "Run history"}
         </Title>
-        <ActionIcon
-          variant="light"
-          size="lg"
-          miw={44}
-          h={44}
-          aria-label="Refresh runs"
-          disabled={isRefreshing}
-          onClick={refreshRuns}
-        >
+        <ActionIcon variant="light" size="lg" miw={44} h={44} aria-label="Refresh runs" disabled={isRefreshing} onClick={refreshRuns}>
           <RefreshIcon spinning={isRefreshing} />
         </ActionIcon>
       </Group>
@@ -270,11 +217,7 @@ export function RunHistoryPage() {
 
       {hasFilters ? (
         <Group gap="sm">
-          <Button
-            variant="subtle"
-            size="compact-sm"
-            onClick={() => setSearchParams({})}
-          >
+          <Button variant="subtle" size="compact-sm" onClick={() => setSearchParams({})}>
             Clear filters
           </Button>
           <Text size="sm" c="dimmed">
@@ -295,16 +238,8 @@ export function RunHistoryPage() {
         <>
           <Stack gap="sm" hiddenFrom="sm">
             {runs.map((run) => {
-              const runsListPath = `${location.pathname}${location.search}`;
-              return (
-                <RunListCard
-                  key={run.id}
-                  run={run}
-                  onOpen={() =>
-                    navigate(`/runs/${run.id}`, { state: { from: runsListPath } })
-                  }
-                />
-              );
+              const runsListPath = `${location.pathname}${location.search}`
+              return <RunListCard key={run.id} run={run} onOpen={() => navigate(`/runs/${run.id}`, { state: { from: runsListPath } })} />
             })}
           </Stack>
 
@@ -314,46 +249,20 @@ export function RunHistoryPage() {
                 <Table.Tr>
                   <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
                   <SortableTh column="job_name" label="Job" sort={sort} onSort={handleSort} />
-                  <SortableTh
-                    column="source_pair"
-                    label="Job Type"
-                    sort={sort}
-                    onSort={handleSort}
-                  />
-                  <SortableTh
-                    column="trigger"
-                    label="Trigger"
-                    sort={sort}
-                    onSort={handleSort}
-                  />
-                  <SortableTh
-                    column="dry_run"
-                    label="Dry run"
-                    sort={sort}
-                    onSort={handleSort}
-                  />
+                  <SortableTh column="source_pair" label="Job Type" sort={sort} onSort={handleSort} />
+                  <SortableTh column="trigger" label="Trigger" sort={sort} onSort={handleSort} />
+                  <SortableTh column="dry_run" label="Dry run" sort={sort} onSort={handleSort} />
                   <SortableTh column="status" label="Status" sort={sort} onSort={handleSort} />
-                  <SortableTh
-                    column="started_at"
-                    label="Started"
-                    sort={sort}
-                    onSort={handleSort}
-                  />
-                  <SortableTh
-                    column="duration"
-                    label="Duration"
-                    sort={sort}
-                    onSort={handleSort}
-                  />
+                  <SortableTh column="started_at" label="Started" sort={sort} onSort={handleSort} />
+                  <SortableTh column="duration" label="Duration" sort={sort} onSort={handleSort} />
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {runs.map((run) => {
-                  const durationMs = runDurationMs(run);
-                  const duration =
-                    durationMs === null ? "running…" : formatDuration(durationMs);
+                  const durationMs = runDurationMs(run)
+                  const duration = durationMs === null ? "running…" : formatDuration(durationMs)
 
-                  const runsListPath = `${location.pathname}${location.search}`;
+                  const runsListPath = `${location.pathname}${location.search}`
 
                   return (
                     <Table.Tr
@@ -362,28 +271,20 @@ export function RunHistoryPage() {
                       tabIndex={0}
                       aria-label={`Run #${run.id} for ${run.job_name ?? `job #${run.job_id}`}`}
                       style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        navigate(`/runs/${run.id}`, { state: { from: runsListPath } })
-                      }
+                      onClick={() => navigate(`/runs/${run.id}`, { state: { from: runsListPath } })}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          navigate(`/runs/${run.id}`, { state: { from: runsListPath } });
+                          event.preventDefault()
+                          navigate(`/runs/${run.id}`, { state: { from: runsListPath } })
                         }
                       }}
                     >
                       <Table.Td className={sortedColumnCellClass(sort, "id")}>
                         <Text fw={500}>#{run.id}</Text>
                       </Table.Td>
-                      <Table.Td className={sortedColumnCellClass(sort, "job_name")}>
-                        {run.job_name ?? `Job #${run.job_id}`}
-                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "job_name")}>{run.job_name ?? `Job #${run.job_id}`}</Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "source_pair")}>
-                        {run.source_pair ? (
-                          <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
-                        ) : (
-                          <Text c="dimmed">—</Text>
-                        )}
+                        {run.source_pair ? <SourcePairLabel sourcePair={run.source_pair} variant="icons" /> : <Text c="dimmed">—</Text>}
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "trigger")}>
                         <RunTriggerBadge trigger={run.trigger} />
@@ -397,11 +298,9 @@ export function RunHistoryPage() {
                       <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
                         {formatDateTime(run.started_at, preferences)}
                       </Table.Td>
-                      <Table.Td className={sortedColumnCellClass(sort, "duration")}>
-                        {duration}
-                      </Table.Td>
+                      <Table.Td className={sortedColumnCellClass(sort, "duration")}>{duration}</Table.Td>
                     </Table.Tr>
-                  );
+                  )
                 })}
               </Table.Tbody>
             </RoundedTable>
@@ -409,5 +308,5 @@ export function RunHistoryPage() {
         </>
       )}
     </Stack>
-  );
+  )
 }

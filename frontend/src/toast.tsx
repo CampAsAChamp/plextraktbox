@@ -1,5 +1,5 @@
-import { notifications, type NotificationData } from "@mantine/notifications";
-import type { ReactNode } from "react";
+import { type NotificationData, notifications } from "@mantine/notifications"
+import type { ReactNode } from "react"
 
 function ToastIcon({ children, size = 18 }: { children: ReactNode; size?: number }) {
   return (
@@ -16,7 +16,7 @@ function ToastIcon({ children, size = 18 }: { children: ReactNode; size?: number
     >
       {children}
     </svg>
-  );
+  )
 }
 
 function CheckIcon() {
@@ -24,7 +24,7 @@ function CheckIcon() {
     <ToastIcon>
       <polyline points="20 6 9 17 4 12" />
     </ToastIcon>
-  );
+  )
 }
 
 function XIcon() {
@@ -33,7 +33,7 @@ function XIcon() {
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </ToastIcon>
-  );
+  )
 }
 
 function AlertIcon() {
@@ -43,7 +43,7 @@ function AlertIcon() {
       <line x1="12" y1="9" x2="12" y2="13" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </ToastIcon>
-  );
+  )
 }
 
 function InfoIcon() {
@@ -53,32 +53,32 @@ function InfoIcon() {
       <line x1="12" y1="16" x2="12" y2="12" />
       <line x1="12" y1="8" x2="12.01" y2="8" />
     </ToastIcon>
-  );
+  )
 }
 
 /** Map Mantine toast colors to status icons. */
 export function iconForToastColor(color: NotificationData["color"]): ReactNode {
-  const name = typeof color === "string" ? color : "blue";
+  const name = typeof color === "string" ? color : "blue"
   switch (name) {
     case "green":
     case "teal":
-      return <CheckIcon />;
+      return <CheckIcon />
     case "red":
-      return <XIcon />;
+      return <XIcon />
     case "orange":
     case "yellow":
-      return <AlertIcon />;
+      return <AlertIcon />
     default:
-      return <InfoIcon />;
+      return <InfoIcon />
   }
 }
 
 /** Show a toast with color coding and a matching status icon. */
 export function showToast(data: NotificationData) {
-  const color = data.color ?? "blue";
+  const color = data.color ?? "blue"
   notifications.show({
     ...data,
     color,
     icon: data.icon ?? iconForToastColor(color),
-  });
+  })
 }

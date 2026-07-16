@@ -1,1 +1,1 @@
-export { SettingsPage } from "src/pages/Settings/SettingsPage";
+export { SettingsPage } from "src/pages/Settings/SettingsPage"

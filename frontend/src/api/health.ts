@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { api } from "src/api/client";
-import type { components } from "src/api/generated/schema";
+import { useQuery } from "@tanstack/react-query"
 
-export type HealthResponse = components["schemas"]["HealthResponse"];
+import { api } from "src/api/client"
+import type { components } from "src/api/generated/schema"
 
-const HEALTH_QUERY_KEY = ["health"] as const;
+export type HealthResponse = components["schemas"]["HealthResponse"]
+
+const HEALTH_QUERY_KEY = ["health"] as const
 
 export function useHealthQuery() {
   return useQuery({
@@ -12,16 +13,16 @@ export function useHealthQuery() {
     queryFn: () => api.get<HealthResponse>("/health"),
     refetchInterval: 60_000,
     refetchIntervalInBackground: true,
-  });
+  })
 }
 
 export function formatVersionLabel(health: HealthResponse | undefined): string {
   if (!health) {
-    return "connecting…";
+    return "connecting…"
   }
-  const sha = health.git_sha?.trim();
+  const sha = health.git_sha?.trim()
   if (sha) {
-    return `v${health.version} · ${sha.slice(0, 7)}`;
+    return `v${health.version} · ${sha.slice(0, 7)}`
   }
-  return `v${health.version}`;
+  return `v${health.version}`
 }

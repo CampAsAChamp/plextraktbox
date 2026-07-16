@@ -30,6 +30,22 @@ If you skip that task: `git config core.hooksPath .githooks`. Emergency bypass:
 
 Run `mise tasks` for the full task list.
 
+## Lint and format
+
+`mise run lint` (and thus `mise run check` / pre-push) covers:
+
+- **Backend:** Ruff lint + format check (including import sorting via Ruff `I`) and mypy
+- **Frontend:** ESLint (`npm run lint`), Prettier check (`npm run format:check`), and TypeScript (`npm run typecheck`)
+
+Frontend helpers from `frontend/`:
+
+```bash
+npm run lint          # ESLint (absolute src/ imports + import sort + hooks)
+npm run lint:fix     # autofix import order / safe fixes
+npm run format        # Prettier write
+npm run format:check  # Prettier CI check
+```
+
 ## Doppler (maintainers — recommended)
 
 [Doppler](https://www.doppler.com/) holds **maintainer** bootstrap secrets. Local `.env` keeps only

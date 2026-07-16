@@ -3,9 +3,10 @@
  *
  * Colors from https://draculatheme.com/contribute (MIT).
  */
-import { createTheme, type MantineColorsTuple } from "@mantine/core";
-import { sharedTheme } from "src/themes/shared";
-import type { BuiltinThemeDefinition } from "src/themes/types";
+import { createTheme, type MantineColorsTuple } from "@mantine/core"
+
+import { sharedTheme } from "src/themes/shared"
+import type { BuiltinThemeDefinition } from "src/themes/types"
 
 /** Dracula purple primary — `#BD93F9`. */
 const violet: MantineColorsTuple = [
@@ -19,7 +20,7 @@ const violet: MantineColorsTuple = [
   "#533D80",
   "#3A2B59",
   "#241A38",
-];
+]
 
 /** Dracula background family — `#282A36`. */
 const dark: MantineColorsTuple = [
@@ -33,7 +34,7 @@ const dark: MantineColorsTuple = [
   "#282A36",
   "#21222C",
   "#191A21",
-];
+]
 
 export const draculaTheme = createTheme({
   ...sharedTheme,
@@ -49,11 +50,11 @@ export const draculaTheme = createTheme({
     ...sharedTheme.other,
     bodyGradient: "linear-gradient(165deg, #191A21 0%, #21222C 42%, #282A36 100%)",
   },
-});
+})
 
 export const draculaDefinition: BuiltinThemeDefinition = {
   id: "dracula",
   name: "Dracula",
   swatches: ["#282A36", "#44475A", "#BD93F9"],
   theme: draculaTheme,
-};
+}

@@ -8,27 +8,22 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
   Textarea,
+  TextInput,
   Tooltip,
   UnstyledButton,
-} from "@mantine/core";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { getSettings } from "src/api/settings";
-import {
-  deleteTheme,
-  listThemes,
-  updateActiveTheme,
-  uploadTheme,
-  type ThemeInfo,
-} from "src/api/themes";
-import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
-import { PaletteIcon } from "src/components/icons/PaletteIcon";
-import { TrashIcon } from "src/components/icons/TrashIcon";
-import { showToast } from "src/toast";
-import { BUILTIN_THEMES, getBuiltinTheme } from "src/themes/registry";
-import { writeCachedThemeId } from "src/themes/themePreference";
+} from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+
+import { getSettings } from "src/api/settings"
+import { deleteTheme, listThemes, type ThemeInfo, updateActiveTheme, uploadTheme } from "src/api/themes"
+import { PaletteIcon } from "src/components/icons/PaletteIcon"
+import { TrashIcon } from "src/components/icons/TrashIcon"
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
+import { BUILTIN_THEMES, getBuiltinTheme } from "src/themes/registry"
+import { writeCachedThemeId } from "src/themes/themePreference"
+import { showToast } from "src/toast"
 
 function ThemeSwatch({
   theme,
@@ -36,13 +31,13 @@ function ThemeSwatch({
   onSelect,
   onDelete,
 }: {
-  theme: ThemeInfo;
-  active: boolean;
-  onSelect: () => void;
-  onDelete?: () => void;
+  theme: ThemeInfo
+  active: boolean
+  onSelect: () => void
+  onDelete?: () => void
 }) {
-  const builtin = getBuiltinTheme(theme.id);
-  const swatches = builtin?.swatches ?? ["#282C34", "#3E4452", "#61AFEF"];
+  const builtin = getBuiltinTheme(theme.id)
+  const swatches = builtin?.swatches ?? ["#282C34", "#3E4452", "#61AFEF"]
 
   return (
     <Box pos="relative">
@@ -54,9 +49,7 @@ function ThemeSwatch({
           display: "block",
           width: "100%",
           borderRadius: "var(--mantine-radius-lg)",
-          border: active
-            ? "2px solid var(--mantine-primary-color-filled)"
-            : "1px solid var(--mantine-color-dark-4)",
+          border: active ? "2px solid var(--mantine-primary-color-filled)" : "1px solid var(--mantine-color-dark-4)",
           padding: 12,
           background: "var(--mantine-color-dark-7)",
           textAlign: "left",
@@ -94,8 +87,8 @@ function ThemeSwatch({
             right={8}
             aria-label={`Delete theme ${theme.name}`}
             onClick={(event) => {
-              event.stopPropagation();
-              onDelete();
+              event.stopPropagation()
+              onDelete()
             }}
           >
             <TrashIcon size={14} />
@@ -103,98 +96,92 @@ function ThemeSwatch({
         </Tooltip>
       ) : null}
     </Box>
-  );
+  )
 }
 
 export function ThemeSection() {
-  const queryClient = useQueryClient();
-  const [pasteCss, setPasteCss] = useState("");
-  const [pasteName, setPasteName] = useState("custom-theme.css");
+  const queryClient = useQueryClient()
+  const [pasteCss, setPasteCss] = useState("")
+  const [pasteName, setPasteName] = useState("custom-theme.css")
 
   const themesQuery = useQuery({
     queryKey: ["themes"],
     queryFn: listThemes,
-  });
+  })
 
   const settingsQuery = useQuery({
     queryKey: ["settings"],
     queryFn: getSettings,
-  });
+  })
 
-  const activeId = settingsQuery.data?.ui_theme ?? "one-dark-pro";
+  const activeId = settingsQuery.data?.ui_theme ?? "one-dark-pro"
 
   const activateMutation = useMutation({
     mutationFn: updateActiveTheme,
     onSuccess: async (result) => {
-      writeCachedThemeId(result.theme_id);
+      writeCachedThemeId(result.theme_id)
       queryClient.setQueryData(["settings"], (prev: { ui_theme?: string } | undefined) =>
         prev ? { ...prev, ui_theme: result.theme_id } : prev,
-      );
-      await queryClient.invalidateQueries({ queryKey: ["settings"] });
-      showToast({ color: "green", message: `Theme set to ${result.theme_id}` });
+      )
+      await queryClient.invalidateQueries({ queryKey: ["settings"] })
+      showToast({ color: "green", message: `Theme set to ${result.theme_id}` })
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Failed to set theme";
-      showToast({ color: "red", message });
+      const message = error instanceof Error ? error.message : "Failed to set theme"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const uploadMutation = useMutation({
-    mutationFn: ({ css, filename }: { css: string; filename?: string }) =>
-      uploadTheme(css, filename),
+    mutationFn: ({ css, filename }: { css: string; filename?: string }) => uploadTheme(css, filename),
     onSuccess: async (info) => {
-      setPasteCss("");
-      await queryClient.invalidateQueries({ queryKey: ["themes"] });
-      showToast({ color: "green", message: `Uploaded ${info.name}` });
+      setPasteCss("")
+      await queryClient.invalidateQueries({ queryKey: ["themes"] })
+      showToast({ color: "green", message: `Uploaded ${info.name}` })
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Upload failed";
-      showToast({ color: "red", message });
+      const message = error instanceof Error ? error.message : "Upload failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const deleteMutation = useMutation({
     mutationFn: deleteTheme,
     onSuccess: async (_void, themeId) => {
-      await queryClient.invalidateQueries({ queryKey: ["themes"] });
-      await queryClient.invalidateQueries({ queryKey: ["settings"] });
-      showToast({ color: "green", message: `Deleted ${themeId}` });
+      await queryClient.invalidateQueries({ queryKey: ["themes"] })
+      await queryClient.invalidateQueries({ queryKey: ["settings"] })
+      showToast({ color: "green", message: `Deleted ${themeId}` })
       if (themeId === activeId) {
-        writeCachedThemeId("one-dark-pro");
+        writeCachedThemeId("one-dark-pro")
       }
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Delete failed";
-      showToast({ color: "red", message });
+      const message = error instanceof Error ? error.message : "Delete failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
-  const themes = themesQuery.data ?? BUILTIN_THEMES.map((t) => ({
-    id: t.id,
-    name: t.name,
-    source: "builtin" as const,
-  }));
+  const themes =
+    themesQuery.data ??
+    BUILTIN_THEMES.map((t) => ({
+      id: t.id,
+      name: t.name,
+      source: "builtin" as const,
+    }))
 
   async function handleFile(file: File | null) {
-    if (!file) return;
-    const css = await file.text();
-    uploadMutation.mutate({ css, filename: file.name });
+    if (!file) return
+    const css = await file.text()
+    uploadMutation.mutate({ css, filename: file.name })
   }
 
   return (
-    <Paper
-      id="settings-theme"
-      withBorder
-      p="md"
-      data-settings-section="Theme"
-      style={{ scrollMarginTop: 80 }}
-    >
+    <Paper id="settings-theme" withBorder p="md" data-settings-section="Theme" style={{ scrollMarginTop: 80 }}>
       <Stack gap="lg">
         <SettingsSectionTitle icon={<PaletteIcon size={18} />}>Theme</SettingsSectionTitle>
         <Text size="sm" c="dimmed">
-          Choose a built-in palette or upload a custom CSS theme. Active theme is stored in
-          settings and applied for this install. Optional host volume:{" "}
-          <code>/data/themes</code>.
+          Choose a built-in palette or upload a custom CSS theme. Active theme is stored in settings and applied for this install. Optional
+          host volume: <code>/data/themes</code>.
         </Text>
 
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="sm">
@@ -205,24 +192,16 @@ export function ThemeSection() {
               active={theme.id === activeId}
               onSelect={() => {
                 if (theme.id !== activeId) {
-                  activateMutation.mutate(theme.id);
+                  activateMutation.mutate(theme.id)
                 }
               }}
-              onDelete={
-                theme.source === "custom"
-                  ? () => deleteMutation.mutate(theme.id)
-                  : undefined
-              }
+              onDelete={theme.source === "custom" ? () => deleteMutation.mutate(theme.id) : undefined}
             />
           ))}
         </SimpleGrid>
 
         <Group gap="sm">
-          <Button
-            variant="light"
-            loading={themesQuery.isFetching}
-            onClick={() => void themesQuery.refetch()}
-          >
+          <Button variant="light" loading={themesQuery.isFetching} onClick={() => void themesQuery.refetch()}>
             Refresh themes
           </Button>
           <FileButton onChange={(file) => void handleFile(file)} accept=".css,text/css">
@@ -237,8 +216,7 @@ export function ThemeSection() {
         <Stack gap="xs">
           <Text fw={500}>Paste custom CSS</Text>
           <Text size="sm" c="dimmed">
-            Include <code>/* @name: … */</code> and <code>/* @id: … */</code> headers. See{" "}
-            <code>frontend/src/themes/README.md</code>.
+            Include <code>/* @name: … */</code> and <code>/* @id: … */</code> headers. See <code>frontend/src/themes/README.md</code>.
           </Text>
           <Textarea
             minRows={6}
@@ -246,28 +224,23 @@ export function ThemeSection() {
             maxRows={14}
             value={pasteCss}
             onChange={(event) => setPasteCss(event.currentTarget.value)}
-            placeholder={"/* @name: My Theme */\n/* @id: my-theme */\n:root[data-ptb-theme=\"my-theme\"] {\n  --mantine-color-dark-9: #111;\n}\n"}
+            placeholder={
+              '/* @name: My Theme */\n/* @id: my-theme */\n:root[data-ptb-theme="my-theme"] {\n  --mantine-color-dark-9: #111;\n}\n'
+            }
             styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
           />
           <Group align="flex-end">
             <Button
               disabled={!pasteCss.trim()}
               loading={uploadMutation.isPending}
-              onClick={() =>
-                uploadMutation.mutate({ css: pasteCss, filename: pasteName || undefined })
-              }
+              onClick={() => uploadMutation.mutate({ css: pasteCss, filename: pasteName || undefined })}
             >
               Save pasted theme
             </Button>
-            <TextInput
-              label="Filename hint"
-              value={pasteName}
-              onChange={(event) => setPasteName(event.currentTarget.value)}
-              w={220}
-            />
+            <TextInput label="Filename hint" value={pasteName} onChange={(event) => setPasteName(event.currentTarget.value)} w={220} />
           </Group>
         </Stack>
       </Stack>
     </Paper>
-  );
+  )
 }

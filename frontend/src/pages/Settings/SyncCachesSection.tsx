@@ -1,50 +1,46 @@
-import { Button, Checkbox, Group, NumberInput, Paper, Stack, Text } from "@mantine/core";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type FormEvent } from "react";
-import { ApiError } from "src/api/client";
-import {
-  clearSyncCaches,
-  getSettings,
-  updateSettings,
-  type AppSettingsInput,
-} from "src/api/settings";
-import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
-import { SaveIcon } from "src/components/icons/SaveIcon";
-import { SyncIcon } from "src/components/icons/SyncIcon";
-import { showToast } from "src/toast";
+import { Button, Checkbox, Group, NumberInput, Paper, Stack, Text } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { type FormEvent, useEffect, useState } from "react"
+
+import { ApiError } from "src/api/client"
+import { type AppSettingsInput, clearSyncCaches, getSettings, updateSettings } from "src/api/settings"
+import { SaveIcon } from "src/components/icons/SaveIcon"
+import { SyncIcon } from "src/components/icons/SyncIcon"
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
+import { showToast } from "src/toast"
 
 export function SyncCachesSection() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   const settingsQuery = useQuery({
     queryKey: ["settings"],
     queryFn: getSettings,
-  });
+  })
 
-  const [exportTtlHours, setExportTtlHours] = useState(24);
-  const [traktTtlMinutes, setTraktTtlMinutes] = useState(30);
-  const [clearExport, setClearExport] = useState(true);
-  const [clearSlug, setClearSlug] = useState(true);
-  const [clearTrakt, setClearTrakt] = useState(true);
-  const [clearDiscover, setClearDiscover] = useState(true);
+  const [exportTtlHours, setExportTtlHours] = useState(24)
+  const [traktTtlMinutes, setTraktTtlMinutes] = useState(30)
+  const [clearExport, setClearExport] = useState(true)
+  const [clearSlug, setClearSlug] = useState(true)
+  const [clearTrakt, setClearTrakt] = useState(true)
+  const [clearDiscover, setClearDiscover] = useState(true)
 
   useEffect(() => {
-    const data = settingsQuery.data;
-    if (!data) return;
-    setExportTtlHours(data.letterboxd_export_cache_ttl_hours);
-    setTraktTtlMinutes(data.trakt_list_cache_ttl_minutes);
-  }, [settingsQuery.data]);
+    const data = settingsQuery.data
+    if (!data) return
+    setExportTtlHours(data.letterboxd_export_cache_ttl_hours)
+    setTraktTtlMinutes(data.trakt_list_cache_ttl_minutes)
+  }, [settingsQuery.data])
 
   const saveMutation = useMutation({
     mutationFn: (input: AppSettingsInput) => updateSettings(input),
     onSuccess: (data) => {
-      void queryClient.setQueryData(["settings"], data);
-      showToast({ color: "green", message: "Cache settings saved" });
+      void queryClient.setQueryData(["settings"], data)
+      showToast({ color: "green", message: "Cache settings saved" })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Save failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Save failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const clearMutation = useMutation({
     mutationFn: () =>
@@ -61,21 +57,21 @@ export function SyncCachesSection() {
           `Cleared caches (export dirs=${result.letterboxd_export}, ` +
           `slugs=${result.letterboxd_slug}, trakt=${result.trakt_lists}, ` +
           `discover=${result.discover_keys})`,
-      });
+      })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Clear failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Clear failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    const data = settingsQuery.data;
-    if (!data) return;
+    event.preventDefault()
+    const data = settingsQuery.data
+    if (!data) return
     if (exportTtlHours < 1 || traktTtlMinutes < 1) {
-      showToast({ color: "red", message: "Cache TTLs must be at least 1" });
-      return;
+      showToast({ color: "red", message: "Cache TTLs must be at least 1" })
+      return
     }
     saveMutation.mutate({
       default_cron: data.default_cron,
@@ -85,22 +81,16 @@ export function SyncCachesSection() {
       exclude_ids: data.exclude_ids,
       letterboxd_export_cache_ttl_hours: exportTtlHours,
       trakt_list_cache_ttl_minutes: traktTtlMinutes,
-    });
+    })
   }
 
   return (
-    <Paper
-      id="settings-sync-caches"
-      withBorder
-      p="md"
-      data-settings-section="Sync caches"
-      style={{ scrollMarginTop: 80 }}
-    >
+    <Paper id="settings-sync-caches" withBorder p="md" data-settings-section="Sync caches" style={{ scrollMarginTop: 80 }}>
       <Stack gap="md">
         <SettingsSectionTitle icon={<SyncIcon size={18} />}>Sync caches</SettingsSectionTitle>
         <Text size="sm" c="dimmed">
-          Reuse Letterboxd exports, Trakt lists, slug→ID resolves, and Plex Discover keys across
-          sync runs. Plex library walks are still once-per-run only (not persisted).
+          Reuse Letterboxd exports, Trakt lists, slug→ID resolves, and Plex Discover keys across sync runs. Plex library walks are still
+          once-per-run only (not persisted).
         </Text>
 
         <form onSubmit={handleSubmit}>
@@ -124,12 +114,7 @@ export function SyncCachesSection() {
               disabled={settingsQuery.isLoading}
             />
             <Group>
-              <Button
-                type="submit"
-                loading={saveMutation.isPending}
-                leftSection={<SaveIcon />}
-                disabled={settingsQuery.isLoading}
-              >
+              <Button type="submit" loading={saveMutation.isPending} leftSection={<SaveIcon />} disabled={settingsQuery.isLoading}>
                 Save cache settings
               </Button>
             </Group>
@@ -143,16 +128,8 @@ export function SyncCachesSection() {
             checked={clearExport}
             onChange={(event) => setClearExport(event.currentTarget.checked)}
           />
-          <Checkbox
-            label="Letterboxd slug → IDs"
-            checked={clearSlug}
-            onChange={(event) => setClearSlug(event.currentTarget.checked)}
-          />
-          <Checkbox
-            label="Trakt list snapshots"
-            checked={clearTrakt}
-            onChange={(event) => setClearTrakt(event.currentTarget.checked)}
-          />
+          <Checkbox label="Letterboxd slug → IDs" checked={clearSlug} onChange={(event) => setClearSlug(event.currentTarget.checked)} />
+          <Checkbox label="Trakt list snapshots" checked={clearTrakt} onChange={(event) => setClearTrakt(event.currentTarget.checked)} />
           <Checkbox
             label="Plex Discover keys"
             checked={clearDiscover}
@@ -171,5 +148,5 @@ export function SyncCachesSection() {
         </Stack>
       </Stack>
     </Paper>
-  );
+  )
 }

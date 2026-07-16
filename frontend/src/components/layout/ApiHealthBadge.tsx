@@ -1,23 +1,24 @@
-import { Badge, Box, Tooltip } from "@mantine/core";
-import { formatVersionLabel, useHealthQuery } from "src/api/health";
+import { Badge, Box, Tooltip } from "@mantine/core"
+
+import { formatVersionLabel, useHealthQuery } from "src/api/health"
 
 /** Shown only when `/health` is degraded or unreachable — healthy stays out of the navbar. */
 export function ApiHealthBadge() {
-  const { data, isError } = useHealthQuery();
+  const { data, isError } = useHealthQuery()
 
   if (data?.status === "ok") {
-    return null;
+    return null
   }
 
   if (data) {
-    const label = formatVersionLabel(data);
-    const tooltipParts = [`plextraktbox ${label}`, "degraded"];
-    if (!data.db_writable) tooltipParts.push("db not writable");
-    if (!data.scheduler_running) tooltipParts.push("scheduler stopped");
+    const label = formatVersionLabel(data)
+    const tooltipParts = [`plextraktbox ${label}`, "degraded"]
+    if (!data.db_writable) tooltipParts.push("db not writable")
+    if (!data.scheduler_running) tooltipParts.push("scheduler stopped")
     if (data.built_at) {
-      tooltipParts.push(`built ${data.built_at}`);
+      tooltipParts.push(`built ${data.built_at}`)
     }
-    const tooltip = tooltipParts.join(" · ");
+    const tooltip = tooltipParts.join(" · ")
 
     return (
       <Tooltip label={tooltip} withArrow>
@@ -30,7 +31,7 @@ export function ApiHealthBadge() {
           </Box>
         </Badge>
       </Tooltip>
-    );
+    )
   }
 
   if (isError) {
@@ -43,8 +44,8 @@ export function ApiHealthBadge() {
           API unreachable
         </Box>
       </Badge>
-    );
+    )
   }
 
-  return null;
+  return null
 }

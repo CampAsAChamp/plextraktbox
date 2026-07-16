@@ -1,22 +1,14 @@
-import {
-  Anchor,
-  Avatar,
-  Button,
-  Group,
-  Paper,
-  PasswordInput,
-  Stack,
-  Text,
-} from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
-import { z } from "zod";
-import type { User } from "src/api/auth";
-import { ApiError } from "src/api/client";
-import { changePassword } from "src/api/settings";
-import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
-import { UserIcon } from "src/components/icons/UserIcon";
+import { Anchor, Avatar, Button, Group, Paper, PasswordInput, Stack, Text } from "@mantine/core"
+import { useMutation } from "@tanstack/react-query"
+import { useState } from "react"
+import { z } from "zod"
+
+import type { User } from "src/api/auth"
+import { ApiError } from "src/api/client"
+import { changePassword } from "src/api/settings"
+import { UserIcon } from "src/components/icons/UserIcon"
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
+import { showToast } from "src/toast"
 
 const passwordSchema = z
   .object({
@@ -31,61 +23,55 @@ const passwordSchema = z
   .refine((value) => value.currentPassword !== value.newPassword, {
     message: "New password must differ from the current password",
     path: ["newPassword"],
-  });
+  })
 
 interface AccountSectionProps {
-  user: User;
+  user: User
 }
 
 export function AccountSection({ user }: AccountSectionProps) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const mutation = useMutation({
     mutationFn: () => changePassword(currentPassword, newPassword),
     onSuccess: () => {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setErrors({});
-      showToast({ color: "green", message: "Password updated" });
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+      setErrors({})
+      showToast({ color: "green", message: "Password updated" })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Password change failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Password change failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+    event.preventDefault()
     const parsed = passwordSchema.safeParse({
       currentPassword,
       newPassword,
       confirmPassword,
-    });
+    })
     if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
+      const fieldErrors: Record<string, string> = {}
       for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? "form");
-        fieldErrors[key] = issue.message;
+        const key = String(issue.path[0] ?? "form")
+        fieldErrors[key] = issue.message
       }
-      setErrors(fieldErrors);
-      return;
+      setErrors(fieldErrors)
+      return
     }
-    setErrors({});
-    mutation.mutate();
+    setErrors({})
+    mutation.mutate()
   }
 
   return (
-    <Paper
-      id="settings-account"
-      withBorder
-      p="md"
-      data-settings-section="Account"
-      style={{ scrollMarginTop: 80 }}
-    >
+    <Paper id="settings-account" withBorder p="md" data-settings-section="Account" style={{ scrollMarginTop: 80 }}>
       <Stack gap="md">
         <SettingsSectionTitle icon={<UserIcon size={18} />}>Account</SettingsSectionTitle>
         <Group gap="md" align="flex-start" wrap="wrap">
@@ -95,12 +81,7 @@ export function AccountSection({ user }: AccountSectionProps) {
             <Text size="sm" c="dimmed">
               {user.email}
             </Text>
-            <Anchor
-              href="https://gravatar.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              size="sm"
-            >
+            <Anchor href="https://gravatar.com" target="_blank" rel="noopener noreferrer" size="sm">
               Manage avatar at Gravatar
             </Anchor>
           </Stack>
@@ -139,5 +120,5 @@ export function AccountSection({ user }: AccountSectionProps) {
         </form>
       </Stack>
     </Paper>
-  );
+  )
 }

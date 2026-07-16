@@ -1,27 +1,12 @@
-import {
-  ActionIcon,
-  Badge,
-  Button,
-  Group,
-  Indicator,
-  Menu,
-  ScrollArea,
-  Stack,
-  Text,
-} from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import {
-  getUnreadCount,
-  listInAppNotifications,
-  markAllInAppRead,
-  markInAppRead,
-  type InAppNotification,
-} from "src/api/notifications";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { formatDateTime } from "src/utils/dateTimeFormat";
+import { ActionIcon, Badge, Button, Group, Indicator, Menu, ScrollArea, Stack, Text } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
+import { Link } from "react-router-dom"
+
+import { getUnreadCount, type InAppNotification, listInAppNotifications, markAllInAppRead, markInAppRead } from "src/api/notifications"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { showToast } from "src/toast"
+import { formatDateTime } from "src/utils/dateTimeFormat"
 
 function BellIcon({ size = 18 }: { size?: number }) {
   return (
@@ -39,34 +24,28 @@ function BellIcon({ size = 18 }: { size?: number }) {
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
-  );
+  )
 }
 
 function levelColor(level: InAppNotification["level"]) {
   switch (level) {
     case "success":
-      return "green";
+      return "green"
     case "warning":
-      return "yellow";
+      return "yellow"
     case "error":
-      return "red";
+      return "red"
     default:
-      return "blue";
+      return "blue"
   }
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+  return error instanceof Error ? error.message : fallback
 }
 
-function NotificationItem({
-  item,
-  onRead,
-}: {
-  item: InAppNotification;
-  onRead: (id: number) => void;
-}) {
-  const { preferences } = useDisplayPreferences();
+function NotificationItem({ item, onRead }: { item: InAppNotification; onRead: (id: number) => void }) {
+  const { preferences } = useDisplayPreferences()
   const content = (
     <Stack gap={2}>
       <Group justify="space-between" wrap="nowrap" gap="xs">
@@ -84,7 +63,7 @@ function NotificationItem({
         {formatDateTime(item.created_at, preferences)}
       </Text>
     </Stack>
-  );
+  )
 
   if (item.run_id != null && item.run_id > 0) {
     return (
@@ -92,77 +71,73 @@ function NotificationItem({
         component={Link}
         to={`/runs/${item.run_id}`}
         onClick={() => {
-          if (!item.read) onRead(item.id);
+          if (!item.read) onRead(item.id)
         }}
       >
         {content}
       </Menu.Item>
-    );
+    )
   }
 
-  return (
-    <Menu.Item onClick={() => !item.read && onRead(item.id)}>
-      {content}
-    </Menu.Item>
-  );
+  return <Menu.Item onClick={() => !item.read && onRead(item.id)}>{content}</Menu.Item>
 }
 
 export function NotificationBell() {
-  const queryClient = useQueryClient();
-  const unreadErrorToasted = useRef(false);
+  const queryClient = useQueryClient()
+  const unreadErrorToasted = useRef(false)
   const unreadQuery = useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
     refetchInterval: 30_000,
-  });
+  })
   const listQuery = useQuery({
     queryKey: ["notifications", "inapp"],
     queryFn: () => listInAppNotifications(false),
     enabled: false,
-  });
+  })
 
   useEffect(() => {
     if (unreadQuery.isError) {
       if (!unreadErrorToasted.current) {
-        unreadErrorToasted.current = true;
+        unreadErrorToasted.current = true
         showToast({
           color: "red",
           message: errorMessage(unreadQuery.error, "Could not load notification count"),
-        });
+        })
       }
-      return;
+      return
     }
-    unreadErrorToasted.current = false;
-  }, [unreadQuery.isError, unreadQuery.error]);
+    unreadErrorToasted.current = false
+  }, [unreadQuery.isError, unreadQuery.error])
 
   const markRead = useMutation({
     mutationFn: markInAppRead,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: errorMessage(error, "Could not mark notification read"),
-      });
+      })
     },
-  });
+  })
 
   const markAll = useMutation({
     mutationFn: markAllInAppRead,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      showToast({ color: "green", message: "All notifications marked read" });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      showToast({ color: "green", message: "All notifications marked read" })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: errorMessage(error, "Could not mark notifications read"),
-      });
+      })
     },
-  });
+  })
 
-  const unreadCount = unreadQuery.data?.unread_count ?? 0;
+  const unreadCount = unreadQuery.data?.unread_count ?? 0
 
   return (
     <Menu
@@ -170,25 +145,12 @@ export function NotificationBell() {
       width="min(360px, calc(100vw - 2rem))"
       withinPortal
       onOpen={() => {
-        void listQuery.refetch();
+        void listQuery.refetch()
       }}
     >
       <Menu.Target>
-        <Indicator
-          inline
-          disabled={unreadCount === 0}
-          color="blue"
-          size={8}
-          offset={4}
-        >
-          <ActionIcon
-            variant="subtle"
-            color={unreadCount > 0 ? "blue" : "gray"}
-            size="lg"
-            miw={44}
-            h={44}
-            aria-label="Notifications"
-          >
+        <Indicator inline disabled={unreadCount === 0} color="blue" size={8} offset={4}>
+          <ActionIcon variant="subtle" color={unreadCount > 0 ? "blue" : "gray"} size="lg" miw={44} h={44} aria-label="Notifications">
             <BellIcon />
           </ActionIcon>
         </Indicator>
@@ -196,12 +158,7 @@ export function NotificationBell() {
       <Menu.Dropdown>
         <Group justify="space-between" px="sm" py={4}>
           <Menu.Label style={{ padding: 0 }}>Notifications</Menu.Label>
-          <Button
-            variant="subtle"
-            size="compact-xs"
-            disabled={unreadCount === 0 || markAll.isPending}
-            onClick={() => markAll.mutate()}
-          >
+          <Button variant="subtle" size="compact-xs" disabled={unreadCount === 0 || markAll.isPending} onClick={() => markAll.mutate()}>
             Mark all read
           </Button>
         </Group>
@@ -215,13 +172,7 @@ export function NotificationBell() {
               {errorMessage(listQuery.error, "Could not load notifications")}
             </Text>
           ) : listQuery.data?.items.length ? (
-            listQuery.data.items.map((item) => (
-              <NotificationItem
-                key={item.id}
-                item={item}
-                onRead={(id) => markRead.mutate(id)}
-              />
-            ))
+            listQuery.data.items.map((item) => <NotificationItem key={item.id} item={item} onRead={(id) => markRead.mutate(id)} />)
           ) : (
             <Text size="sm" c="dimmed" px="sm" py="md">
               No notifications yet
@@ -230,5 +181,5 @@ export function NotificationBell() {
         </ScrollArea.Autosize>
       </Menu.Dropdown>
     </Menu>
-  );
+  )
 }

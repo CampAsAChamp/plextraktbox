@@ -1,6 +1,7 @@
-import { Group, Table, Text, UnstyledButton, useMantineTheme } from "@mantine/core";
-import type { SortDirection, SortState } from "src/utils/tableSort";
-import classes from "./SortableTh.module.css";
+import { Group, Table, Text, UnstyledButton, useMantineTheme } from "@mantine/core"
+
+import classes from "src/components/table/SortableTh.module.css"
+import type { SortDirection, SortState } from "src/utils/tableSort"
 
 function ChevronUpIcon({ size = 16 }: { size?: number }) {
   return (
@@ -17,7 +18,7 @@ function ChevronUpIcon({ size = 16 }: { size?: number }) {
     >
       <path d="M18 15l-6-6-6 6" />
     </svg>
-  );
+  )
 }
 
 function ChevronUpDownIcon({ size = 16 }: { size?: number }) {
@@ -36,18 +37,14 @@ function ChevronUpDownIcon({ size = 16 }: { size?: number }) {
       <path d="M7 15l5 5 5-5" />
       <path d="M7 9l5-5 5 5" />
     </svg>
-  );
+  )
 }
 
 function SortIndicator({ direction }: { direction?: SortDirection }) {
-  const sorted = direction !== undefined;
-  const className = [
-    classes.indicator,
-    sorted ? classes.indicatorSorted : "",
-    direction === "desc" ? classes.indicatorDesc : "",
-  ]
+  const sorted = direction !== undefined
+  const className = [classes.indicator, sorted ? classes.indicatorSorted : "", direction === "desc" ? classes.indicatorDesc : ""]
     .filter(Boolean)
-    .join(" ");
+    .join(" ")
 
   return (
     <span className={className} aria-hidden>
@@ -58,7 +55,7 @@ function SortIndicator({ direction }: { direction?: SortDirection }) {
         <ChevronUpIcon />
       </span>
     </span>
-  );
+  )
 }
 
 export function SortableTh<TColumn extends string>({
@@ -68,24 +65,20 @@ export function SortableTh<TColumn extends string>({
   onSort,
   hiddenFrom,
 }: {
-  column: TColumn;
-  label: string;
-  sort: SortState<TColumn> | null;
-  onSort: (column: TColumn) => void;
+  column: TColumn
+  label: string
+  sort: SortState<TColumn> | null
+  onSort: (column: TColumn) => void
   /** Hide this column below the given Mantine breakpoint. */
-  hiddenFrom?: "xs" | "sm" | "md" | "lg" | "xl";
+  hiddenFrom?: "xs" | "sm" | "md" | "lg" | "xl"
 }) {
-  const theme = useMantineTheme();
-  const active = sort?.column === column;
-  const direction = active ? sort.direction : undefined;
-  const ariaSort = active ? (direction === "asc" ? "ascending" : "descending") : "none";
+  const theme = useMantineTheme()
+  const active = sort?.column === column
+  const direction = active ? sort.direction : undefined
+  const ariaSort = active ? (direction === "asc" ? "ascending" : "descending") : "none"
 
   return (
-    <Table.Th
-      aria-sort={ariaSort}
-      className={active ? `${classes.th} ${classes.thSorted}` : classes.th}
-      hiddenFrom={hiddenFrom}
-    >
+    <Table.Th aria-sort={ariaSort} className={active ? `${classes.th} ${classes.thSorted}` : classes.th} hiddenFrom={hiddenFrom}>
       <UnstyledButton
         onClick={() => onSort(column)}
         aria-label={`Sort by ${label}`}
@@ -110,13 +103,10 @@ export function SortableTh<TColumn extends string>({
         </Group>
       </UnstyledButton>
     </Table.Th>
-  );
+  )
 }
 
 /** Class for body cells that belong to the active sort column. */
-export function sortedColumnCellClass<TColumn extends string>(
-  sort: SortState<TColumn> | null,
-  column: TColumn,
-): string | undefined {
-  return sort?.column === column ? classes.sortedCell : undefined;
+export function sortedColumnCellClass<TColumn extends string>(sort: SortState<TColumn> | null, column: TColumn): string | undefined {
+  return sort?.column === column ? classes.sortedCell : undefined
 }

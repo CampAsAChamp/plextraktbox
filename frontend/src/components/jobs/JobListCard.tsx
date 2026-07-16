@@ -1,32 +1,33 @@
-import { Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core";
-import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
-import type { Job } from "src/api/jobs";
-import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm";
-import { RunStatusBadge } from "src/components/runs/RunBadges";
-import { RunSummaryStats } from "src/components/runs/RunSummaryStats";
-import { DataTypeBadge } from "src/components/services/DataTypeBadge";
-import { SourcePairLabel } from "src/components/services/SourcePairLabel";
-import { RowActionsMenu } from "src/components/table/RowActionsMenu";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat";
-import dryRunRowClasses from "../../styles/dryRunRow.module.css";
+import { Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core"
+import type { ReactNode } from "react"
+import { Link } from "react-router-dom"
+
+import type { Job } from "src/api/jobs"
+import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
+import { RunStatusBadge } from "src/components/runs/RunBadges"
+import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
+import { DataTypeBadge } from "src/components/services/DataTypeBadge"
+import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { RowActionsMenu } from "src/components/table/RowActionsMenu"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import dryRunRowClasses from "src/styles/dryRunRow.module.css"
+import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 type JobListCardProps = {
-  job: Job;
+  job: Job
   /** Labeled menu actions (Run, Edit, …). */
-  actions: ReactNode;
+  actions: ReactNode
   /** When true, show last-run summary (Dashboard). */
-  showLastRun?: boolean;
-};
+  showLastRun?: boolean
+}
 
 function ScheduleSummary({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences();
+  const { preferences } = useDisplayPreferences()
   const nextLabel = !job.enabled
     ? "Disabled — no next run"
     : job.next_run_at
       ? formatScheduleDateTime(job.next_run_at, preferences)
-      : "Next run unavailable";
+      : "Next run unavailable"
 
   return (
     <Stack gap={2}>
@@ -37,32 +38,25 @@ function ScheduleSummary({ job }: { job: Job }) {
         {nextLabel}
       </Text>
     </Stack>
-  );
+  )
 }
 
 function LastRunSummary({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences();
-  const theme = useMantineTheme();
-  const last = job.last_run;
+  const { preferences } = useDisplayPreferences()
+  const theme = useMantineTheme()
+  const last = job.last_run
   if (!last) {
     return (
       <Text size="sm" c="dimmed">
         Never run
       </Text>
-    );
+    )
   }
 
   return (
     <Stack gap={4}>
       <Group gap="xs" wrap="wrap">
-        <Text
-          component={Link}
-          to={`/runs/${last.id}`}
-          size="sm"
-          fw={500}
-          c={`${theme.primaryColor}.4`}
-          style={{ textDecoration: "none" }}
-        >
+        <Text component={Link} to={`/runs/${last.id}`} size="sm" fw={500} c={`${theme.primaryColor}.4`} style={{ textDecoration: "none" }}>
           Run #{last.id}
         </Text>
         <RunStatusBadge status={last.status} />
@@ -71,24 +65,15 @@ function LastRunSummary({ job }: { job: Job }) {
       <Text size="xs" c="dimmed">
         {formatDateTime(last.finished_at ?? last.started_at, preferences)}
       </Text>
-      <RunSummaryStats
-        matched={last.matched}
-        added={last.added}
-        errors={last.errors}
-      />
+      <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
-  );
+  )
 }
 
 /** Mobile job card — used below `sm` on Jobs and Dashboard. */
 export function JobListCard({ job, actions, showLastRun = false }: JobListCardProps) {
   return (
-    <Paper
-      withBorder
-      radius="lg"
-      p="md"
-      className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-    >
+    <Paper withBorder radius="lg" p="md" className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
           <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
@@ -138,5 +123,5 @@ export function JobListCard({ job, actions, showLastRun = false }: JobListCardPr
         ) : null}
       </Stack>
     </Paper>
-  );
+  )
 }

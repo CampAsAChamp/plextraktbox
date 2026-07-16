@@ -1,11 +1,12 @@
-import { Box, Group, Select, TableOfContents, Text, useMantineTheme } from "@mantine/core";
-import type { ComponentType } from "react";
-import { BellIcon } from "src/components/icons/BellIcon";
-import { ClockIcon } from "src/components/icons/ClockIcon";
-import { DatabaseIcon } from "src/components/icons/DatabaseIcon";
-import { PaletteIcon } from "src/components/icons/PaletteIcon";
-import { SyncIcon } from "src/components/icons/SyncIcon";
-import { UserIcon } from "src/components/icons/UserIcon";
+import { Box, Group, Select, TableOfContents, Text, useMantineTheme } from "@mantine/core"
+import type { ComponentType } from "react"
+
+import { BellIcon } from "src/components/icons/BellIcon"
+import { ClockIcon } from "src/components/icons/ClockIcon"
+import { DatabaseIcon } from "src/components/icons/DatabaseIcon"
+import { PaletteIcon } from "src/components/icons/PaletteIcon"
+import { SyncIcon } from "src/components/icons/SyncIcon"
+import { UserIcon } from "src/components/icons/UserIcon"
 
 const INITIAL_SECTIONS = [
   { id: "settings-account", value: "Account", depth: 1 },
@@ -15,7 +16,7 @@ const INITIAL_SECTIONS = [
   { id: "settings-display", value: "Display preferences", depth: 1 },
   { id: "settings-theme", value: "Theme", depth: 1 },
   { id: "settings-notifications", value: "Notifications", depth: 1 },
-] as const;
+] as const
 
 const SECTION_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   "settings-account": UserIcon,
@@ -25,10 +26,10 @@ const SECTION_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   "settings-display": ClockIcon,
   "settings-theme": PaletteIcon,
   "settings-notifications": BellIcon,
-};
+}
 
 function scrollToSection(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
 }
 
 /** Compact section jump for narrow viewports (desktop TOC is sticky aside). */
@@ -43,7 +44,7 @@ export function SettingsMobileNav() {
         label: section.value,
       }))}
       onChange={(value) => {
-        if (value) scrollToSection(value);
+        if (value) scrollToSection(value)
       }}
       clearable
       styles={{
@@ -51,19 +52,13 @@ export function SettingsMobileNav() {
         section: { cursor: "pointer" },
       }}
     />
-  );
+  )
 }
 
 export function SettingsToc() {
-  const theme = useMantineTheme();
+  const theme = useMantineTheme()
   return (
-    <Box
-      component="nav"
-      aria-label="Settings sections"
-      visibleFrom="sm"
-      w={200}
-      style={{ position: "sticky", top: 80, flexShrink: 0 }}
-    >
+    <Box component="nav" aria-label="Settings sections" visibleFrom="sm" w={200} style={{ position: "sticky", top: 80, flexShrink: 0 }}>
       <Text size="xs" tt="uppercase" c="dimmed" fw={600} mb="xs">
         On this page
       </Text>
@@ -78,20 +73,19 @@ export function SettingsToc() {
           getValue: (element) => element.getAttribute("data-settings-section") ?? "",
         }}
         getControlProps={({ data }) => {
-          const Icon = SECTION_ICONS[data.id];
+          const Icon = SECTION_ICONS[data.id]
           return {
-            onClick: () =>
-              data.getNode().scrollIntoView({ behavior: "smooth", block: "start" }),
+            onClick: () => data.getNode().scrollIntoView({ behavior: "smooth", block: "start" }),
             children: (
               <Group gap={6} wrap="nowrap" justify="flex-start">
                 {Icon ? <Icon size={14} /> : null}
                 <span>{data.value}</span>
               </Group>
             ),
-          };
+          }
         }}
         initialData={[...INITIAL_SECTIONS]}
       />
     </Box>
-  );
+  )
 }

@@ -13,5 +13,5 @@ export function StatusCheckIcon({ size = 12 }: { size?: number }) {
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  );
+  )
 }

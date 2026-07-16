@@ -1,42 +1,32 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  Divider,
-  Group,
-  Paper,
-  Stack,
-  Switch,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { Box, Button, Checkbox, Divider, Group, Paper, Stack, Switch, Text, TextInput } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
+
+import { ApiError } from "src/api/client"
 import {
   CHANNEL_LABELS,
   createNotificationConfig,
   deleteNotificationConfig,
   listNotificationConfigs,
-  testNotificationConfig,
-  updateNotificationConfig,
   type NotificationChannel,
   type NotificationConfig,
-} from "src/api/notifications";
-import { ApiError } from "src/api/client";
-import { SettingsSectionTitle } from "src/components/SettingsSectionTitle";
-import { BellIcon } from "src/components/icons/BellIcon";
-import { DiscordIcon } from "src/components/icons/DiscordIcon";
-import { SaveIcon } from "src/components/icons/SaveIcon";
+  testNotificationConfig,
+  updateNotificationConfig,
+} from "src/api/notifications"
+import { BellIcon } from "src/components/icons/BellIcon"
+import { DiscordIcon } from "src/components/icons/DiscordIcon"
+import { SaveIcon } from "src/components/icons/SaveIcon"
+import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
+import { showToast } from "src/toast"
 
-const CHANNELS: NotificationChannel[] = ["discord", "inapp"];
-const DISCORD_BLURPLE = "#5865F2";
+const CHANNELS: NotificationChannel[] = ["discord", "inapp"]
+const DISCORD_BLURPLE = "#5865F2"
 
 interface ChannelFormState {
-  enabled: boolean;
-  onSuccess: boolean;
-  onFailure: boolean;
-  webhookUrl: string;
+  enabled: boolean
+  onSuccess: boolean
+  onFailure: boolean
+  webhookUrl: string
 }
 
 function defaultFormState(): ChannelFormState {
@@ -45,18 +35,18 @@ function defaultFormState(): ChannelFormState {
     onSuccess: true,
     onFailure: true,
     webhookUrl: "",
-  };
+  }
 }
 
 function configToFormState(config: NotificationConfig | undefined): ChannelFormState {
-  const base = defaultFormState();
-  if (!config) return base;
+  const base = defaultFormState()
+  if (!config) return base
   return {
     enabled: config.enabled,
     onSuccess: config.on_success,
     onFailure: config.on_failure,
     webhookUrl: "",
-  };
+  }
 }
 
 function ChannelSettings({
@@ -64,15 +54,15 @@ function ChannelSettings({
   config,
   onSaved,
 }: {
-  channel: NotificationChannel;
-  config: NotificationConfig | undefined;
-  onSaved: () => void;
+  channel: NotificationChannel
+  config: NotificationConfig | undefined
+  onSaved: () => void
 }) {
-  const [form, setForm] = useState<ChannelFormState>(() => configToFormState(config));
+  const [form, setForm] = useState<ChannelFormState>(() => configToFormState(config))
 
   useEffect(() => {
-    setForm(configToFormState(config));
-  }, [config]);
+    setForm(configToFormState(config))
+  }, [config])
 
   const save = useMutation({
     mutationFn: async () => {
@@ -81,11 +71,8 @@ function ChannelSettings({
           enabled: form.enabled,
           on_success: form.onSuccess,
           on_failure: form.onFailure,
-          discord:
-            channel === "discord" && form.webhookUrl
-              ? { webhook_url: form.webhookUrl }
-              : undefined,
-        });
+          discord: channel === "discord" && form.webhookUrl ? { webhook_url: form.webhookUrl } : undefined,
+        })
       }
       return createNotificationConfig({
         channel,
@@ -93,39 +80,38 @@ function ChannelSettings({
         on_success: form.onSuccess,
         on_failure: form.onFailure,
         scope: "global",
-        discord:
-          channel === "discord" ? { webhook_url: form.webhookUrl } : undefined,
-      });
+        discord: channel === "discord" ? { webhook_url: form.webhookUrl } : undefined,
+      })
     },
     onSuccess: () => {
-      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} settings saved` });
-      onSaved();
+      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} settings saved` })
+      onSaved()
     },
     onError: (error) => {
-      const message = error instanceof ApiError ? error.message : "Save failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? error.message : "Save failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const remove = useMutation({
     mutationFn: () => deleteNotificationConfig(config!.id),
     onSuccess: () => {
-      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} removed` });
-      onSaved();
+      showToast({ color: "green", message: `${CHANNEL_LABELS[channel]} removed` })
+      onSaved()
     },
-  });
+  })
 
   const test = useMutation({
     mutationFn: () => testNotificationConfig(config!.id),
     onSuccess: () => {
-      showToast({ color: "green", message: "Test notification sent" });
-      onSaved();
+      showToast({ color: "green", message: "Test notification sent" })
+      onSaved()
     },
     onError: (error) => {
-      const message = error instanceof ApiError ? error.message : "Test failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? error.message : "Test failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const body = (
     <Stack gap="sm">
@@ -147,25 +133,19 @@ function ChannelSettings({
         <Checkbox
           label="On success"
           checked={form.onSuccess}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, onSuccess: event.currentTarget.checked }))
-          }
+          onChange={(event) => setForm((current) => ({ ...current, onSuccess: event.currentTarget.checked }))}
         />
         <Checkbox
           label="On failure"
           checked={form.onFailure}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, onFailure: event.currentTarget.checked }))
-          }
+          onChange={(event) => setForm((current) => ({ ...current, onFailure: event.currentTarget.checked }))}
         />
       </Group>
 
       {channel === "discord" ? (
         <TextInput
           label="Webhook URL"
-          description={
-            config?.has_secret ? "Leave blank to keep the existing webhook URL" : undefined
-          }
+          description={config?.has_secret ? "Leave blank to keep the existing webhook URL" : undefined}
           value={form.webhookUrl}
           onChange={(event) => setForm((current) => ({ ...current, webhookUrl: event.currentTarget.value }))}
           placeholder={config?.has_secret ? "Configured" : "https://discord.com/api/webhooks/..."}
@@ -187,19 +167,14 @@ function ChannelSettings({
             <Button variant="light" loading={test.isPending} onClick={() => test.mutate()}>
               Send test
             </Button>
-            <Button
-              variant="subtle"
-              color="red"
-              loading={remove.isPending}
-              onClick={() => remove.mutate()}
-            >
+            <Button variant="subtle" color="red" loading={remove.isPending} onClick={() => remove.mutate()}>
               Remove
             </Button>
           </>
         ) : null}
       </Group>
     </Stack>
-  );
+  )
 
   if (channel === "discord") {
     return (
@@ -208,62 +183,50 @@ function ChannelSettings({
         style={{
           borderLeft: `3px solid ${DISCORD_BLURPLE}`,
           borderRadius: "var(--mantine-radius-lg)",
-          background:
-            "color-mix(in srgb, var(--mantine-color-body) 92%, #5865F2 8%)",
+          background: "color-mix(in srgb, var(--mantine-color-body) 92%, #5865F2 8%)",
         }}
       >
         {body}
       </Box>
-    );
+    )
   }
 
-  return body;
+  return body
 }
 
 export function NotificationSettings() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   const configsQuery = useQuery({
     queryKey: ["notifications", "configs", "global"],
     queryFn: () => listNotificationConfigs(),
-  });
+  })
 
-  const globalConfigs = (configsQuery.data ?? []).filter((item) => item.scope === "global");
+  const globalConfigs = (configsQuery.data ?? []).filter((item) => item.scope === "global")
   const configByChannel = Object.fromEntries(globalConfigs.map((item) => [item.channel, item])) as Partial<
     Record<NotificationChannel, NotificationConfig>
-  >;
+  >
 
   function refresh() {
-    void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    void queryClient.invalidateQueries({ queryKey: ["notifications"] })
   }
 
   return (
-    <Paper
-      id="settings-notifications"
-      withBorder
-      p="md"
-      data-settings-section="Notifications"
-      style={{ scrollMarginTop: 80 }}
-    >
+    <Paper id="settings-notifications" withBorder p="md" data-settings-section="Notifications" style={{ scrollMarginTop: 80 }}>
       <Stack gap="md">
         <Stack gap={4}>
           <SettingsSectionTitle icon={<BellIcon size={18} />}>Notifications</SettingsSectionTitle>
           <Text size="sm" c="dimmed">
-            Configure global alerts for completed job runs. Jobs can inherit these settings or use
-            custom per-job channels.
+            Configure global alerts for completed job runs. Jobs can inherit these settings or use custom per-job channels.
           </Text>
         </Stack>
 
         {CHANNELS.map((channel, index) => (
           <Stack key={channel} gap="sm">
             {index > 0 ? <Divider /> : null}
-            <ChannelSettings
-              channel={channel}
-              config={configByChannel[channel]}
-              onSaved={refresh}
-            />
+            <ChannelSettings channel={channel} config={configByChannel[channel]} onSaved={refresh} />
           </Stack>
         ))}
       </Stack>
     </Paper>
-  );
+  )
 }

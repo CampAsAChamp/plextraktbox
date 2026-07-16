@@ -1,62 +1,52 @@
-import {
-  Button,
-  Center,
-  Loader,
-  Paper,
-  PasswordInput,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { api } from "src/api/client";
-import type { LoginInput, User } from "src/api/auth";
-import { ApiError } from "src/api/client";
+import { Button, Center, Loader, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { z } from "zod"
+
+import type { LoginInput, User } from "src/api/auth"
+import { api } from "src/api/client"
+import { ApiError } from "src/api/client"
+import { showToast } from "src/toast"
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username or email is required"),
   password: z.string().min(1, "Password is required"),
-});
+})
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const login = useMutation({
     mutationFn: (body: LoginInput) => api.post<User>("/auth/login", body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-      navigate("/", { replace: true });
+      void queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+      navigate("/", { replace: true })
     },
     onError: (error: unknown) => {
-      const message =
-        error instanceof ApiError ? String(error.message) : "Login failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Login failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    const parsed = loginSchema.safeParse({ username, password });
+    event.preventDefault()
+    const parsed = loginSchema.safeParse({ username, password })
     if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
+      const fieldErrors: Record<string, string> = {}
       for (const issue of parsed.error.issues) {
-        const key = issue.path[0];
-        if (typeof key === "string") fieldErrors[key] = issue.message;
+        const key = issue.path[0]
+        if (typeof key === "string") fieldErrors[key] = issue.message
       }
-      setErrors(fieldErrors);
-      return;
+      setErrors(fieldErrors)
+      return
     }
-    setErrors({});
-    login.mutate(parsed.data);
+    setErrors({})
+    login.mutate(parsed.data)
   }
 
   return (
@@ -91,7 +81,7 @@ export function LoginPage() {
         </Stack>
       </Paper>
     </Center>
-  );
+  )
 }
 
 export function LoginLoading() {
@@ -99,5 +89,5 @@ export function LoginLoading() {
     <Center mih="60vh">
       <Loader />
     </Center>
-  );
+  )
 }

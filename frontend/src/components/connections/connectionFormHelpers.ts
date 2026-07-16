@@ -1,34 +1,30 @@
-import type { ConnectionSummary } from "src/api/connections";
+import type { ConnectionSummary } from "src/api/connections"
 
-export const SAVED_SECRET_PLACEHOLDER = "••••••••••••";
+export const SAVED_SECRET_PLACEHOLDER = "••••••••••••"
 
 export function isSavedSecretPlaceholder(value: string): boolean {
-  return value === SAVED_SECRET_PLACEHOLDER;
+  return value === SAVED_SECRET_PLACEHOLDER
 }
 
 export function isConnectionConfigured(connection: ConnectionSummary | undefined): boolean {
-  return connection !== undefined && connection.status !== "unconfigured";
+  return connection !== undefined && connection.status !== "unconfigured"
 }
 
 export function savedUsername(connection: ConnectionSummary | undefined): string {
-  if (!isConnectionConfigured(connection)) return "";
-  const value = connection?.config.username;
-  return typeof value === "string" ? value : "";
+  if (!isConnectionConfigured(connection)) return ""
+  const value = connection?.config.username
+  return typeof value === "string" ? value : ""
 }
 
-export function secretPlaceholderHandlers(
-  value: string,
-  setValue: (next: string) => void,
-  configured: boolean,
-) {
+export function secretPlaceholderHandlers(value: string, setValue: (next: string) => void, configured: boolean) {
   return {
     onFocus: () => {
-      if (isSavedSecretPlaceholder(value)) setValue("");
+      if (isSavedSecretPlaceholder(value)) setValue("")
     },
     onBlur: () => {
-      if (value === "" && configured) setValue(SAVED_SECRET_PLACEHOLDER);
+      if (value === "" && configured) setValue(SAVED_SECRET_PLACEHOLDER)
     },
-  };
+  }
 }
 
 export function secretPlaceholderInputProps(
@@ -38,8 +34,8 @@ export function secretPlaceholderInputProps(
   placeholderWhenSaved: string,
   savedDescription: string,
 ) {
-  const isSavedPlaceholder = isSavedSecretPlaceholder(value);
-  const handlers = secretPlaceholderHandlers(value, setValue, configured);
+  const isSavedPlaceholder = isSavedSecretPlaceholder(value)
+  const handlers = secretPlaceholderHandlers(value, setValue, configured)
 
   return {
     value,
@@ -48,5 +44,5 @@ export function secretPlaceholderInputProps(
     placeholder: configured ? placeholderWhenSaved : undefined,
     description: isSavedPlaceholder ? savedDescription : undefined,
     styles: isSavedPlaceholder ? { visibilityToggle: { display: "none" } } : undefined,
-  };
+  }
 }

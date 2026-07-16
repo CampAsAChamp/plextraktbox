@@ -1,9 +1,9 @@
-import { Group, Title } from "@mantine/core";
-import type { ReactNode } from "react";
+import { Group, Title } from "@mantine/core"
+import type { ReactNode } from "react"
 
 interface SettingsSectionTitleProps {
-  icon: ReactNode;
-  children: ReactNode;
+  icon: ReactNode
+  children: ReactNode
 }
 
 export function SettingsSectionTitle({ icon, children }: SettingsSectionTitleProps) {
@@ -12,5 +12,5 @@ export function SettingsSectionTitle({ icon, children }: SettingsSectionTitlePro
       {icon}
       <Title order={4}>{children}</Title>
     </Group>
-  );
+  )
 }

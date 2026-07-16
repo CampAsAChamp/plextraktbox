@@ -1,26 +1,27 @@
-import { Group, Paper, Stack, Text, UnstyledButton } from "@mantine/core";
-import type { RunListItem } from "src/api/jobs";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat";
-import { SourcePairLabel } from "src/components/services/SourcePairLabel";
-import dryRunRowClasses from "../../styles/dryRunRow.module.css";
-import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges";
+import { Group, Paper, Stack, Text, UnstyledButton } from "@mantine/core"
+
+import type { RunListItem } from "src/api/jobs"
+import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
+import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import dryRunRowClasses from "src/styles/dryRunRow.module.css"
+import { formatDateTime, formatDuration } from "src/utils/dateTimeFormat"
 
 type RunListCardProps = {
-  run: RunListItem;
-  onOpen: () => void;
-};
+  run: RunListItem
+  onOpen: () => void
+}
 
 function runDurationMs(run: RunListItem): number | null {
-  if (!run.finished_at) return null;
-  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
+  if (!run.finished_at) return null
+  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()
 }
 
 /** Mobile run card — tap opens run detail. */
 export function RunListCard({ run, onOpen }: RunListCardProps) {
-  const { preferences } = useDisplayPreferences();
-  const durationMs = runDurationMs(run);
-  const duration = durationMs === null ? "running…" : formatDuration(durationMs);
+  const { preferences } = useDisplayPreferences()
+  const durationMs = runDurationMs(run)
+  const duration = durationMs === null ? "running…" : formatDuration(durationMs)
 
   return (
     <UnstyledButton
@@ -28,12 +29,7 @@ export function RunListCard({ run, onOpen }: RunListCardProps) {
       aria-label={`Run #${run.id} for ${run.job_name ?? `job #${run.job_id}`}`}
       style={{ display: "block", width: "100%", borderRadius: "var(--mantine-radius-lg)" }}
     >
-      <Paper
-        withBorder
-        radius="lg"
-        p="md"
-        className={run.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-      >
+      <Paper withBorder radius="lg" p="md" className={run.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
         <Stack gap="sm">
           <Group justify="space-between" align="flex-start" wrap="wrap" gap="xs">
             <Text fw={600} size="md">
@@ -67,5 +63,5 @@ export function RunListCard({ run, onOpen }: RunListCardProps) {
         </Stack>
       </Paper>
     </UnstyledButton>
-  );
+  )
 }

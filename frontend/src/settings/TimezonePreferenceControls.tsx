@@ -1,17 +1,18 @@
-import { Group, SegmentedControl, Select, Stack, Text } from "@mantine/core";
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import { ClockIcon } from "src/components/icons/ClockIcon";
-import { GlobeIcon } from "src/components/icons/GlobeIcon";
-import { MapPinIcon } from "src/components/icons/MapPinIcon";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
+import { Group, SegmentedControl, Select, Stack, Text } from "@mantine/core"
+import type { ReactNode } from "react"
+import { useMemo } from "react"
+
+import { ClockIcon } from "src/components/icons/ClockIcon"
+import { GlobeIcon } from "src/components/icons/GlobeIcon"
+import { MapPinIcon } from "src/components/icons/MapPinIcon"
 import {
   formatTimezoneLabel,
   getBrowserTimezone,
   getManualTimezone,
   getTimezoneMode,
   listIanaTimezones,
-} from "src/settings/displayPreferences";
+} from "src/settings/displayPreferences"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 
 function modeLabel(icon: ReactNode, text: string, title: string) {
   return (
@@ -19,7 +20,7 @@ function modeLabel(icon: ReactNode, text: string, title: string) {
       {icon}
       <span>{text}</span>
     </Group>
-  );
+  )
 }
 
 /** Shared Local → UTC → Manual order for display prefs and cron timezone. */
@@ -36,22 +37,22 @@ export const TIMEZONE_MODE_OPTIONS = [
     value: "manual",
     label: modeLabel(<ClockIcon size={14} />, "Manual", "Pick a specific timezone"),
   },
-];
+]
 
 const TIMEZONE_SELECT_STYLES = {
   input: { cursor: "pointer" },
   section: { cursor: "pointer" },
-};
+}
 
 type TimezonePreferenceControlsProps = {
-  compact?: boolean;
-};
+  compact?: boolean
+}
 
 export function TimezonePreferenceControls({ compact = false }: TimezonePreferenceControlsProps) {
-  const { preferences, setTimezone } = useDisplayPreferences();
-  const timezoneMode = getTimezoneMode(preferences.timezone);
-  const manualTimezone = getManualTimezone(preferences.timezone);
-  const browserTimezone = getBrowserTimezone();
+  const { preferences, setTimezone } = useDisplayPreferences()
+  const timezoneMode = getTimezoneMode(preferences.timezone)
+  const manualTimezone = getManualTimezone(preferences.timezone)
+  const browserTimezone = getBrowserTimezone()
 
   const timezoneOptions = useMemo(
     () =>
@@ -60,19 +61,19 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
         label: formatTimezoneLabel(timezone),
       })),
     [],
-  );
+  )
 
   const handleModeChange = (value: string) => {
     if (value === "local") {
-      setTimezone("local");
-      return;
+      setTimezone("local")
+      return
     }
     if (value === "utc") {
-      setTimezone("utc");
-      return;
+      setTimezone("utc")
+      return
     }
-    setTimezone(manualTimezone);
-  };
+    setTimezone(manualTimezone)
+  }
 
   const manualTimezoneSelect = (
     <Select
@@ -86,7 +87,7 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
       w={compact ? { base: "100%", sm: 220 } : undefined}
       styles={TIMEZONE_SELECT_STYLES}
     />
-  );
+  )
 
   if (compact) {
     return (
@@ -104,22 +105,17 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
           {timezoneMode === "manual" ? manualTimezoneSelect : null}
         </Group>
       </Stack>
-    );
+    )
   }
 
   return (
     <Stack gap="xs">
       <Text fw={500}>Timezone</Text>
       <Text size="sm" c="dimmed">
-        Use your browser timezone, UTC, or pick a specific IANA timezone for displaying
-        timestamps. Job cron schedules use the separate Cron timezone under Sync defaults.
+        Use your browser timezone, UTC, or pick a specific IANA timezone for displaying timestamps. Job cron schedules use the separate Cron
+        timezone under Sync defaults.
       </Text>
-      <SegmentedControl
-        fullWidth
-        value={timezoneMode}
-        onChange={handleModeChange}
-        data={[...TIMEZONE_MODE_OPTIONS]}
-      />
+      <SegmentedControl fullWidth value={timezoneMode} onChange={handleModeChange} data={[...TIMEZONE_MODE_OPTIONS]} />
       {timezoneMode === "local" ? (
         <Text size="sm" c="dimmed">
           <Text span fw={600} inherit>
@@ -130,5 +126,5 @@ export function TimezonePreferenceControls({ compact = false }: TimezonePreferen
       ) : null}
       {timezoneMode === "manual" ? manualTimezoneSelect : null}
     </Stack>
-  );
+  )
 }

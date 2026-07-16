@@ -53,13 +53,13 @@ fi
 '''
 
 [tasks.lint]
-description = "[META] Run ruff, mypy, frontend typecheck, and OpenAPI types drift check"
+description = "[META] Run ruff, mypy, frontend lint/format/typecheck, and OpenAPI types drift check"
 depends = ["install-backend", "install-frontend", "check-api-types"]
 run = '''
 backend/.venv/bin/ruff check backend/plextraktbox
 backend/.venv/bin/ruff format --check backend/plextraktbox
 backend/.venv/bin/mypy backend/plextraktbox
-cd frontend && npm run typecheck
+cd frontend && npm run lint && npm run format:check && npm run typecheck
 '''
 
 [tasks.test]

@@ -1,59 +1,48 @@
-import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Loader,
-  Menu,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import type { User } from "src/api/auth";
-import type { ConnectionSummary } from "src/api/connections";
-import { ApiError } from "src/api/client";
-import type { Job } from "src/api/jobs";
-import { listJobs, runJob } from "src/api/jobApi";
-import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge";
-import { JobListCard } from "src/components/jobs/JobListCard";
-import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm";
-import { RunStatusBadge } from "src/components/runs/RunBadges";
-import { RunSummaryStats } from "src/components/runs/RunSummaryStats";
-import { SourcePairLabel } from "src/components/services/SourcePairLabel";
-import { RoundedTable } from "src/components/table/RoundedTable";
-import { RowActionsMenu } from "src/components/table/RowActionsMenu";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { showToast } from "src/toast";
-import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat";
-import dryRunRowClasses from "../../styles/dryRunRow.module.css";
+import { Alert, Badge, Box, Button, Group, Loader, Menu, Stack, Table, Text, Title } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
+import { Link } from "react-router-dom"
+
+import type { User } from "src/api/auth"
+import { ApiError } from "src/api/client"
+import type { ConnectionSummary } from "src/api/connections"
+import { listJobs, runJob } from "src/api/jobApi"
+import type { Job } from "src/api/jobs"
+import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge"
+import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
+import { JobListCard } from "src/components/jobs/JobListCard"
+import { RunStatusBadge } from "src/components/runs/RunBadges"
+import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
+import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { RoundedTable } from "src/components/table/RoundedTable"
+import { RowActionsMenu } from "src/components/table/RowActionsMenu"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import dryRunRowClasses from "src/styles/dryRunRow.module.css"
+import { showToast } from "src/toast"
+import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 interface DashboardPageProps {
-  user: User;
-  connections?: ConnectionSummary[];
+  user: User
+  connections?: ConnectionSummary[]
 }
 
-type RunMode = "run" | "dry-run";
+type RunMode = "run" | "dry-run"
 
 /** Stable key for the current set of failed/partial last runs. */
 function problemJobsSignature(jobs: Job[]): string {
   return jobs
     .map((job) => `${job.id}:${job.last_run?.id ?? 0}:${job.last_run?.status ?? ""}`)
     .sort()
-    .join("|");
+    .join("|")
 }
 
 function ScheduleCell({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences();
+  const { preferences } = useDisplayPreferences()
   const nextLabel = !job.enabled
     ? "Disabled — no next run"
     : job.next_run_at
       ? formatScheduleDateTime(job.next_run_at, preferences)
-      : "Next run unavailable";
+      : "Next run unavailable"
 
   return (
     <Stack gap={2}>
@@ -64,18 +53,18 @@ function ScheduleCell({ job }: { job: Job }) {
         {nextLabel}
       </Text>
     </Stack>
-  );
+  )
 }
 
 function LastRunCell({ job }: { job: Job }) {
-  const { preferences } = useDisplayPreferences();
-  const last = job.last_run;
+  const { preferences } = useDisplayPreferences()
+  const last = job.last_run
   if (!last) {
     return (
       <Text size="sm" c="dimmed">
         Never run
       </Text>
-    );
+    )
   }
 
   return (
@@ -90,86 +79,64 @@ function LastRunCell({ job }: { job: Job }) {
       <Text size="xs" c="dimmed">
         {formatDateTime(last.finished_at ?? last.started_at, preferences)}
       </Text>
-      <RunSummaryStats
-        matched={last.matched}
-        added={last.added}
-        errors={last.errors}
-      />
+      <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
     </Stack>
-  );
+  )
 }
 
-function jobActions(
-  job: Job,
-  isRunning: (job: Job, mode: RunMode) => boolean,
-  onRun: (job: Job, mode: RunMode) => void,
-) {
+function jobActions(job: Job, isRunning: (job: Job, mode: RunMode) => boolean, onRun: (job: Job, mode: RunMode) => void) {
   return (
     <>
-      <Menu.Item
-        disabled={isRunning(job, "run")}
-        onClick={() => onRun(job, "run")}
-      >
+      <Menu.Item disabled={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
         {isRunning(job, "run") ? "Running…" : "Run now"}
       </Menu.Item>
-      <Menu.Item
-        disabled={isRunning(job, "dry-run")}
-        onClick={() => onRun(job, "dry-run")}
-      >
+      <Menu.Item disabled={isRunning(job, "dry-run")} onClick={() => onRun(job, "dry-run")}>
         {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
       </Menu.Item>
       <Menu.Item component={Link} to={`/jobs/${job.id}/edit`}>
         Edit
       </Menu.Item>
     </>
-  );
+  )
 }
 
 export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
-  const queryClient = useQueryClient();
-  const [dismissedProblemsKey, setDismissedProblemsKey] = useState<string | null>(null);
+  const queryClient = useQueryClient()
+  const [dismissedProblemsKey, setDismissedProblemsKey] = useState<string | null>(null)
 
   const jobsQuery = useQuery({
     queryKey: ["jobs"],
     queryFn: listJobs,
-  });
+  })
 
   const runMutation = useMutation({
-    mutationFn: ({ job, mode }: { job: Job; mode: RunMode }) =>
-      runJob(job.id, mode === "dry-run" ? true : undefined),
+    mutationFn: ({ job, mode }: { job: Job; mode: RunMode }) => runJob(job.id, mode === "dry-run" ? true : undefined),
     onSuccess: (run) => {
-      void queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      void queryClient.invalidateQueries({ queryKey: ["runs"] });
+      void queryClient.invalidateQueries({ queryKey: ["jobs"] })
+      void queryClient.invalidateQueries({ queryKey: ["runs"] })
       showToast({
         color: run.status === "success" ? "green" : "orange",
         message: `Run #${run.id} finished with status ${run.status}`,
-      });
+      })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Run failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Run failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
-  const needsReauth = connections.some((item) => item.status === "needs_reauth");
-  const jobs = jobsQuery.data ?? [];
-  const problemJobs = jobs.filter(
-    (job) => job.last_run?.status === "failed" || job.last_run?.status === "partial",
-  );
-  const problemsKey = problemJobsSignature(problemJobs);
-  const showProblemsAlert =
-    problemJobs.length > 0 && problemsKey !== "" && problemsKey !== dismissedProblemsKey;
+  const needsReauth = connections.some((item) => item.status === "needs_reauth")
+  const jobs = jobsQuery.data ?? []
+  const problemJobs = jobs.filter((job) => job.last_run?.status === "failed" || job.last_run?.status === "partial")
+  const problemsKey = problemJobsSignature(problemJobs)
+  const showProblemsAlert = problemJobs.length > 0 && problemsKey !== "" && problemsKey !== dismissedProblemsKey
 
   function isRunning(job: Job, mode: RunMode): boolean {
-    return (
-      runMutation.isPending &&
-      runMutation.variables?.job.id === job.id &&
-      runMutation.variables.mode === mode
-    );
+    return runMutation.isPending && runMutation.variables?.job.id === job.id && runMutation.variables.mode === mode
   }
 
   function onRun(job: Job, mode: RunMode) {
-    runMutation.mutate({ job, mode });
+    runMutation.mutate({ job, mode })
   }
 
   return (
@@ -189,9 +156,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
       {needsReauth ? (
         <Alert color="orange" title="Re-authorization required">
           <Stack gap="xs">
-            <Text size="sm">
-              One or more service connections need attention. Update credentials to resume sync jobs.
-            </Text>
+            <Text size="sm">One or more service connections need attention. Update credentials to resume sync jobs.</Text>
             <Button component={Link} to="/connections" variant="light" size="xs" w="fit-content">
               Manage connections
             </Button>
@@ -216,12 +181,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                 {job.last_run ? (
                   <>
                     <RunStatusBadge status={job.last_run.status} />
-                    <Button
-                      component={Link}
-                      to={`/runs/${job.last_run.id}`}
-                      variant="subtle"
-                      size="compact-xs"
-                    >
+                    <Button component={Link} to={`/runs/${job.last_run.id}`} variant="subtle" size="compact-xs">
                       View run #{job.last_run.id}
                     </Button>
                   </>
@@ -278,12 +238,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
           <>
             <Stack gap="sm" hiddenFrom="sm">
               {jobs.map((job) => (
-                <JobListCard
-                  key={job.id}
-                  job={job}
-                  showLastRun
-                  actions={jobActions(job, isRunning, onRun)}
-                />
+                <JobListCard key={job.id} job={job} showLastRun actions={jobActions(job, isRunning, onRun)} />
               ))}
             </Stack>
 
@@ -302,10 +257,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                 </Table.Thead>
                 <Table.Tbody>
                   {jobs.map((job) => (
-                    <Table.Tr
-                      key={job.id}
-                      className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}
-                    >
+                    <Table.Tr key={job.id} className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
                       <Table.Td>
                         <Text fw={500}>{job.name}</Text>
                       </Table.Td>
@@ -325,9 +277,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                         <LastRunCell job={job} />
                       </Table.Td>
                       <Table.Td>
-                        <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
-                          {jobActions(job, isRunning, onRun)}
-                        </RowActionsMenu>
+                        <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>{jobActions(job, isRunning, onRun)}</RowActionsMenu>
                       </Table.Td>
                     </Table.Tr>
                   ))}
@@ -338,5 +288,5 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
         )}
       </Stack>
     </Stack>
-  );
+  )
 }

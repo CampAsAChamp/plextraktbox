@@ -1,47 +1,47 @@
-import type { ConnectionSummary, Service } from "src/api/connections";
+import type { ConnectionSummary, Service } from "src/api/connections"
 
 export const SERVICE_LABELS: Record<Service, string> = {
   plex: "Plex",
   trakt: "Trakt",
   letterboxd: "Letterboxd",
   tmdb: "TMDB",
-};
+}
 
 export function statusColor(status: ConnectionSummary["status"]) {
   switch (status) {
     case "ok":
-      return "green";
+      return "green"
     case "needs_reauth":
-      return "orange";
+      return "orange"
     case "error":
-      return "red";
+      return "red"
     default:
-      return "gray";
+      return "gray"
   }
 }
 
 export function formatConnectionStatus(status: ConnectionSummary["status"]) {
   switch (status) {
     case "ok":
-      return "✓";
+      return "✓"
     case "needs_reauth":
-      return "Re-auth";
+      return "Re-auth"
     case "error":
-      return "Error";
+      return "Error"
     default:
-      return "—";
+      return "—"
   }
 }
 
 export function connectionStatusLabel(status: ConnectionSummary["status"]) {
   switch (status) {
     case "ok":
-      return "Connected";
+      return "Connected"
     case "needs_reauth":
-      return "Needs re-authorization";
+      return "Needs re-authorization"
     case "error":
-      return "Error";
+      return "Error"
     default:
-      return "Not configured";
+      return "Not configured"
   }
 }

@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import type { RunListItem } from "src/api/jobs";
-import { filterRuns, parseRunStatuses, parseRunTrigger } from "src/utils/runFilters";
+import { describe, expect, it } from "vitest"
+
+import type { RunListItem } from "src/api/jobs"
+import { filterRuns, parseRunStatuses, parseRunTrigger } from "src/utils/runFilters"
 
 const sampleRuns: RunListItem[] = [
   {
@@ -29,43 +30,43 @@ const sampleRuns: RunListItem[] = [
     summary: {},
     error: "boom",
   },
-];
+]
 
 describe("parseRunStatuses", () => {
   it("accepts known statuses", () => {
-    expect(parseRunStatuses("success")).toEqual(["success"]);
-    expect(parseRunStatuses("failed,partial")).toEqual(["failed", "partial"]);
-  });
+    expect(parseRunStatuses("success")).toEqual(["success"])
+    expect(parseRunStatuses("failed,partial")).toEqual(["failed", "partial"])
+  })
 
   it("rejects unknown values", () => {
-    expect(parseRunStatuses("bogus")).toEqual([]);
-    expect(parseRunStatuses("failed,bogus,partial")).toEqual(["failed", "partial"]);
-    expect(parseRunStatuses(null)).toEqual([]);
-  });
-});
+    expect(parseRunStatuses("bogus")).toEqual([])
+    expect(parseRunStatuses("failed,bogus,partial")).toEqual(["failed", "partial"])
+    expect(parseRunStatuses(null)).toEqual([])
+  })
+})
 
 describe("parseRunTrigger", () => {
   it("accepts known triggers", () => {
-    expect(parseRunTrigger("manual")).toBe("manual");
-    expect(parseRunTrigger("scheduled")).toBe("scheduled");
-  });
+    expect(parseRunTrigger("manual")).toBe("manual")
+    expect(parseRunTrigger("scheduled")).toBe("scheduled")
+  })
 
   it("rejects unknown values", () => {
-    expect(parseRunTrigger("cron")).toBeUndefined();
-    expect(parseRunTrigger(null)).toBeUndefined();
-  });
-});
+    expect(parseRunTrigger("cron")).toBeUndefined()
+    expect(parseRunTrigger(null)).toBeUndefined()
+  })
+})
 
 describe("filterRuns", () => {
   it("returns all runs when no filters are set", () => {
-    expect(filterRuns(sampleRuns, {})).toEqual(sampleRuns);
-  });
+    expect(filterRuns(sampleRuns, {})).toEqual(sampleRuns)
+  })
 
   it("filters by status and trigger", () => {
-    expect(filterRuns(sampleRuns, { statuses: ["success"] })).toHaveLength(1);
-    expect(filterRuns(sampleRuns, { statuses: ["failed", "success"] })).toHaveLength(2);
-    expect(filterRuns(sampleRuns, { trigger: "scheduled" })).toHaveLength(1);
-    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "manual" })).toHaveLength(1);
-    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "scheduled" })).toHaveLength(0);
-  });
-});
+    expect(filterRuns(sampleRuns, { statuses: ["success"] })).toHaveLength(1)
+    expect(filterRuns(sampleRuns, { statuses: ["failed", "success"] })).toHaveLength(2)
+    expect(filterRuns(sampleRuns, { trigger: "scheduled" })).toHaveLength(1)
+    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "manual" })).toHaveLength(1)
+    expect(filterRuns(sampleRuns, { statuses: ["success"], trigger: "scheduled" })).toHaveLength(0)
+  })
+})

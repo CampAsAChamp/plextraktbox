@@ -14,12 +14,7 @@ body {
   background-color: var(--mantine-color-dark-8);
   background-image: var(
     --ptb-body-gradient,
-    linear-gradient(
-      165deg,
-      var(--mantine-color-dark-9) 0%,
-      var(--mantine-color-dark-8) 42%,
-      var(--mantine-color-dark-7) 100%
-    )
+    linear-gradient(165deg, var(--mantine-color-dark-9) 0%, var(--mantine-color-dark-8) 42%, var(--mantine-color-dark-7) 100%)
   );
   background-attachment: fixed;
   color: var(--mantine-color-dark-0);
@@ -49,7 +44,10 @@ body {
 
 /* Alert X is transparent by default — readable hover tint + a small spin. */
 .mantine-Alert-closeButton {
-  transition: background-color 160ms ease, color 160ms ease, transform 220ms ease;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 220ms ease;
 }
 
 .mantine-Alert-closeButton:hover:not([data-disabled]) {

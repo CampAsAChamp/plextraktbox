@@ -15,5 +15,5 @@ export function DatabaseIcon({ size = 14 }: { size?: number }) {
       <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
       <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
     </svg>
-  );
+  )
 }

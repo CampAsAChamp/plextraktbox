@@ -15,5 +15,5 @@ export function ConnectIcon({ size = 14 }: { size?: number }) {
       <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
       <path d="M8 12h8" />
     </svg>
-  );
+  )
 }

@@ -1,15 +1,16 @@
-import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core";
-import type { JobRunStatus } from "src/api/jobs";
-import { RUN_STATUS_OPTIONS } from "src/utils/runFilters";
-import { RunStatusBadge, RunStatusOptionRow } from "src/components/runs/RunBadges";
+import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core"
+
+import type { JobRunStatus } from "src/api/jobs"
+import { RunStatusBadge, RunStatusOptionRow } from "src/components/runs/RunBadges"
+import { RUN_STATUS_OPTIONS } from "src/utils/runFilters"
 
 type RunStatusMultiSelectProps = {
-  label?: string;
-  value: JobRunStatus[];
-  onChange: (value: JobRunStatus[]) => void;
-  clearable?: boolean;
-  placeholder?: string;
-};
+  label?: string
+  value: JobRunStatus[]
+  onChange: (value: JobRunStatus[]) => void
+  clearable?: boolean
+  placeholder?: string
+}
 
 export function RunStatusMultiSelect({
   label,
@@ -20,27 +21,24 @@ export function RunStatusMultiSelect({
 }: RunStatusMultiSelectProps) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
-  });
+  })
 
   function toggleStatus(status: JobRunStatus) {
     if (value.includes(status)) {
-      onChange(value.filter((item) => item !== status));
-      return;
+      onChange(value.filter((item) => item !== status))
+      return
     }
-    onChange([...value, status]);
+    onChange([...value, status])
   }
 
   function removeStatus(status: JobRunStatus) {
-    onChange(value.filter((item) => item !== status));
+    onChange(value.filter((item) => item !== status))
   }
 
-  const showClear = clearable && value.length > 0;
+  const showClear = clearable && value.length > 0
 
   return (
-    <Combobox
-      store={combobox}
-      onOptionSubmit={(optionValue) => toggleStatus(optionValue as JobRunStatus)}
-    >
+    <Combobox store={combobox} onOptionSubmit={(optionValue) => toggleStatus(optionValue as JobRunStatus)}>
       <Combobox.DropdownTarget>
         <PillsInput
           label={label}
@@ -63,21 +61,17 @@ export function RunStatusMultiSelect({
               <PillsInput.Field
                 placeholder={value.length === 0 ? placeholder : undefined}
                 type={value.length === 0 ? "visible" : "hidden"}
-                style={
-                  value.length > 0
-                    ? { flex: "0 0 0", width: 0, minWidth: 0, padding: 0, overflow: "hidden" }
-                    : undefined
-                }
+                style={value.length > 0 ? { flex: "0 0 0", width: 0, minWidth: 0, padding: 0, overflow: "hidden" } : undefined}
                 readOnly
                 pointer
                 onBlur={() => combobox.closeDropdown()}
                 onKeyDown={(event) => {
                   if (event.key === "Backspace" && value.length > 0) {
-                    removeStatus(value[value.length - 1]);
+                    removeStatus(value[value.length - 1])
                   }
                   if (event.key === " ") {
-                    event.preventDefault();
-                    combobox.toggleDropdown();
+                    event.preventDefault()
+                    combobox.toggleDropdown()
                   }
                 }}
               />
@@ -89,15 +83,15 @@ export function RunStatusMultiSelect({
       <Combobox.Dropdown>
         <Combobox.Options>
           {RUN_STATUS_OPTIONS.map((option) => {
-            const checked = value.includes(option.value);
+            const checked = value.includes(option.value)
             return (
               <Combobox.Option key={option.value} value={option.value} active={checked}>
                 <RunStatusOptionRow status={option.value} checked={checked} />
               </Combobox.Option>
-            );
+            )
           })}
         </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
-  );
+  )
 }

@@ -1,7 +1,6 @@
-import type { MantineThemeOverride } from "@mantine/core";
+import type { MantineThemeOverride } from "@mantine/core"
 
-const fontFamily =
-  "Nunito, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif";
+const fontFamily = "Nunito, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
 
 /** Shared chrome (radius, typography, component overrides) across built-in themes. */
 export const sharedTheme: MantineThemeOverride = {
@@ -77,8 +76,7 @@ export const sharedTheme: MantineThemeOverride = {
       defaultProps: { radius: "lg" },
       styles: {
         root: {
-          backgroundColor:
-            "color-mix(in srgb, var(--notification-color) 16%, var(--mantine-color-dark-6))",
+          backgroundColor: "color-mix(in srgb, var(--notification-color) 16%, var(--mantine-color-dark-6))",
           border: "1px solid color-mix(in srgb, var(--notification-color) 38%, transparent)",
         },
       },
@@ -137,4 +135,4 @@ export const sharedTheme: MantineThemeOverride = {
       },
     },
   },
-};
+}

@@ -1,29 +1,19 @@
-import {
-  Alert,
-  Button,
-  Group,
-  Loader,
-  Menu,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-  Tooltip,
-} from "@mantine/core";
-import { showToast } from "src/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation, useParams } from "react-router-dom";
-import { ApiError } from "src/api/client";
-import { downloadRunLogs, type LogExportFormat } from "src/api/logs";
-import { getRun, markRunFailed } from "src/api/runs";
-import { DownloadIcon } from "src/components/icons/DownloadIcon";
-import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon";
-import { LogViewer } from "src/components/LogViewer/LogViewer";
-import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider";
-import { formatDateTime } from "src/utils/dateTimeFormat";
-import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges";
-import { UnmatchedItemsSection } from "src/components/runs/UnmatchedItemsSection";
-import { SourcePairLabel } from "src/components/services/SourcePairLabel";
+import { Alert, Button, Group, Loader, Menu, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link, useLocation, useParams } from "react-router-dom"
+
+import { ApiError } from "src/api/client"
+import { downloadRunLogs, type LogExportFormat } from "src/api/logs"
+import { getRun, markRunFailed } from "src/api/runs"
+import { DownloadIcon } from "src/components/icons/DownloadIcon"
+import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon"
+import { LogViewer } from "src/components/LogViewer/LogViewer"
+import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
+import { UnmatchedItemsSection } from "src/components/runs/UnmatchedItemsSection"
+import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
+import { showToast } from "src/toast"
+import { formatDateTime } from "src/utils/dateTimeFormat"
 
 const SUMMARY_LABELS: Record<string, string> = {
   matched: "Matched",
@@ -38,7 +28,7 @@ const SUMMARY_LABELS: Record<string, string> = {
   skipped: "Skipped",
   errors: "Errors",
   unmatched_count: "Unmatched",
-};
+}
 
 const SUMMARY_TOOLTIPS: Record<string, string> = {
   matched: "Items matched across services that need a rating or watched update.",
@@ -52,54 +42,51 @@ const SUMMARY_TOOLTIPS: Record<string, string> = {
   episodes_watched: "Episodes marked watched in Plex from Trakt history.",
   skipped: "Planned changes skipped because they were already applied or not needed.",
   errors: "Planned changes that failed during apply.",
-  unmatched_count:
-    "Items that could not be matched across services or are missing TMDB/IMDb IDs.",
-};
+  unmatched_count: "Items that could not be matched across services or are missing TMDB/IMDb IDs.",
+}
 
 export function RunDetailPage() {
-  const { runId } = useParams();
-  const location = useLocation();
-  const queryClient = useQueryClient();
-  const id = Number(runId);
-  const { preferences } = useDisplayPreferences();
+  const { runId } = useParams()
+  const location = useLocation()
+  const queryClient = useQueryClient()
+  const id = Number(runId)
+  const { preferences } = useDisplayPreferences()
   const backTo =
-    typeof (location.state as { from?: unknown } | null)?.from === "string"
-      ? (location.state as { from: string }).from
-      : "/runs";
+    typeof (location.state as { from?: unknown } | null)?.from === "string" ? (location.state as { from: string }).from : "/runs"
 
   const runQuery = useQuery({
     queryKey: ["runs", id],
     queryFn: () => getRun(id),
     enabled: Number.isFinite(id),
     refetchInterval: (query) => (query.state.data?.status === "running" ? 2000 : false),
-  });
+  })
 
   const markFailedMutation = useMutation({
     mutationFn: () => markRunFailed(id),
     onSuccess: (run) => {
-      queryClient.setQueryData(["runs", id], run);
-      void queryClient.invalidateQueries({ queryKey: ["runs"] });
-      showToast({ color: "orange", message: `Run #${run.id} marked as failed` });
+      queryClient.setQueryData(["runs", id], run)
+      void queryClient.invalidateQueries({ queryKey: ["runs"] })
+      showToast({ color: "orange", message: `Run #${run.id} marked as failed` })
     },
     onError: (error: unknown) => {
-      const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed";
-      showToast({ color: "red", message });
+      const message = error instanceof ApiError ? String(error.message) : "Could not mark run as failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   const exportMutation = useMutation({
     mutationFn: (format: LogExportFormat) => downloadRunLogs(id, format),
     onSuccess: (_data, format) => {
-      showToast({ color: "green", message: `Downloaded run logs (.${format})` });
+      showToast({ color: "green", message: `Downloaded run logs (.${format})` })
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : "Log export failed";
-      showToast({ color: "red", message });
+      const message = error instanceof Error ? error.message : "Log export failed"
+      showToast({ color: "red", message })
     },
-  });
+  })
 
   if (!Number.isFinite(id)) {
-    return <Text c="red">Invalid run id.</Text>;
+    return <Text c="red">Invalid run id.</Text>
   }
 
   if (runQuery.isLoading) {
@@ -108,14 +95,14 @@ export function RunDetailPage() {
         <Loader size="sm" />
         <Text>Loading run…</Text>
       </Group>
-    );
+    )
   }
 
   if (runQuery.isError || !runQuery.data) {
-    return <Text c="red">Run not found.</Text>;
+    return <Text c="red">Run not found.</Text>
   }
 
-  const run = runQuery.data;
+  const run = runQuery.data
 
   return (
     <Stack gap="md">
@@ -137,7 +124,7 @@ export function RunDetailPage() {
                       "Mark this run as failed? If sync work is still in progress on the server, it may continue until it finishes, but this run will stay marked failed.",
                     )
                   ) {
-                    markFailedMutation.mutate();
+                    markFailedMutation.mutate()
                   }
                 }}
               >
@@ -165,11 +152,7 @@ export function RunDetailPage() {
           <Text>
             <strong>Job Type:</strong>
           </Text>
-          {run.source_pair ? (
-            <SourcePairLabel sourcePair={run.source_pair} variant="icons" />
-          ) : (
-            <Text c="dimmed">—</Text>
-          )}
+          {run.source_pair ? <SourcePairLabel sourcePair={run.source_pair} variant="icons" /> : <Text c="dimmed">—</Text>}
         </Group>
         <Text>
           <strong>Started:</strong> {formatDateTime(run.started_at, preferences)}
@@ -191,28 +174,18 @@ export function RunDetailPage() {
           {Object.entries(run.summary)
             .filter(([key]) => key !== "unmatched")
             .map(([key, value]) => (
-            <Stack key={key} gap={0}>
-              <Tooltip
-                label={SUMMARY_TOOLTIPS[key] ?? SUMMARY_LABELS[key] ?? key}
-                multiline
-                w={260}
-                openDelay={500}
-              >
-                <Group
-                  gap={4}
-                  wrap="nowrap"
-                  c="dimmed"
-                  style={{ cursor: "help", width: "fit-content" }}
-                >
-                  <Text size="xs" c="inherit">
-                    {SUMMARY_LABELS[key] ?? key}
-                  </Text>
-                  <HelpCircleIcon size={12} />
-                </Group>
-              </Tooltip>
-              <Text fw={600}>{typeof value === "number" ? value : "—"}</Text>
-            </Stack>
-          ))}
+              <Stack key={key} gap={0}>
+                <Tooltip label={SUMMARY_TOOLTIPS[key] ?? SUMMARY_LABELS[key] ?? key} multiline w={260} openDelay={500}>
+                  <Group gap={4} wrap="nowrap" c="dimmed" style={{ cursor: "help", width: "fit-content" }}>
+                    <Text size="xs" c="inherit">
+                      {SUMMARY_LABELS[key] ?? key}
+                    </Text>
+                    <HelpCircleIcon size={12} />
+                  </Group>
+                </Tooltip>
+                <Text fw={600}>{typeof value === "number" ? value : "—"}</Text>
+              </Stack>
+            ))}
         </SimpleGrid>
       </Stack>
 
@@ -223,12 +196,7 @@ export function RunDetailPage() {
           <Text fw={500}>Logs</Text>
           <Menu withinPortal position="bottom-end">
             <Menu.Target>
-              <Button
-                size="xs"
-                variant="light"
-                leftSection={<DownloadIcon />}
-                loading={exportMutation.isPending}
-              >
+              <Button size="xs" variant="light" leftSection={<DownloadIcon />} loading={exportMutation.isPending}>
                 Export
               </Button>
             </Menu.Target>
@@ -241,5 +209,5 @@ export function RunDetailPage() {
         <LogViewer runId={run.id} isLive={run.status === "running"} />
       </Stack>
     </Stack>
-  );
+  )
 }

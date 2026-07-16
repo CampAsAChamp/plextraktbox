@@ -1,85 +1,64 @@
-import {
-  Accordion,
-  Alert,
-  Button,
-  Checkbox,
-  Group,
-  List,
-  PasswordInput,
-  Stack,
-  Stepper,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
-import { showToast } from "src/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { api, ApiError } from "src/api/client";
+import { Accordion, Alert, Button, Checkbox, Group, List, PasswordInput, Stack, Stepper, Text, TextInput, Title } from "@mantine/core"
+import { useMediaQuery } from "@mantine/hooks"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { type ReactNode, useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { z } from "zod"
+
+import { api, ApiError } from "src/api/client"
 import type {
-  ConnectionSummary,
   ConnectionsStatus,
+  ConnectionSummary,
   ConnectionTestResult,
   LetterboxdConnectionInput,
+  PlexLibrariesResponse,
   PlexPinPollInput,
   PlexPinPollResult,
   PlexPinStart,
-  PlexLibrariesResponse,
   Service,
   TmdbConnectionInput,
   TraktDevicePollInput,
   TraktDevicePollResult,
   TraktDeviceStart,
-} from "src/api/connections";
+} from "src/api/connections"
 import {
   isConnectionConfigured,
   SAVED_SECRET_PLACEHOLDER,
   savedUsername,
   secretPlaceholderInputProps,
-} from "src/components/connections/connectionFormHelpers";
-import {
-  TestConnectionButton,
-  useConnectionTestFeedback,
-} from "src/components/connections/connectionTestFeedback";
-import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
-import { ServiceLogo } from "src/components/connections/ServiceLogo";
-import { ServiceStepLabel } from "src/components/connections/ServiceStepLabel";
-import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon";
-import { ConnectIcon } from "src/components/icons/ConnectIcon";
-import { FilmIcon } from "src/components/icons/FilmIcon";
-import { HomeIcon } from "src/components/icons/HomeIcon";
-import { KeyIcon } from "src/components/icons/KeyIcon";
-import { LockIcon } from "src/components/icons/LockIcon";
-import { SaveIcon } from "src/components/icons/SaveIcon";
-import { TrashIcon } from "src/components/icons/TrashIcon";
-import { TvIcon } from "src/components/icons/TvIcon";
-import { UserIcon } from "src/components/icons/UserIcon";
-import classes from "./OnboardingStepper.module.css";
+} from "src/components/connections/connectionFormHelpers"
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus"
+import { TestConnectionButton, useConnectionTestFeedback } from "src/components/connections/connectionTestFeedback"
+import { ServiceLogo } from "src/components/connections/ServiceLogo"
+import { ServiceStepLabel } from "src/components/connections/ServiceStepLabel"
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon"
+import { ConnectIcon } from "src/components/icons/ConnectIcon"
+import { FilmIcon } from "src/components/icons/FilmIcon"
+import { HomeIcon } from "src/components/icons/HomeIcon"
+import { KeyIcon } from "src/components/icons/KeyIcon"
+import { LockIcon } from "src/components/icons/LockIcon"
+import { SaveIcon } from "src/components/icons/SaveIcon"
+import { TrashIcon } from "src/components/icons/TrashIcon"
+import { TvIcon } from "src/components/icons/TvIcon"
+import { UserIcon } from "src/components/icons/UserIcon"
+import classes from "src/pages/OnboardingStepper.module.css"
+import { showToast } from "src/toast"
 
 const tmdbSchema = z.object({
   api_key: z.string().min(1, "API key is required"),
-});
+})
 
-const TMDB_API_SETTINGS_URL = "https://www.themoviedb.org/settings/api";
+const TMDB_API_SETTINGS_URL = "https://www.themoviedb.org/settings/api"
 
-const SERVICE_ORDER = ["plex", "trakt", "letterboxd", "tmdb"] as const;
+const SERVICE_ORDER = ["plex", "trakt", "letterboxd", "tmdb"] as const
 
-function FieldLabel({
-  icon,
-  children,
-}: {
-  icon: ReactNode;
-  children: ReactNode;
-}) {
+function FieldLabel({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
     <Group gap={6} wrap="nowrap">
       <span style={{ display: "inline-flex", color: "var(--mantine-color-dimmed)" }}>{icon}</span>
       <span>{children}</span>
     </Group>
-  );
+  )
 }
 
 function ClearConnectionButton({
@@ -88,91 +67,78 @@ function ClearConnectionButton({
   onCleared,
   variant = "outline",
 }: {
-  service: Service;
-  connection: ConnectionSummary | undefined;
-  onCleared: () => void;
-  variant?: "subtle" | "outline";
+  service: Service
+  connection: ConnectionSummary | undefined
+  onCleared: () => void
+  variant?: "subtle" | "outline"
 }) {
   const clear = useMutation({
     mutationFn: () => api.del(`/connections/${service}`),
     onSuccess: () => {
-      onCleared();
+      onCleared()
       showToast({
         color: "green",
         message: `${SERVICE_LABELS[service]} connection cleared`,
-      });
+      })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
-        message:
-          error instanceof ApiError
-            ? String(error.message)
-            : `Could not clear ${SERVICE_LABELS[service]} connection`,
-      });
+        message: error instanceof ApiError ? String(error.message) : `Could not clear ${SERVICE_LABELS[service]} connection`,
+      })
     },
-  });
+  })
 
-  if (!connection || connection.status === "unconfigured") return null;
+  if (!connection || connection.status === "unconfigured") return null
 
   function handleClear() {
-    const confirmed = window.confirm(
-      `Remove the saved ${SERVICE_LABELS[service]} connection? You will need to set it up again.`,
-    );
-    if (confirmed) clear.mutate();
+    const confirmed = window.confirm(`Remove the saved ${SERVICE_LABELS[service]} connection? You will need to set it up again.`)
+    if (confirmed) clear.mutate()
   }
 
   return (
-    <Button
-      variant={variant}
-      color="red"
-      leftSection={<TrashIcon />}
-      onClick={handleClear}
-      loading={clear.isPending}
-      w="fit-content"
-    >
+    <Button variant={variant} color="red" leftSection={<TrashIcon />} onClick={handleClear} loading={clear.isPending} w="fit-content">
       Clear {SERVICE_LABELS[service]} connection
     </Button>
-  );
+  )
 }
 
 function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   const librariesQuery = useQuery({
     queryKey: ["connections", "plex", "libraries"],
     queryFn: () => api.get<PlexLibrariesResponse>("/connections/plex/libraries"),
     enabled,
-  });
-  const [selected, setSelected] = useState<string[]>([]);
+  })
+  const [selected, setSelected] = useState<string[]>([])
 
   useEffect(() => {
     if (librariesQuery.data) {
-      setSelected(librariesQuery.data.selected_ids);
+      setSelected(librariesQuery.data.selected_ids)
     }
-  }, [librariesQuery.data]);
+  }, [librariesQuery.data])
 
   const save = useMutation({
-    mutationFn: (libraryIds: string[]) =>
-      api.put<ConnectionSummary>("/connections/plex/libraries", { library_ids: libraryIds }),
+    mutationFn: (libraryIds: string[]) => api.put<ConnectionSummary>("/connections/plex/libraries", { library_ids: libraryIds }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["connections"] });
-      queryClient.invalidateQueries({ queryKey: ["connections", "plex", "libraries"] });
-      showToast({ color: "green", message: "Plex library selection saved" });
+      queryClient.invalidateQueries({ queryKey: ["connections"] })
+      queryClient.invalidateQueries({ queryKey: ["connections", "plex", "libraries"] })
+      showToast({ color: "green", message: "Plex library selection saved" })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Could not save Plex libraries",
-      });
+      })
     },
-  });
+  })
 
   if (!enabled) {
-    return null;
+    return null
   }
 
   if (librariesQuery.isLoading) {
-    return <Text size="sm">Loading Plex libraries…</Text>;
+    return <Text size="sm">Loading Plex libraries…</Text>
   }
 
   if (librariesQuery.isError || !librariesQuery.data) {
@@ -180,16 +146,16 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
       <Alert color="yellow" title="Could not load Plex libraries">
         Connect and test Plex first, then choose which Plex libraries to sync.
       </Alert>
-    );
+    )
   }
 
-  const { libraries } = librariesQuery.data;
+  const { libraries } = librariesQuery.data
   if (libraries.length === 0) {
     return (
       <Alert color="yellow" title="No Plex libraries">
         Add a movie or show library to your Plex server to sync ratings and watched history.
       </Alert>
-    );
+    )
   }
 
   return (
@@ -198,9 +164,8 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
         Plex libraries to sync
       </Text>
       <Text c="dimmed" size="sm">
-        Movie ratings and movie/episode watched history are fetched from the libraries you select.
-        Show libraries enable episode watched sync; leave all unchecked to include every movie and
-        show library.
+        Movie ratings and movie/episode watched history are fetched from the libraries you select. Show libraries enable episode watched
+        sync; leave all unchecked to include every movie and show library.
       </Text>
       <Checkbox.Group value={selected} onChange={setSelected}>
         <Stack gap="xs">
@@ -221,17 +186,11 @@ function PlexLibraryPicker({ enabled }: { enabled: boolean }) {
           ))}
         </Stack>
       </Checkbox.Group>
-      <Button
-        variant="light"
-        w="fit-content"
-        loading={save.isPending}
-        leftSection={<SaveIcon />}
-        onClick={() => save.mutate(selected)}
-      >
+      <Button variant="light" w="fit-content" loading={save.isPending} leftSection={<SaveIcon />} onClick={() => save.mutate(selected)}>
         Save Plex library selection
       </Button>
     </Stack>
-  );
+  )
 }
 
 function PlexStep({
@@ -239,99 +198,97 @@ function PlexStep({
   onSaved,
   onCleared,
 }: {
-  connection: ConnectionSummary | undefined;
-  onSaved: () => void;
-  onCleared: () => void;
+  connection: ConnectionSummary | undefined
+  onSaved: () => void
+  onCleared: () => void
 }) {
-  const [pin, setPin] = useState<PlexPinStart | null>(null);
-  const [polling, setPolling] = useState(false);
-  const [pollError, setPollError] = useState<string | null>(null);
-  const pinRef = useRef<PlexPinStart | null>(null);
-  pinRef.current = pin;
+  const [pin, setPin] = useState<PlexPinStart | null>(null)
+  const [polling, setPolling] = useState(false)
+  const [pollError, setPollError] = useState<string | null>(null)
+  const pinRef = useRef<PlexPinStart | null>(null)
+  pinRef.current = pin
 
   const start = useMutation({
     mutationFn: () => api.post<PlexPinStart>("/connections/plex/pin/start"),
     onSuccess: (data) => {
-      setPollError(null);
-      setPin(data);
-      setPolling(true);
-      showToast({ color: "blue", message: "Sign in to Plex to authorize plextraktbox" });
+      setPollError(null)
+      setPin(data)
+      setPolling(true)
+      showToast({ color: "blue", message: "Sign in to Plex to authorize plextraktbox" })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Plex authorization failed",
-      });
+      })
     },
-  });
+  })
 
   const poll = useMutation({
-    mutationFn: (body: PlexPinPollInput) =>
-      api.post<PlexPinPollResult>("/connections/plex/pin/poll", body),
+    mutationFn: (body: PlexPinPollInput) => api.post<PlexPinPollResult>("/connections/plex/pin/poll", body),
     onSuccess: (data) => {
       if (data.status === "ok") {
-        setPolling(false);
-        setPin(null);
-        showToast({ color: "green", message: "Plex connected" });
-        onSaved();
+        setPolling(false)
+        setPin(null)
+        showToast({ color: "green", message: "Plex connected" })
+        onSaved()
       }
     },
     onError: (error: unknown) => {
-      setPolling(false);
-      const message =
-        error instanceof ApiError ? String(error.message) : "Plex authorization failed";
-      setPollError(message);
-      showToast({ color: "red", message });
+      setPolling(false)
+      const message = error instanceof ApiError ? String(error.message) : "Plex authorization failed"
+      setPollError(message)
+      showToast({ color: "red", message })
     },
-  });
-  const pollMutate = useRef(poll.mutate);
-  pollMutate.current = poll.mutate;
+  })
+  const pollMutate = useRef(poll.mutate)
+  pollMutate.current = poll.mutate
 
   useEffect(() => {
-    if (!polling || !pinRef.current || poll.isPending) return undefined;
-    const timer = window.setInterval(() => {
-      const activePin = pinRef.current;
-      if (!activePin?.pin_code) return;
-      pollMutate.current({ pin_id: activePin.pin_id, pin_code: activePin.pin_code });
-    }, (pinRef.current.interval || 2) * 1000);
-    return () => window.clearInterval(timer);
-  }, [polling, pin, poll.isPending]);
+    if (!polling || !pinRef.current || poll.isPending) return undefined
+    const timer = window.setInterval(
+      () => {
+        const activePin = pinRef.current
+        if (!activePin?.pin_code) return
+        pollMutate.current({ pin_id: activePin.pin_id, pin_code: activePin.pin_code })
+      },
+      (pinRef.current.interval || 2) * 1000,
+    )
+    return () => window.clearInterval(timer)
+  }, [polling, pin, poll.isPending])
 
-  useEffect(() => () => setPolling(false), []);
+  useEffect(() => () => setPolling(false), [])
 
   function cancelAuthorization() {
-    setPolling(false);
-    setPollError(null);
-    setPin(null);
+    setPolling(false)
+    setPollError(null)
+    setPin(null)
   }
 
-  const showManualCode = pin ? pin.pin_code.length <= 8 : false;
-  const configured = isConnectionConfigured(connection);
-  const plexConnected = connection?.status === "ok";
-  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+  const showManualCode = pin ? pin.pin_code.length <= 8 : false
+  const configured = isConnectionConfigured(connection)
+  const plexConnected = connection?.status === "ok"
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()
 
   useEffect(() => {
-    resetTestStatus();
-  }, [connection?.service, connection?.status, resetTestStatus]);
+    resetTestStatus()
+  }, [connection?.service, connection?.status, resetTestStatus])
 
   const testSaved = useMutation({
     mutationFn: () => api.post<ConnectionTestResult>("/connections/plex/test", {}),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "Plex test failed"),
-  });
+  })
 
   return (
     <Stack gap="sm">
       <Text c="dimmed" size="sm">
-        Authorize plextraktbox to access your Plex account. Your server will be discovered
-        automatically after you sign in.
+        Authorize plextraktbox to access your Plex account. Your server will be discovered automatically after you sign in.
       </Text>
       {plexConnected && connection ? (
         <Alert color="green" title="Plex connected">
           <Text size="sm">
-            {typeof connection.config.friendly_name === "string"
-              ? connection.config.friendly_name
-              : "Plex server"}
+            {typeof connection.config.friendly_name === "string" ? connection.config.friendly_name : "Plex server"}
             {typeof connection.config.url === "string" ? ` — ${connection.config.url}` : ""}
           </Text>
         </Alert>
@@ -346,11 +303,7 @@ function PlexStep({
           Connect Plex
         </Button>
         {configured ? (
-          <TestConnectionButton
-            testStatus={testStatus}
-            onClick={() => testSaved.mutate()}
-            loading={testSaved.isPending}
-          />
+          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
         ) : null}
         <ClearConnectionButton service="plex" connection={connection} onCleared={onCleared} />
       </Group>
@@ -362,8 +315,8 @@ function PlexStep({
               size="xs"
               variant="light"
               onClick={() => {
-                cancelAuthorization();
-                start.mutate();
+                cancelAuthorization()
+                start.mutate()
               }}
             >
               Try again
@@ -375,16 +328,10 @@ function PlexStep({
         <Alert color="blue" title="Authorize on Plex">
           <Stack gap="xs">
             <Text size="sm">
-              Sign in to Plex and approve access for plextraktbox. Use the same browser
-              session where you are already signed in to Plex, or sign in when prompted.
+              Sign in to Plex and approve access for plextraktbox. Use the same browser session where you are already signed in to Plex, or
+              sign in when prompted.
             </Text>
-            <Button
-              component="a"
-              href={pin.auth_url}
-              target="_blank"
-              rel="noreferrer"
-              variant="light"
-            >
+            <Button component="a" href={pin.auth_url} target="_blank" rel="noreferrer" variant="light">
               Open Plex authorization
             </Button>
             {showManualCode ? (
@@ -407,7 +354,7 @@ function PlexStep({
       ) : null}
       <PlexLibraryPicker enabled={plexConnected} />
     </Stack>
-  );
+  )
 }
 
 function TraktStep({
@@ -415,73 +362,74 @@ function TraktStep({
   onSaved,
   onCleared,
 }: {
-  connection: ConnectionSummary | undefined;
-  onSaved: () => void;
-  onCleared: () => void;
+  connection: ConnectionSummary | undefined
+  onSaved: () => void
+  onCleared: () => void
 }) {
-  const [device, setDevice] = useState<TraktDeviceStart | null>(null);
+  const [device, setDevice] = useState<TraktDeviceStart | null>(null)
 
   const start = useMutation({
     mutationFn: () => api.post<TraktDeviceStart>("/connections/trakt/device/start"),
     onSuccess: (data) => {
-      setDevice(data);
-      showToast({ color: "blue", message: "Visit Trakt to authorize this device" });
+      setDevice(data)
+      showToast({ color: "blue", message: "Visit Trakt to authorize this device" })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Trakt authorization failed",
-      });
+      })
     },
-  });
+  })
 
   const poll = useMutation({
-    mutationFn: (body: TraktDevicePollInput) =>
-      api.post<TraktDevicePollResult>("/connections/trakt/device/poll", body),
+    mutationFn: (body: TraktDevicePollInput) => api.post<TraktDevicePollResult>("/connections/trakt/device/poll", body),
     onSuccess: (data) => {
       if (data.status === "ok") {
-        setDevice(null);
-        showToast({ color: "green", message: "Trakt connected" });
-        onSaved();
+        setDevice(null)
+        showToast({ color: "green", message: "Trakt connected" })
+        onSaved()
       }
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Trakt authorization failed",
-      });
+      })
     },
-  });
-  const pollMutate = useRef(poll.mutate);
-  pollMutate.current = poll.mutate;
+  })
+  const pollMutate = useRef(poll.mutate)
+  pollMutate.current = poll.mutate
 
   useEffect(() => {
-    if (!device || poll.isPending) return undefined;
-    const timer = window.setInterval(() => {
-      pollMutate.current({ device_code: device.device_code });
-    }, (device.interval || 5) * 1000);
-    return () => window.clearInterval(timer);
-  }, [device, poll.isPending]);
+    if (!device || poll.isPending) return undefined
+    const timer = window.setInterval(
+      () => {
+        pollMutate.current({ device_code: device.device_code })
+      },
+      (device.interval || 5) * 1000,
+    )
+    return () => window.clearInterval(timer)
+  }, [device, poll.isPending])
 
-  const configured = isConnectionConfigured(connection);
-  const traktConnected = connection?.status === "ok";
-  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+  const configured = isConnectionConfigured(connection)
+  const traktConnected = connection?.status === "ok"
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()
 
   useEffect(() => {
-    resetTestStatus();
-  }, [connection?.service, connection?.status, resetTestStatus]);
+    resetTestStatus()
+  }, [connection?.service, connection?.status, resetTestStatus])
 
   const testSaved = useMutation({
     mutationFn: () => api.post<ConnectionTestResult>("/connections/trakt/test", {}),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "Trakt test failed"),
-  });
+  })
 
   return (
     <Stack gap="sm">
       <Text c="dimmed" size="sm">
-        Authorize plextraktbox to access your Trakt account. You will visit Trakt and enter a
-        one-time code.
+        Authorize plextraktbox to access your Trakt account. You will visit Trakt and enter a one-time code.
       </Text>
       {traktConnected ? (
         <Alert color="green" title="Trakt connected">
@@ -498,11 +446,7 @@ function TraktStep({
           Connect Trakt
         </Button>
         {configured ? (
-          <TestConnectionButton
-            testStatus={testStatus}
-            onClick={() => testSaved.mutate()}
-            loading={testSaved.isPending}
-          />
+          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
         ) : null}
         <ClearConnectionButton service="trakt" connection={connection} onCleared={onCleared} />
       </Group>
@@ -523,7 +467,7 @@ function TraktStep({
         </Alert>
       ) : null}
     </Stack>
-  );
+  )
 }
 
 function LetterboxdStep({
@@ -531,106 +475,104 @@ function LetterboxdStep({
   onSaved,
   onCleared,
 }: {
-  connection: ConnectionSummary | undefined;
-  onSaved: () => void;
-  onCleared: () => void;
+  connection: ConnectionSummary | undefined
+  onSaved: () => void
+  onCleared: () => void
 }) {
-  const configured = isConnectionConfigured(connection);
-  const baselineUsername = savedUsername(connection);
-  const baselinePassword = configured ? SAVED_SECRET_PLACEHOLDER : "";
+  const configured = isConnectionConfigured(connection)
+  const baselineUsername = savedUsername(connection)
+  const baselinePassword = configured ? SAVED_SECRET_PLACEHOLDER : ""
 
-  const [username, setUsername] = useState(baselineUsername);
-  const [password, setPassword] = useState(baselinePassword);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const nextConfigured = isConnectionConfigured(connection);
-    setUsername(savedUsername(connection));
-    setPassword(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "");
-    setErrors({});
-  }, [connection?.service, connection?.status, connection?.config.username]);
-
-  const isDirty = username !== baselineUsername || password !== baselinePassword;
-  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+  const [username, setUsername] = useState(baselineUsername)
+  const [password, setPassword] = useState(baselinePassword)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    resetTestStatus();
-  }, [connection?.service, connection?.status, resetTestStatus]);
+    const nextConfigured = isConnectionConfigured(connection)
+    setUsername(savedUsername(connection))
+    setPassword(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "")
+    setErrors({})
+  }, [connection?.service, connection?.status, connection?.config.username])
+
+  const isDirty = username !== baselineUsername || password !== baselinePassword
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()
 
   useEffect(() => {
-    if (isDirty) resetTestStatus();
-  }, [isDirty, resetTestStatus]);
+    resetTestStatus()
+  }, [connection?.service, connection?.status, resetTestStatus])
+
+  useEffect(() => {
+    if (isDirty) resetTestStatus()
+  }, [isDirty, resetTestStatus])
 
   const save = useMutation({
-    mutationFn: (body: LetterboxdConnectionInput) =>
-      api.post<ConnectionSummary>("/connections/letterboxd", body),
+    mutationFn: (body: LetterboxdConnectionInput) => api.post<ConnectionSummary>("/connections/letterboxd", body),
     onSuccess: () => {
-      showToast({ color: "green", message: "Letterboxd connected" });
-      onSaved();
+      showToast({ color: "green", message: "Letterboxd connected" })
+      onSaved()
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Letterboxd setup failed",
-      });
+      })
     },
-  });
+  })
 
   const testSaved = useMutation({
     mutationFn: () => api.post<ConnectionTestResult>("/connections/letterboxd/test", {}),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "Letterboxd test failed"),
-  });
+  })
 
   const testDraft = useMutation({
-    mutationFn: (body: LetterboxdConnectionInput) =>
-      api.post<ConnectionTestResult>("/connections/letterboxd/test", body),
+    mutationFn: (body: LetterboxdConnectionInput) => api.post<ConnectionTestResult>("/connections/letterboxd/test", body),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "Letterboxd test failed"),
-  });
+  })
 
   function buildPayload(): LetterboxdConnectionInput | null {
-    if (!username.trim()) return null;
-    const payload: LetterboxdConnectionInput = { username: username.trim() };
+    if (!username.trim()) return null
+    const payload: LetterboxdConnectionInput = { username: username.trim() }
     if (password && password !== SAVED_SECRET_PLACEHOLDER) {
-      payload.password = password;
+      payload.password = password
     } else if (!configured) {
-      return null;
+      return null
     }
-    return payload;
+    return payload
   }
 
   function handleTest() {
     if (!isDirty && configured) {
-      testSaved.mutate();
-      return;
+      testSaved.mutate()
+      return
     }
-    const payload = buildPayload();
-    if (!payload) return;
-    testDraft.mutate(payload);
+    const payload = buildPayload()
+    if (!payload) return
+    testDraft.mutate(payload)
   }
 
   function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    const payload = buildPayload();
+    event.preventDefault()
+    const payload = buildPayload()
     if (!payload) {
-      const fieldErrors: Record<string, string> = {};
-      if (!username.trim()) fieldErrors.username = "Username is required";
+      const fieldErrors: Record<string, string> = {}
+      if (!username.trim()) fieldErrors.username = "Username is required"
       if (!configured && (!password || password === SAVED_SECRET_PLACEHOLDER)) {
-        fieldErrors.password = "Password is required";
+        fieldErrors.password = "Password is required"
       }
-      setErrors(fieldErrors);
-      return;
+      setErrors(fieldErrors)
+      return
     }
-    setErrors({});
-    save.mutate(payload);
+    setErrors({})
+    save.mutate(payload)
   }
 
   const canTest =
     username.trim() !== "" &&
     (configured
       ? password === SAVED_SECRET_PLACEHOLDER || password.trim() !== ""
-      : password.trim() !== "" && password !== SAVED_SECRET_PLACEHOLDER);
+      : password.trim() !== "" && password !== SAVED_SECRET_PLACEHOLDER)
 
   return (
     <form onSubmit={handleSubmit}>
@@ -646,17 +588,13 @@ function LetterboxdStep({
           </Alert>
         ) : null}
         <TextInput
-          label={
-            <FieldLabel icon={<UserIcon />}>Letterboxd username</FieldLabel>
-          }
+          label={<FieldLabel icon={<UserIcon />}>Letterboxd username</FieldLabel>}
           value={username}
           onChange={(event) => setUsername(event.currentTarget.value)}
           error={errors.username}
         />
         <PasswordInput
-          label={
-            <FieldLabel icon={<LockIcon />}>Letterboxd password</FieldLabel>
-          }
+          label={<FieldLabel icon={<LockIcon />}>Letterboxd password</FieldLabel>}
           onChange={(event) => setPassword(event.currentTarget.value)}
           error={errors.password}
           {...secretPlaceholderInputProps(
@@ -681,7 +619,7 @@ function LetterboxdStep({
         </Group>
       </Stack>
     </form>
-  );
+  )
 }
 
 function TmdbApiKeyHelpContent() {
@@ -701,26 +639,17 @@ function TmdbApiKeyHelpContent() {
           </a>
         </List.Item>
         <List.Item>
-          Click <strong>Request an API Key</strong>, choose <strong>Developer</strong>, and complete
-          the application form
+          Click <strong>Request an API Key</strong>, choose <strong>Developer</strong>, and complete the application form
         </List.Item>
         <List.Item>
           Copy the <strong>API Key</strong> (v3 auth) — not the Read Access Token
         </List.Item>
       </List>
-      <Button
-        component="a"
-        href={TMDB_API_SETTINGS_URL}
-        target="_blank"
-        rel="noreferrer"
-        variant="light"
-        size="xs"
-        w="fit-content"
-      >
+      <Button component="a" href={TMDB_API_SETTINGS_URL} target="_blank" rel="noreferrer" variant="light" size="xs" w="fit-content">
         Open TMDB API settings
       </Button>
     </Stack>
-  );
+  )
 }
 
 function TmdbApiKeyHelp({
@@ -728,16 +657,16 @@ function TmdbApiKeyHelp({
   expanded,
   onExpandedChange,
 }: {
-  collapsible: boolean;
-  expanded: boolean;
-  onExpandedChange: (next: boolean) => void;
+  collapsible: boolean
+  expanded: boolean
+  onExpandedChange: (next: boolean) => void
 }) {
   if (!collapsible) {
     return (
       <Alert color="blue" title="Get a TMDB API key">
         <TmdbApiKeyHelpContent />
       </Alert>
-    );
+    )
   }
 
   return (
@@ -769,7 +698,7 @@ function TmdbApiKeyHelp({
         </Accordion.Item>
       </Accordion>
     </Alert>
-  );
+  )
 }
 
 function TmdbStep({
@@ -777,95 +706,90 @@ function TmdbStep({
   onSaved,
   onCleared,
 }: {
-  connection: ConnectionSummary | undefined;
-  onSaved: () => void;
-  onCleared: () => void;
+  connection: ConnectionSummary | undefined
+  onSaved: () => void
+  onCleared: () => void
 }) {
-  const configured = isConnectionConfigured(connection);
-  const baselineApiKey = configured ? SAVED_SECRET_PLACEHOLDER : "";
+  const configured = isConnectionConfigured(connection)
+  const baselineApiKey = configured ? SAVED_SECRET_PLACEHOLDER : ""
 
-  const [apiKey, setApiKey] = useState(baselineApiKey);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showTmdbHelp, setShowTmdbHelp] = useState(!configured);
-
-  useEffect(() => {
-    const nextConfigured = isConnectionConfigured(connection);
-    setApiKey(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "");
-    setErrors({});
-    setShowTmdbHelp(!nextConfigured);
-  }, [connection?.service, connection?.status]);
-
-  const isDirty = apiKey !== baselineApiKey;
-  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback();
+  const [apiKey, setApiKey] = useState(baselineApiKey)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [showTmdbHelp, setShowTmdbHelp] = useState(!configured)
 
   useEffect(() => {
-    resetTestStatus();
-  }, [connection?.service, connection?.status, resetTestStatus]);
+    const nextConfigured = isConnectionConfigured(connection)
+    setApiKey(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "")
+    setErrors({})
+    setShowTmdbHelp(!nextConfigured)
+  }, [connection?.service, connection?.status])
+
+  const isDirty = apiKey !== baselineApiKey
+  const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()
 
   useEffect(() => {
-    if (isDirty) resetTestStatus();
-  }, [isDirty, resetTestStatus]);
+    resetTestStatus()
+  }, [connection?.service, connection?.status, resetTestStatus])
+
+  useEffect(() => {
+    if (isDirty) resetTestStatus()
+  }, [isDirty, resetTestStatus])
 
   const save = useMutation({
-    mutationFn: (body: TmdbConnectionInput) =>
-      api.post<ConnectionSummary>("/connections/tmdb", body),
+    mutationFn: (body: TmdbConnectionInput) => api.post<ConnectionSummary>("/connections/tmdb", body),
     onSuccess: () => {
-      showToast({ color: "green", message: "TMDB connected" });
-      onSaved();
+      showToast({ color: "green", message: "TMDB connected" })
+      onSaved()
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "TMDB setup failed",
-      });
+      })
     },
-  });
+  })
 
   const testSaved = useMutation({
     mutationFn: () => api.post<ConnectionTestResult>("/connections/tmdb/test", {}),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "TMDB test failed"),
-  });
+  })
 
   const testDraft = useMutation({
-    mutationFn: (body: TmdbConnectionInput) =>
-      api.post<ConnectionTestResult>("/connections/tmdb/test", body),
+    mutationFn: (body: TmdbConnectionInput) => api.post<ConnectionTestResult>("/connections/tmdb/test", body),
     onSuccess: onTestSuccess,
     onError: (error: unknown) => onTestError(error, "TMDB test failed"),
-  });
+  })
 
   function handleTest() {
     if (!isDirty && configured) {
-      testSaved.mutate();
-      return;
+      testSaved.mutate()
+      return
     }
-    if (!apiKey.trim() || apiKey === SAVED_SECRET_PLACEHOLDER) return;
-    testDraft.mutate({ api_key: apiKey.trim() });
+    if (!apiKey.trim() || apiKey === SAVED_SECRET_PLACEHOLDER) return
+    testDraft.mutate({ api_key: apiKey.trim() })
   }
 
   function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    const parsed = tmdbSchema.safeParse({ api_key: apiKey });
+    event.preventDefault()
+    const parsed = tmdbSchema.safeParse({ api_key: apiKey })
     if (!parsed.success || apiKey === SAVED_SECRET_PLACEHOLDER) {
-      const fieldErrors: Record<string, string> = {};
+      const fieldErrors: Record<string, string> = {}
       if (!apiKey.trim() || apiKey === SAVED_SECRET_PLACEHOLDER) {
-        fieldErrors.api_key = "API key is required";
+        fieldErrors.api_key = "API key is required"
       }
       for (const issue of parsed.error?.issues ?? []) {
-        const key = issue.path[0];
-        if (typeof key === "string") fieldErrors[key] = issue.message;
+        const key = issue.path[0]
+        if (typeof key === "string") fieldErrors[key] = issue.message
       }
-      setErrors(fieldErrors);
-      return;
+      setErrors(fieldErrors)
+      return
     }
-    setErrors({});
-    save.mutate(parsed.data);
+    setErrors({})
+    save.mutate(parsed.data)
   }
 
-  const canTest =
-    configured && !isDirty
-      ? true
-      : apiKey.trim() !== "" && apiKey !== SAVED_SECRET_PLACEHOLDER;
+  const canTest = configured && !isDirty ? true : apiKey.trim() !== "" && apiKey !== SAVED_SECRET_PLACEHOLDER
 
   return (
     <form onSubmit={handleSubmit}>
@@ -878,11 +802,7 @@ function TmdbStep({
             <Text size="sm">API key saved and ready for title matching.</Text>
           </Alert>
         ) : null}
-        <TmdbApiKeyHelp
-          collapsible={configured}
-          expanded={showTmdbHelp}
-          onExpandedChange={setShowTmdbHelp}
-        />
+        <TmdbApiKeyHelp collapsible={configured} expanded={showTmdbHelp} onExpandedChange={setShowTmdbHelp} />
         <PasswordInput
           label={<FieldLabel icon={<KeyIcon />}>TMDB API key</FieldLabel>}
           onChange={(event) => setApiKey(event.currentTarget.value)}
@@ -909,36 +829,30 @@ function TmdbStep({
         </Group>
       </Stack>
     </form>
-  );
+  )
 }
 
 function resolveActiveStep(connections: ConnectionSummary[]) {
   for (let index = 0; index < SERVICE_ORDER.length; index += 1) {
-    const service = SERVICE_ORDER[index];
-    const row = connections.find((item) => item.service === service);
-    if (!row || row.status !== "ok") return index;
+    const service = SERVICE_ORDER[index]
+    const row = connections.find((item) => item.service === service)
+    if (!row || row.status !== "ok") return index
   }
-  return SERVICE_ORDER.length;
+  return SERVICE_ORDER.length
 }
 
 function allConnectionsOk(connections: ConnectionSummary[]) {
   return SERVICE_ORDER.every((service) => {
-    const row = connections.find((item) => item.service === service);
-    return row?.status === "ok";
-  });
+    const row = connections.find((item) => item.service === service)
+    return row?.status === "ok"
+  })
 }
 
 function stepIconClass(connection: ConnectionSummary | undefined) {
-  return connection?.status === "ok"
-    ? `${classes.stepIcon} ${classes.stepIconConnected}`
-    : classes.stepIcon;
+  return connection?.status === "ok" ? `${classes.stepIcon} ${classes.stepIconConnected}` : classes.stepIcon
 }
 
-function FinishedStep({
-  onGoToDashboard,
-}: {
-  onGoToDashboard: () => void;
-}) {
+function FinishedStep({ onGoToDashboard }: { onGoToDashboard: () => void }) {
   return (
     <Stack gap="md">
       <Alert
@@ -951,88 +865,85 @@ function FinishedStep({
         }
       >
         <Text size="sm">
-          Plex, Trakt, Letterboxd, and TMDB are configured and ready for sync. Use the steps above
-          anytime to review or update a connection.
+          Plex, Trakt, Letterboxd, and TMDB are configured and ready for sync. Use the steps above anytime to review or update a connection.
         </Text>
       </Alert>
       <Button onClick={onGoToDashboard} w="fit-content" leftSection={<HomeIcon />}>
         Go to dashboard
       </Button>
     </Stack>
-  );
+  )
 }
 
 export function ConnectionsPage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const isNarrow = useMediaQuery("(max-width: 47.997em)");
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const isNarrow = useMediaQuery("(max-width: 47.997em)")
   const statusQuery = useQuery({
     queryKey: ["connections", "status"],
     queryFn: () => api.get<ConnectionsStatus>("/connections/status"),
-  });
+  })
 
-  const [active, setActive] = useState(0);
-  const prevNeedsConnectionsRef = useRef<boolean | undefined>(undefined);
+  const [active, setActive] = useState(0)
+  const prevNeedsConnectionsRef = useRef<boolean | undefined>(undefined)
 
-  const needsConnections = statusQuery.data?.needs_connections === true;
+  const needsConnections = statusQuery.data?.needs_connections === true
 
   useEffect(() => {
-    if (!statusQuery.data) return;
-    const needsChanged = prevNeedsConnectionsRef.current !== statusQuery.data.needs_connections;
-    prevNeedsConnectionsRef.current = statusQuery.data.needs_connections;
-    const step = resolveActiveStep(statusQuery.data.connections);
-    const allOk = allConnectionsOk(statusQuery.data.connections);
+    if (!statusQuery.data) return
+    const needsChanged = prevNeedsConnectionsRef.current !== statusQuery.data.needs_connections
+    prevNeedsConnectionsRef.current = statusQuery.data.needs_connections
+    const step = resolveActiveStep(statusQuery.data.connections)
+    const allOk = allConnectionsOk(statusQuery.data.connections)
     setActive((current) => {
-      if (current === SERVICE_ORDER.length) return current;
-      if (allOk) return step;
-      if (!statusQuery.data.needs_connections && !needsChanged) return current;
-      return step;
-    });
-  }, [statusQuery.data]);
+      if (current === SERVICE_ORDER.length) return current
+      if (allOk) return step
+      if (!statusQuery.data.needs_connections && !needsChanged) return current
+      return step
+    })
+  }, [statusQuery.data])
 
   function refreshStatus() {
-    void queryClient.invalidateQueries({ queryKey: ["connections", "status"] });
+    void queryClient.invalidateQueries({ queryKey: ["connections", "status"] })
   }
 
   const clearAll = useMutation({
     mutationFn: () => api.del("/connections"),
     onSuccess: () => {
-      setActive(0);
-      refreshStatus();
-      showToast({ color: "green", message: "All connections cleared" });
+      setActive(0)
+      refreshStatus()
+      showToast({ color: "green", message: "All connections cleared" })
     },
     onError: (error: unknown) => {
       showToast({
         color: "red",
         message: error instanceof ApiError ? String(error.message) : "Could not clear connections",
-      });
+      })
     },
-  });
+  })
 
   function handleConnectionCleared() {
-    refreshStatus();
+    refreshStatus()
   }
 
   function handleGoToDashboard() {
-    navigate("/", { replace: true });
+    navigate("/", { replace: true })
   }
 
   function handleClearAll() {
-    const confirmed = window.confirm(
-      "Remove all saved Plex, Trakt, Letterboxd, and TMDB connections? You will need to set them up again.",
-    );
-    if (confirmed) clearAll.mutate();
+    const confirmed = window.confirm("Remove all saved Plex, Trakt, Letterboxd, and TMDB connections? You will need to set them up again.")
+    if (confirmed) clearAll.mutate()
   }
 
   if (statusQuery.isLoading) {
-    return <Text>Loading connections…</Text>;
+    return <Text>Loading connections…</Text>
   }
 
-  const connections = statusQuery.data?.connections ?? [];
-  const hasConfiguredConnections = connections.some((item) => item.status !== "unconfigured");
+  const connections = statusQuery.data?.connections ?? []
+  const hasConfiguredConnections = connections.some((item) => item.status !== "unconfigured")
 
   function connectionFor(service: Service) {
-    return connections.find((item) => item.service === service);
+    return connections.find((item) => item.service === service)
   }
 
   return (
@@ -1046,13 +957,7 @@ export function ConnectionsPage() {
 
       {!needsConnections && hasConfiguredConnections ? (
         <Group justify="flex-end" wrap="wrap">
-          <Button
-            variant="outline"
-            color="red"
-            leftSection={<TrashIcon />}
-            onClick={handleClearAll}
-            loading={clearAll.isPending}
-          >
+          <Button variant="outline" color="red" leftSection={<TrashIcon />} onClick={handleClearAll} loading={clearAll.isPending}>
             Clear all connections
           </Button>
         </Group>
@@ -1077,8 +982,8 @@ export function ConnectionsPage() {
           <PlexStep
             connection={connectionFor("plex")}
             onSaved={() => {
-              refreshStatus();
-              setActive(1);
+              refreshStatus()
+              setActive(1)
             }}
             onCleared={handleConnectionCleared}
           />
@@ -1093,8 +998,8 @@ export function ConnectionsPage() {
           <TraktStep
             connection={connectionFor("trakt")}
             onSaved={() => {
-              refreshStatus();
-              setActive(2);
+              refreshStatus()
+              setActive(2)
             }}
             onCleared={handleConnectionCleared}
           />
@@ -1103,16 +1008,14 @@ export function ConnectionsPage() {
           classNames={{ stepIcon: stepIconClass(connectionFor("letterboxd")) }}
           icon={<ServiceLogo service="letterboxd" size={18} />}
           completedIcon={<ServiceLogo service="letterboxd" size={18} />}
-          label={
-            <ServiceStepLabel service="letterboxd" connection={connectionFor("letterboxd")} />
-          }
+          label={<ServiceStepLabel service="letterboxd" connection={connectionFor("letterboxd")} />}
           description="Read-only login"
         >
           <LetterboxdStep
             connection={connectionFor("letterboxd")}
             onSaved={() => {
-              refreshStatus();
-              setActive(3);
+              refreshStatus()
+              setActive(3)
             }}
             onCleared={handleConnectionCleared}
           />
@@ -1127,8 +1030,8 @@ export function ConnectionsPage() {
           <TmdbStep
             connection={connectionFor("tmdb")}
             onSaved={() => {
-              refreshStatus();
-              setActive(SERVICE_ORDER.length);
+              refreshStatus()
+              setActive(SERVICE_ORDER.length)
             }}
             onCleared={handleConnectionCleared}
           />
@@ -1139,5 +1042,5 @@ export function ConnectionsPage() {
         </Stepper.Completed>
       </Stepper>
     </Stack>
-  );
+  )
 }

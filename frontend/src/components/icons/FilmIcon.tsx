@@ -20,5 +20,5 @@ export function FilmIcon({ size = 14 }: { size?: number }) {
       <path d="M17 7.5h4" />
       <path d="M17 16.5h4" />
     </svg>
-  );
+  )
 }

@@ -1,15 +1,16 @@
-import { Group, Text } from "@mantine/core";
-import type { ConnectionSummary, Service } from "src/api/connections";
-import { SERVICE_LABELS } from "src/components/connections/connectionStatus";
-import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon";
+import { Group, Text } from "@mantine/core"
+
+import type { ConnectionSummary, Service } from "src/api/connections"
+import { SERVICE_LABELS } from "src/components/connections/connectionStatus"
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon"
 
 interface ServiceStepLabelProps {
-  service: Service;
-  connection: ConnectionSummary | undefined;
+  service: Service
+  connection: ConnectionSummary | undefined
 }
 
 export function ServiceStepLabel({ service, connection }: ServiceStepLabelProps) {
-  const connected = connection?.status === "ok";
+  const connected = connection?.status === "ok"
 
   return (
     <Group gap={4} justify="center" wrap="nowrap">
@@ -22,5 +23,5 @@ export function ServiceStepLabel({ service, connection }: ServiceStepLabelProps)
         </span>
       ) : null}
     </Group>
-  );
+  )
 }

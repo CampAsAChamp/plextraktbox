@@ -1,44 +1,36 @@
-import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core";
-import { LogLevelBadge, LogLevelOptionRow, LOG_LEVEL_OPTIONS, type LogLevel } from "src/components/LogViewer/logLevels";
+import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core"
+
+import { LOG_LEVEL_OPTIONS, type LogLevel, LogLevelBadge, LogLevelOptionRow } from "src/components/LogViewer/logLevels"
 
 type LogLevelMultiSelectProps = {
-  label?: string;
-  value: LogLevel[];
-  onChange: (value: LogLevel[]) => void;
-  clearable?: boolean;
-  placeholder?: string;
-};
+  label?: string
+  value: LogLevel[]
+  onChange: (value: LogLevel[]) => void
+  clearable?: boolean
+  placeholder?: string
+}
 
-export function LogLevelMultiSelect({
-  label,
-  value,
-  onChange,
-  clearable = false,
-  placeholder = "All levels",
-}: LogLevelMultiSelectProps) {
+export function LogLevelMultiSelect({ label, value, onChange, clearable = false, placeholder = "All levels" }: LogLevelMultiSelectProps) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
-  });
+  })
 
   function toggleLevel(level: LogLevel) {
     if (value.includes(level)) {
-      onChange(value.filter((item) => item !== level));
-      return;
+      onChange(value.filter((item) => item !== level))
+      return
     }
-    onChange([...value, level]);
+    onChange([...value, level])
   }
 
   function removeLevel(level: LogLevel) {
-    onChange(value.filter((item) => item !== level));
+    onChange(value.filter((item) => item !== level))
   }
 
-  const showClear = clearable && value.length > 0;
+  const showClear = clearable && value.length > 0
 
   return (
-    <Combobox
-      store={combobox}
-      onOptionSubmit={(optionValue) => toggleLevel(optionValue as LogLevel)}
-    >
+    <Combobox store={combobox} onOptionSubmit={(optionValue) => toggleLevel(optionValue as LogLevel)}>
       <Combobox.DropdownTarget>
         <PillsInput
           label={label}
@@ -62,21 +54,17 @@ export function LogLevelMultiSelect({
               <PillsInput.Field
                 placeholder={value.length === 0 ? placeholder : undefined}
                 type={value.length === 0 ? "visible" : "hidden"}
-                style={
-                  value.length > 0
-                    ? { flex: "0 0 0", width: 0, minWidth: 0, padding: 0, overflow: "hidden" }
-                    : undefined
-                }
+                style={value.length > 0 ? { flex: "0 0 0", width: 0, minWidth: 0, padding: 0, overflow: "hidden" } : undefined}
                 readOnly
                 pointer
                 onBlur={() => combobox.closeDropdown()}
                 onKeyDown={(event) => {
                   if (event.key === "Backspace" && value.length > 0) {
-                    removeLevel(value[value.length - 1]);
+                    removeLevel(value[value.length - 1])
                   }
                   if (event.key === " ") {
-                    event.preventDefault();
-                    combobox.toggleDropdown();
+                    event.preventDefault()
+                    combobox.toggleDropdown()
                   }
                 }}
               />
@@ -88,15 +76,15 @@ export function LogLevelMultiSelect({
       <Combobox.Dropdown>
         <Combobox.Options>
           {LOG_LEVEL_OPTIONS.map((option) => {
-            const checked = value.includes(option.value);
+            const checked = value.includes(option.value)
             return (
               <Combobox.Option key={option.value} value={option.value} active={checked}>
                 <LogLevelOptionRow level={option.value} checked={checked} />
               </Combobox.Option>
-            );
+            )
           })}
         </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
-  );
+  )
 }
