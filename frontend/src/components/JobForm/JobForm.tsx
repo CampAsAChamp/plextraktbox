@@ -13,6 +13,7 @@ import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon"
 import { SaveIcon } from "src/components/icons/SaveIcon"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
+import { SourceOfTruthCallout } from "src/components/sync/SourceOfTruthCallout"
 import { RoundedTable } from "src/components/table/RoundedTable"
 import { formatTimezoneLabel } from "src/settings/displayPreferences"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
@@ -135,6 +136,8 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
             ))}
           </Stack>
         </Radio.Group>
+
+        <SourceOfTruthCallout relevantTypes={allowedDataTypes} />
 
         <Stack gap="xs">
           <Text size="sm" fw={500}>
