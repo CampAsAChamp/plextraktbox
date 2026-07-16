@@ -85,8 +85,6 @@ function AppRoutes() {
     return <Center mih="100vh">API unreachable. Start the backend and refresh.</Center>
   }
 
-  const needsConnections = authed && connectionsQuery.data?.needs_connections === true
-
   return (
     <Routes>
       <Route element={<AppLayout username={user?.username} avatarUrl={user?.avatar_url} showLogout={authed} />}>
@@ -98,11 +96,7 @@ function AppRoutes() {
           path="/"
           element={
             authed && user ? (
-              needsConnections ? (
-                <Navigate to="/connections" replace />
-              ) : (
-                <DashboardPage user={user} connections={connectionsQuery.data?.connections} />
-              )
+              <DashboardPage user={user} connections={connectionsQuery.data?.connections} />
             ) : (
               <Navigate to="/login" replace />
             )

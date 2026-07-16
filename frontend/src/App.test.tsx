@@ -83,17 +83,19 @@ function unreadCount() {
   return jsonResponse({ unread_count: 0 })
 }
 
-test("redirects to connections when setup is incomplete", async () => {
+test("shows dashboard when connections are incomplete", async () => {
   vi.mocked(fetch)
     .mockResolvedValueOnce(jsonResponse({ needs_setup: false }))
     .mockResolvedValueOnce(jsonResponse(nickUser))
     .mockResolvedValueOnce(connectionsPending())
+    .mockResolvedValueOnce(jsonResponse({ status: "ok", version: "0.1.0" }))
     .mockResolvedValue(unreadCount())
 
   renderWithProviders(<App />)
 
   await waitFor(() => {
-    expect(screen.getByRole("heading", { name: "Connect your services" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument()
+    expect(screen.getByText(/Signed in as/)).toBeInTheDocument()
   })
 })
 
