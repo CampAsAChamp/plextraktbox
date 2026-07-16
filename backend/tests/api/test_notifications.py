@@ -154,3 +154,24 @@ def test_clear_all_inapp_notifications(client: TestClient) -> None:
     assert remaining["items"] == []
     assert remaining["unread_count"] == 0
     assert client.get("/api/notifications/inapp/unread-count").json()["unread_count"] == 0
+
+
+def test_dev_seed_notifications(client: TestClient) -> None:
+    _create_user_and_login(client)
+
+    seeded = client.post("/api/dev/notifications/seed", headers=HEADERS)
+    assert seeded.status_code == 200
+    body = seeded.json()
+    assert len(body["items"]) == 4
+    assert body["unread_count"] >= 4
+    levels = {item["level"] for item in body["items"]}
+    assert levels == {"info", "success", "warning", "error"}
+
+    listed = client.get("/api/notifications/inapp").json()
+    assert listed["unread_count"] >= 4
+    assert len(listed["items"]) >= 4
+
+
+def test_dev_seed_notifications_requires_auth(client: TestClient) -> None:
+    resp = client.post("/api/dev/notifications/seed", headers=HEADERS)
+    assert resp.status_code == 401

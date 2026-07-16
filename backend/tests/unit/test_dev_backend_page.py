@@ -38,3 +38,4 @@ def test_dev_revision_not_registered_in_prod(monkeypatch) -> None:
     app = create_app()
 
     assert "/api/dev/revision" not in app.openapi()["paths"]
+    assert "/api/dev/notifications/seed" not in app.openapi()["paths"]
