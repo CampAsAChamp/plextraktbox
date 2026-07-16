@@ -2,7 +2,12 @@
 # environment (advanced — e.g. `doppler run -- podman compose up --build` for maintainers).
 services:
   plextraktbox:
-    build: .
+    build:
+      context: .
+      args:
+        # Set USE_CORPORATE_CA=1 in .env on Zscaler laptops so npm/pip trust docker/certs/.
+        # Default 0 — CI and GHCR publish without baking the CA into the runtime image.
+        USE_CORPORATE_CA: ${USE_CORPORATE_CA:-0}
     image: plextraktbox:latest
     container_name: plextraktbox
     ports:
@@ -14,6 +19,9 @@ services:
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:?set TRAKT_CLIENT_ID in .env or via Doppler}
       TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:?set TRAKT_CLIENT_SECRET in .env or via Doppler}
       DATA_DIR: /data
+      # Optional: match host dataset ownership (TrueNAS apps often use apps user 568)
+      PUID: ${PUID:-}
+      PGID: ${PGID:-}
     volumes:
       - ./data:/data
     restart: unless-stopped

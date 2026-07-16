@@ -1,36 +1,53 @@
 # ---- Stage 1: build the React SPA ----
 FROM node:24-alpine AS frontend
-# Trust Zscaler (and similar TLS-inspecting proxies) so npm can reach the registry.
-COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/zscaler-root-ca.pem
+# Optional: trust Zscaler (or similar) during npm on corporate networks.
+# Default 0 so CI / public builds use the normal CA store. Laptop:
+#   podman compose build --build-arg USE_CORPORATE_CA=1
+#   or set USE_CORPORATE_CA=1 in .env
+ARG USE_CORPORATE_CA=0
 WORKDIR /app/frontend
+COPY docker/certs/zscaler-root-ca.pem /tmp/zscaler-root-ca.pem
 COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm ci
+RUN if [ "$USE_CORPORATE_CA" = "1" ]; then export NODE_EXTRA_CA_CERTS=/tmp/zscaler-root-ca.pem; fi; \
+    npm ci
 COPY frontend/ ./
 # Vite emits into ../backend/plextraktbox/static; redirect it to a build dir here.
-RUN npm run build -- --outDir dist --emptyOutDir
+RUN if [ "$USE_CORPORATE_CA" = "1" ]; then export NODE_EXTRA_CA_CERTS=/tmp/zscaler-root-ca.pem; fi; \
+    npm run build -- --outDir dist --emptyOutDir
 
 # ---- Stage 2: python runtime ----
 FROM python:3.14-slim AS runtime
 ARG GIT_SHA=
 ARG BUILD_TIME=
-COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem
-ENV SSL_CERT_FILE=/etc/ssl/certs/zscaler-root-ca.pem \
-    REQUESTS_CA_BUNDLE=/etc/ssl/certs/zscaler-root-ca.pem \
-    PIP_CERT=/etc/ssl/certs/zscaler-root-ca.pem \
-    PLEXTRAKTBOX_GIT_SHA=${GIT_SHA} \
-    PLEXTRAKTBOX_BUILD_TIME=${BUILD_TIME}
+ARG USE_CORPORATE_CA=0
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ENV=prod \
-    DATA_DIR=/data
+    DATA_DIR=/data \
+    PLEXTRAKTBOX_GIT_SHA=${GIT_SHA} \
+    PLEXTRAKTBOX_BUILD_TIME=${BUILD_TIME}
+
+# gosu: drop from root to PUID/PGID after chown'ing /data (TrueNAS ZFS mounts).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && gosu nobody true
 
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
 COPY backend/plextraktbox ./plextraktbox
 COPY backend/migrations ./migrations
 COPY backend/alembic.ini ./
-RUN pip install --no-cache-dir .
+# Corporate CA is used only for this pip install when USE_CORPORATE_CA=1, then deleted.
+# The published runtime image must not ship SSL_CERT_FILE / PIP_CERT pointing at Zscaler.
+COPY docker/certs/zscaler-root-ca.pem /tmp/zscaler-root-ca.pem
+RUN if [ "$USE_CORPORATE_CA" = "1" ]; then \
+      export SSL_CERT_FILE=/tmp/zscaler-root-ca.pem \
+             REQUESTS_CA_BUNDLE=/tmp/zscaler-root-ca.pem \
+             PIP_CERT=/tmp/zscaler-root-ca.pem; \
+    fi; \
+    pip install --no-cache-dir .; \
+    rm -f /tmp/zscaler-root-ca.pem
 
 # Bring in the built SPA
 COPY --from=frontend /app/frontend/dist ./plextraktbox/static

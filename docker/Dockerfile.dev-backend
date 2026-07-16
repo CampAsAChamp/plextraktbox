@@ -1,4 +1,6 @@
 # Dev backend image: Python deps baked in; source is bind-mounted for uvicorn reload.
+# Includes Zscaler CA for corporate laptop Docker builds (never published to GHCR).
+# Prod image: see root Dockerfile + USE_CORPORATE_CA (build-only; not in runtime).
 FROM python:3.14-slim
 
 COPY docker/certs/zscaler-root-ca.pem /etc/ssl/certs/zscaler-root-ca.pem

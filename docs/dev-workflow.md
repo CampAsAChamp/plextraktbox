@@ -10,6 +10,15 @@ mise trust && mise install   # first clone only
 mise run install             # backend venv + frontend deps + git hooks
 ```
 
+### Corporate TLS (Zscaler)
+
+On a Zscaler (or similar) laptop, native `mise run install` / `dev-*` usually use the **host** trust
+store. For **prod** image builds on that laptop, set `USE_CORPORATE_CA=1` in `.env` so `npm`/`pip`
+inside the Dockerfile trust [`docker/certs/`](../docker/certs/). The CA is used at build time only
+and is **not** present in the published GHCR / TrueNAS runtime image. Dev compose images
+(`Dockerfile.dev-*`) still include the CA for local hot-reload Docker. Details:
+[docker/certs/README.md](../docker/certs/README.md).
+
 `mise run install` sets `git config core.hooksPath .githooks` so:
 
 - **commit-msg** — subjects must be [Conventional Commits](https://www.conventionalcommits.org/)
