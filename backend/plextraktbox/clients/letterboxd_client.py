@@ -13,11 +13,13 @@ from zipfile import ZipFile
 
 import httpx
 
+from plextraktbox.clients import flaresolverr
 from plextraktbox.clients.base import ConnectionTestResult
 from plextraktbox.clients.media_mappers import (
     media_item_from_letterboxd_film,
     parse_letterboxd_rating,
 )
+from plextraktbox.config import get_settings
 from plextraktbox.sync.guid import letterboxd_slug
 from plextraktbox.sync.media_item import MediaItem
 
@@ -35,6 +37,11 @@ DEFAULT_HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     ),
 }
+_CF_HINT = (
+    "Letterboxd appears to be behind a Cloudflare challenge. "
+    "Set FLARESOLVERR_URL to a reachable FlareSolverr instance "
+    "(see docs/deploy/truenas.md)."
+)
 
 
 @dataclass(frozen=True)
@@ -161,27 +168,74 @@ def items_from_diary_csv(
 
 @contextmanager
 def _authenticated_client(username: str, password: str) -> Iterator[httpx.Client]:
+    settings = get_settings()
+    fs_url = settings.flaresolverr_url
+    timeout_ms = settings.flaresolverr_timeout_ms
+    headers = dict(DEFAULT_HEADERS)
+    fs_session: str | None = None
+
     client = httpx.Client(
         timeout=60.0,
         follow_redirects=True,
-        headers=DEFAULT_HEADERS,
+        headers=headers,
     )
     try:
-        _login(client, username, password)
+        if fs_url:
+            fs_session = flaresolverr.create_session(fs_url, timeout_ms=timeout_ms)
+            solution = flaresolverr.request_get(
+                fs_url,
+                LETTERBOXD_BASE,
+                session_id=fs_session,
+                timeout_ms=timeout_ms,
+            )
+            flaresolverr.apply_cookies(client, solution.cookies)
+            client.headers["User-Agent"] = solution.user_agent
+            if not client.cookies.get(CSRF_COOKIE):
+                signin_solution = flaresolverr.request_get(
+                    fs_url,
+                    SIGNIN_URL,
+                    session_id=fs_session,
+                    timeout_ms=timeout_ms,
+                )
+                flaresolverr.apply_cookies(client, signin_solution.cookies)
+                client.headers["User-Agent"] = signin_solution.user_agent
+            _login(client, username, password, skip_bootstrap=True)
+        else:
+            _login(client, username, password, skip_bootstrap=False)
         yield client
     finally:
+        if fs_url and fs_session is not None:
+            flaresolverr.destroy_session(fs_url, fs_session, timeout_ms=timeout_ms)
         client.close()
 
 
-def _login(client: httpx.Client, username: str, password: str) -> None:
-    home = client.get(LETTERBOXD_BASE)
-    home.raise_for_status()
+def _login(
+    client: httpx.Client,
+    username: str,
+    password: str,
+    *,
+    skip_bootstrap: bool,
+) -> None:
+    if not skip_bootstrap:
+        try:
+            home = client.get(LETTERBOXD_BASE)
+            home.raise_for_status()
+            _raise_if_cloudflare_challenge(home)
+        except httpx.HTTPStatusError as exc:
+            _raise_challenge_or_reraise(exc)
 
-    csrf = client.cookies.get(CSRF_COOKIE)
-    if not csrf:
-        signin = client.get(SIGNIN_URL)
-        signin.raise_for_status()
         csrf = client.cookies.get(CSRF_COOKIE)
+        if not csrf:
+            try:
+                signin = client.get(SIGNIN_URL)
+                signin.raise_for_status()
+                _raise_if_cloudflare_challenge(signin)
+            except httpx.HTTPStatusError as exc:
+                _raise_challenge_or_reraise(exc)
+            csrf = client.cookies.get(CSRF_COOKIE)
+    else:
+        csrf = client.cookies.get(CSRF_COOKIE)
+
     if not csrf:
         raise ValueError("Could not initialize Letterboxd sign-in session")
 
@@ -209,10 +263,49 @@ def _login(client: httpx.Client, username: str, password: str) -> None:
             raise ValueError("Invalid Letterboxd username or password")
         return
 
+    if _looks_like_cloudflare_challenge(resp):
+        if get_settings().flaresolverr_url:
+            raise ValueError(
+                "Letterboxd login still looks like a Cloudflare challenge after FlareSolverr bootstrap"
+            )
+        raise ValueError(_CF_HINT)
+
     if client.cookies.get(USER_COOKIE):
         return
 
     raise ValueError("Invalid Letterboxd username or password")
+
+
+def _raise_challenge_or_reraise(exc: httpx.HTTPStatusError) -> None:
+    response = exc.response
+    if response is not None and (
+        response.status_code == 403 or _looks_like_cloudflare_challenge(response)
+    ):
+        if not get_settings().flaresolverr_url:
+            raise ValueError(_CF_HINT) from exc
+        raise ValueError(
+            "Letterboxd returned a Cloudflare challenge even with FLARESOLVERR_URL set; "
+            "check that FlareSolverr can reach letterboxd.com"
+        ) from exc
+    raise exc
+
+
+def _raise_if_cloudflare_challenge(resp: httpx.Response) -> None:
+    if _looks_like_cloudflare_challenge(resp):
+        if not get_settings().flaresolverr_url:
+            raise ValueError(_CF_HINT)
+        raise ValueError(
+            "Letterboxd returned a Cloudflare challenge even with FLARESOLVERR_URL set; "
+            "check that FlareSolverr can reach letterboxd.com"
+        )
+
+
+def _looks_like_cloudflare_challenge(resp: httpx.Response) -> bool:
+    if resp.headers.get("cf-mitigated", "").lower() == "challenge":
+        return True
+    # Avoid reading huge bodies; challenge pages are small HTML.
+    snippet = (resp.text or "")[:2000].lower()
+    return "just a moment..." in snippet or "cdn-cgi/challenge" in snippet
 
 
 def _items_from_csv(

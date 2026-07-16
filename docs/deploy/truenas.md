@@ -116,8 +116,28 @@ value** (compose does `${PORT:-8000}:${PORT:-8000}`; TrueNAS custom apps need bo
 | `PORT` | No | HTTP listen port inside the container (default `8000`). If set, publish the same host port |
 | `PUID` | Recommended | Host UID that should own files on the dataset (e.g. `568`) |
 | `PGID` | Recommended | Host GID for that dataset (e.g. `568`) |
+| `FLARESOLVERR_URL` | No | Optional FlareSolverr base URL for Letterboxd Cloudflare challenges (e.g. `http://192.168.1.105:30098`). Must be reachable **from the plextraktbox container** |
+| `FLARESOLVERR_TIMEOUT_MS` | No | FlareSolverr challenge timeout in ms (default `60000`) |
 
 Do **not** enable host networking, privileged mode, or Docker socket mounts.
+
+### Letterboxd / Cloudflare
+
+Some residential ISP egress IPs get Cloudflare’s “Just a moment…” challenge on
+`letterboxd.com`, which blocks login from plain HTTP clients. If connection tests fail
+with `403 Forbidden` (or similar) against Letterboxd:
+
+1. Run [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) on the NAS (or LAN).
+2. Set `FLARESOLVERR_URL` to that service (example: `http://192.168.1.105:30098`).
+3. Confirm reachability **from inside** the plextraktbox container:
+
+```bash
+curl -sS -X POST http://192.168.1.105:30098/v1 \
+  -H 'Content-Type: application/json' \
+  -d '{"cmd":"request.get","url":"https://letterboxd.com","maxTimeout":60000}'
+```
+
+Expect `"status":"ok"`. Then retest the Letterboxd connection in the UI.
 
 The published image does **not** include a corporate (Zscaler) CA — only public CAs. Developer
 machines that need Zscaler for building use `USE_CORPORATE_CA=1` locally; see
@@ -218,5 +238,5 @@ Format notes: `frontend/src/themes/README.md`.
 | Image | `ghcr.io/campasachamp/plextraktbox:vX.Y.Z` (or `:latest`) |
 | Port | `PORT` (default 8000) → app HTTP; host mapping must match |
 | Volume | Host ZFS path → `/data` |
-| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PORT`, `SESSION_HTTPS_ONLY`, recommended `PUID`/`PGID` |
+| Env | `SECRET_KEY`, `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, optional `PORT`, `SESSION_HTTPS_ONLY`, `FLARESOLVERR_URL`, recommended `PUID`/`PGID` |
 | HTTPS | Cloudflare Tunnel → `http://<host>:<port>` |

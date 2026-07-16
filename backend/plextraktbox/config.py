@@ -59,6 +59,18 @@ class Settings(BaseSettings):
         ge=0,
         description="Local-only seconds to wait at run start (ENV=local) for live log testing.",
     )
+    flaresolverr_url: str = Field(
+        default="",
+        description=(
+            "Optional FlareSolverr base URL (e.g. http://192.168.1.105:30098). "
+            "When set, Letterboxd session bootstrap clears Cloudflare via FlareSolverr."
+        ),
+    )
+    flaresolverr_timeout_ms: int = Field(
+        default=60_000,
+        ge=1_000,
+        description="FlareSolverr maxTimeout in milliseconds for challenge solves.",
+    )
 
     @model_validator(mode="after")
     def _require_secret_in_prod(self) -> Settings:
@@ -68,6 +80,7 @@ class Settings(BaseSettings):
             # Deterministic dev-only key so encrypted data survives restarts locally.
             self.secret_key = "dev-insecure-secret-key-do-not-use-in-production"
         self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.flaresolverr_url = self.flaresolverr_url.strip().rstrip("/")
         return self
 
     @property

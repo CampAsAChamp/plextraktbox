@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import io
+import json
 import zipfile
 
 import httpx
+import pytest
 import respx
 
+from plextraktbox import config
 from plextraktbox.clients import letterboxd_client
 
 RATINGS_CSV = """Date,Name,Year,Letterboxd URI,Rating
@@ -113,6 +116,81 @@ def test_test_connection_accepts_json_login() -> None:
 
     result = letterboxd_client.test_connection("nick", "secret")
     assert result.ok is True
+
+
+@respx.mock
+def test_test_connection_hints_flaresolverr_on_cloudflare_403(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("FLARESOLVERR_URL", raising=False)
+    config.get_settings.cache_clear()
+    respx.get("https://letterboxd.com/").mock(
+        return_value=httpx.Response(
+            403,
+            headers={"cf-mitigated": "challenge"},
+            text="<html><title>Just a moment...</title></html>",
+        )
+    )
+
+    result = letterboxd_client.test_connection("nick", "secret")
+    assert result.ok is False
+    assert "FLARESOLVERR_URL" in result.message
+    config.get_settings.cache_clear()
+
+
+@respx.mock
+def test_test_connection_bootstraps_via_flaresolverr(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FLARESOLVERR_URL", "http://fs.local")
+    config.get_settings.cache_clear()
+
+    def _fs_handler(request: httpx.Request) -> httpx.Response:
+        payload = json.loads(request.content)
+        cmd = payload.get("cmd")
+        if cmd == "sessions.create":
+            return httpx.Response(200, json={"status": "ok", "session": "sess-1"})
+        if cmd == "sessions.destroy":
+            return httpx.Response(200, json={"status": "ok"})
+        if cmd == "request.get":
+            return httpx.Response(
+                200,
+                json={
+                    "status": "ok",
+                    "solution": {
+                        "status": 200,
+                        "userAgent": "Mozilla/5.0 FS-Agent",
+                        "cookies": [
+                            {
+                                "name": "com.xk72.webparts.csrf",
+                                "value": "fs-csrf",
+                                "domain": "letterboxd.com",
+                                "path": "/",
+                            },
+                            {
+                                "name": "cf_clearance",
+                                "value": "cleared",
+                                "domain": ".letterboxd.com",
+                                "path": "/",
+                            },
+                        ],
+                    },
+                },
+            )
+        return httpx.Response(500, json={"status": "error", "message": f"unexpected {cmd}"})
+
+    respx.post("http://fs.local/v1").mock(side_effect=_fs_handler)
+    login_route = respx.post("https://letterboxd.com/user/login.do").mock(
+        return_value=httpx.Response(
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    result = letterboxd_client.test_connection("nick", "secret")
+    assert result.ok is True
+    assert login_route.called
+    assert b"fs-csrf" in login_route.calls[0].request.content
+
+    monkeypatch.delenv("FLARESOLVERR_URL", raising=False)
+    config.get_settings.cache_clear()
 
 
 def test_slug_from_uri_resolves_letterboxd_film_url() -> None:
