@@ -101,8 +101,8 @@ Adapts PlexTraktSync's GUID matching, stateless diffing, and dry-run into **Sour
 - `matcher.py` — index by identifier priority chain TMDB→IMDb→TVDB; stateless (no persisted Plex↔Trakt mapping).
 - **Fetch / resolve caches:** Letterboxd CSV export TTL on `/data`; persisted `letterboxd_slug` → external ids; Trakt list TTL snapshots; Plex Discover key map (`tmdb`/`imdb` → Discover metadata id); Plex library loaded once per run for fetch + apply. Identifier / list caches only — matching across sources stays ID-based.
 - **Sources** (`sources/base.py` ABC): `fetch_watchlist/ratings/watched`, `apply_watchlist/ratings/watched(..., dry_run)`, `capabilities`. `PlexSource`/`TraktSource` full read/write; `LetterboxdSource` **read-only** — `apply_`* raise `NotSupported`, capabilities mark writes false (enforces no-write-back at type level).
-- **Reconcilers** compute a **plan** then **apply** (skipped on dry_run), each hard-coding its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
-- `engine.run(job, ctx)` — fetch (cached) → per-data-type reconcile → log every planned change ("would X" on dry-run) → apply with per-item try/except (one failure ≠ abort) → RunSummary (counts: matched/added/removed/rated/watched/skipped/errors).
+- **Reconcilers** compute a **plan** (fetch happens inside `plan` via cached `ctx.fetch`); apply runs afterward with `dry_run` passed through. Each hard-codes its source-of-truth (watchlist=Plex, ratings=Letterboxd, watched=Trakt). Runs only for the sources/data-types a job enables.
+- `run_sync(ctx)` — per-data-type: reconciler `plan` (fetch cached) → collect unmatched → log every planned change ("would X" on dry-run) → `apply_*` grouped by target + action (dry-run no-ops inside sources; live: per-batch try/except, with `apply_live` falling back to per-item on batch failure) → RunSummary (counts: matched/added/removed/rated/watched/skipped/errors/unmatched).
 
 ### Plex ratings: Discover vs library
 
@@ -144,7 +144,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Scheduler + run-now + dry-run
 
 `scheduler/manager.py`: AsyncIOScheduler + SQLAlchemyJobStore, started in FastAPI lifespan; on startup register a CronTrigger per enabled job using Settings `cron_timezone` (default UTC); job CRUD calls `sync_job()` to add/reschedule/remove live; changing `cron_timezone` reloads all job triggers; `max_instances=1`+`coalesce=True` (no self-overlap).
-`scheduler/runner.py` is the single entry for **all** executions: create JobRun(running) → bind per-run logger → `engine.run` → finalize (status/summary/error) → close log channel → dispatch notifications.
+`scheduler/runner.py` is the single entry for **all** executions: create JobRun(running) → bind per-run logger → `run_sync(ctx)` → finalize (status/summary/error) → close log channel → dispatch notifications.
 
 - **Run now:** `POST /api/jobs/{id}/run` → `scheduler.add_job(next_run_time=now)` so manual + scheduled serialize under `max_instances=1`.
 - **Dry-run resolved** per run: `override ?? job.dry_run` (global dry-run seeds new jobs at create time). If `require_dry_run_first` and no successful dry-run exists yet, live runs are coerced to dry-run. Exclude ids (global ∪ job) filter items in `SyncContext.fetch`.

@@ -26,8 +26,8 @@ flowchart LR
 
 | Data type | Truth | Writes | Notes |
 | --------- | ----- | ------ | ----- |
-| Watchlist | Plex | Trakt add/remove | Letterboxd watchlist is ignored (not fetched) |
-| Ratings | Letterboxd (0.5–5 → 0–10 at fetch) | Plex (library or Discover), Trakt | Trakt: only update items already in Trakt ratings |
+| Watchlist | Plex | Trakt add/remove | Letterboxd watchlist is ignored (not fetched); movies + shows |
+| Ratings | Letterboxd (0.5–5 → 0–10 at fetch) | Plex (library or Discover), Trakt | Movies only; Trakt: only update items already in Trakt ratings |
 | Watched | Trakt | Plex library mark watched | Movies + episodes; unmatched library titles are skipped; LB diary is not a write target |
 
 ## Job pairs → services
@@ -46,11 +46,12 @@ flowchart TB
 
   DT -->|watchlist| W[WatchlistReconciler — plex_trakt only]
   DT -->|ratings| R[RatingsReconciler — needs letterboxd]
-  DT -->|watched| H[WatchedReconciler]
+  DT -->|watched| H[WatchedReconciler — needs trakt]
 ```
 
 Validation (from `Job.validate_data_types`): watchlist requires `plex_trakt`; ratings requires
-Letterboxd in the pair.
+Letterboxd in the pair; watched requires Trakt in the pair. A `letterboxd_trakt` job with
+`watched` validates but has no Plex write target (noop for that data type).
 
 ## Run lifecycle
 
@@ -74,20 +75,18 @@ sequenceDiagram
   Run->>Run: create JobRun(running), bind per-run logger
   Run->>SF: build_sources(connections)
   SF-->>Run: plex / trakt / letterboxd Sources
+  Note over Run: resolve dry_run (override ?? job;<br/>require_dry_run_first may coerce live → dry)
   Run->>Eng: run_sync(ctx)
 
   loop each enabled data_type
     Eng->>Rec: plan(ctx)
-    Rec->>Src: fetch truth + targets (cached in ctx)
+    Rec->>Src: fetch truth + targets (cached in ctx; exclude IDs filtered)
     Src-->>Rec: MediaItem lists
     Rec-->>Eng: ReconcilePlan (PlannedChanges)
+    Eng->>Eng: collect unmatched into RunSummary
     Eng->>Log: log "would X" / "will X"
-    alt dry_run
-      Eng->>Eng: skip apply
-    else live
-      Eng->>Src: apply_* (grouped by target + action)
-      Note over Eng,Src: per-batch try/except — one failure ≠ abort
-    end
+    Eng->>Src: apply_* (grouped by target + action, dry_run flag)
+    Note over Eng,Src: dry_run → apply no-ops (zero writes)<br/>live: per-batch try/except; apply_live may retry per-item
   end
 
   Eng-->>Run: RunSummary
@@ -95,19 +94,17 @@ sequenceDiagram
   Run->>N: dispatch Discord / in-app
 ```
 
-Inside the engine, the shape is always **fetch → plan → log → apply**:
+Inside the engine, the shape is always **plan (fetch inside) → log → apply**:
 
 ```mermaid
 flowchart LR
-  A[For each data_type] --> B[reconciler.plan]
-  B --> C[Log each PlannedChange]
-  C --> D{dry_run?}
-  D -->|yes| E[Skip apply]
-  D -->|no| F[Group by target + action]
-  F --> G[source.apply_*]
+  A[For each data_type] --> B[reconciler.plan / ctx.fetch]
+  B --> U[Collect unmatched]
+  U --> C[Log each PlannedChange]
+  C --> F[Group by target + action]
+  F --> G["source.apply_* (dry_run=True|False)"]
   G --> H[Merge ApplyResult into RunSummary]
-  E --> I[RunSummary]
-  H --> I
+  H --> I[RunSummary]
 ```
 
 ## Matching
@@ -170,6 +167,7 @@ flowchart TB
 
 **Jobs:** `letterboxd_plex` and/or `letterboxd_trakt` with `ratings` enabled.  
 **Truth:** Letterboxd. **Write targets:** Plex and/or Trakt (whichever sources are in the job).
+**Scope:** movies only (all three services fetch movie ratings).
 
 Ratings are normalized to **0–10** when building Letterboxd `MediaItem`s (stars × 2).
 
@@ -220,7 +218,8 @@ shared server’s library page. See [architecture.md](architecture.md#plex-ratin
 
 ## Watched — Trakt → Plex
 
-**Job:** typically `plex_trakt` with `watched` enabled.  
+**Job:** typically `plex_trakt` with `watched` enabled (needs Trakt in the pair; Plex required to
+write).  
 **Truth:** Trakt. **Write target:** Plex (library mark watched). Only items that already exist in
 the scoped Plex library are planned. Covers **movies** and **episodes** (show libraries).
 
@@ -257,8 +256,12 @@ flowchart LR
 
 ## Dry-run
 
-Dry-run is resolved per run: `override ?? job.dry_run` (global dry-run seeds new jobs). The same plan and log path run;
-apply is skipped and messages use **“would …”** instead of **“will …”**. Zero third-party writes.
+Dry-run is resolved per run: `override ?? job.dry_run` (global dry-run seeds new jobs). If
+`require_dry_run_first` is set and no successful dry-run exists yet, live runs are coerced to
+dry-run. The same plan and log path run; `apply_*` is still invoked with `dry_run=True` (sources
+no-op — zero third-party writes) and messages use **“would …”** instead of **“will …”**.
+
+Exclude IDs (global ∪ job) are stripped in `SyncContext.fetch` before reconcilers see items.
 
 ## Where the code lives
 
