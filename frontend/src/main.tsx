@@ -15,6 +15,8 @@ import { BrowserRouter } from "react-router-dom"
 import { App } from "src/App"
 import { ThemeProvider } from "src/themes/ThemeProvider"
 
+console.info(`[plextraktbox] frontend v${__APP_VERSION__}`)
+
 const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

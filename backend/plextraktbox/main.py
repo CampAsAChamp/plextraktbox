@@ -39,7 +39,7 @@ from plextraktbox.logstream import get_log_hub, get_log_writer
 from plextraktbox.scheduler import get_scheduler_manager
 from plextraktbox.session_middleware import AdaptiveSessionMiddleware
 from plextraktbox.ssl_compat import create_default_context_is_relaxed
-from plextraktbox.version_info import __version__
+from plextraktbox.version_info import __version__, git_sha
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -61,7 +61,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     scheduler.start()
     app.state.scheduler = scheduler
     app.state.started_at = time.time()
-    log.info("plextraktbox.startup", env=get_settings().env)
+    log.info(
+        "plextraktbox.startup",
+        env=get_settings().env,
+        version=__version__,
+        git_sha=git_sha(),
+    )
     yield
     scheduler.shutdown(wait=True)
     get_log_writer().stop()
