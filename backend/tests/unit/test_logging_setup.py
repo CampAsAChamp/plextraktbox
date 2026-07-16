@@ -96,7 +96,11 @@ def test_configure_logging_writes_to_stdout() -> None:
     assert isinstance(root.handlers[0], logging.StreamHandler)
     assert root.handlers[0].stream is sys.stdout
 
-    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+    for name in ("uvicorn", "uvicorn.error"):
         uv_logger = logging.getLogger(name)
         assert uv_logger.handlers == []
         assert uv_logger.propagate is True
+
+    access = logging.getLogger("uvicorn.access")
+    assert access.handlers == []
+    assert access.propagate is False

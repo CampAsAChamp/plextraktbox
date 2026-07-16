@@ -264,11 +264,18 @@ def configure_logging() -> None:
     root.addHandler(handler)
     root.setLevel(level)
 
-    # uvicorn installs its own stderr handlers with propagate=False; fold them into root.
-    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+    # uvicorn installs its own stderr handlers with propagate=False; fold error logs into root.
+    for name in ("uvicorn", "uvicorn.error"):
         uv_logger = logging.getLogger(name)
         uv_logger.handlers.clear()
         uv_logger.propagate = True
+
+    # AccessLogMiddleware owns request logging. Keep uvicorn.access quiet: with
+    # propagate=True, Logger.hasHandlers() sees the root handler and uvicorn
+    # re-enables access lines despite --no-access-log (noisy healthchecks).
+    access = logging.getLogger("uvicorn.access")
+    access.handlers.clear()
+    access.propagate = False
 
     # httpx logs raw outbound requests at INFO; oauth poll handlers emit structured events.
     logging.getLogger("httpx").setLevel(logging.WARNING)
