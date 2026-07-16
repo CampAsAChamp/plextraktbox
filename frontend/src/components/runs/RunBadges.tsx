@@ -37,6 +37,7 @@ export function RunStatusBadge({ status, onRemove }: { status: string; onRemove?
     <Badge
       color={runStatusColor(status)}
       variant="light"
+      className={status === "running" ? "ptbPulseOpacity" : undefined}
       pr={onRemove ? 3 : undefined}
       rightSection={
         onRemove ? (

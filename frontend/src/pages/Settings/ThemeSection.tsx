@@ -24,6 +24,7 @@ import { SyncIcon } from "src/components/icons/SyncIcon"
 import { TrashIcon } from "src/components/icons/TrashIcon"
 import { UploadIcon } from "src/components/icons/UploadIcon"
 import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
+import classes from "src/pages/Settings/ThemeSection.module.css"
 import exampleThemeCss from "src/themes/example-theme.css?raw"
 import { BUILTIN_THEMES, DEFAULT_THEME_ID, getBuiltinTheme } from "src/themes/registry"
 import { writeCachedThemeId } from "src/themes/themePreference"
@@ -32,6 +33,24 @@ import { iconForToastColor, showToast } from "src/toast"
 /** Keep the refresh spinner visible on fast local refetches. */
 const MIN_REFRESH_SPIN_MS = 500
 const FALLBACK_SWATCHES = ["#282C34", "#3E4452", "#61AFEF"]
+
+function ThemeSwatchCheckIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
 
 function ThemeSwatch({
   theme,
@@ -46,22 +65,15 @@ function ThemeSwatch({
 }) {
   const builtin = getBuiltinTheme(theme.id)
   const swatches = builtin?.swatches ?? theme.swatches ?? FALLBACK_SWATCHES
+  const showDelete = theme.source === "custom" && onDelete
 
   return (
-    <Box pos="relative">
+    <Box pos="relative" className={showDelete ? classes.swatchWithDelete : undefined}>
       <UnstyledButton
         onClick={onSelect}
         aria-pressed={active}
         aria-label={`Use theme ${theme.name}`}
-        style={{
-          display: "block",
-          width: "100%",
-          borderRadius: "var(--mantine-radius-lg)",
-          border: active ? "2px solid var(--mantine-primary-color-filled)" : "1px solid var(--mantine-color-dark-4)",
-          padding: 12,
-          background: "var(--mantine-color-dark-7)",
-          textAlign: "left",
-        }}
+        className={[classes.swatch, active ? classes.swatchActive : ""].filter(Boolean).join(" ")}
       >
         <Group gap={6} mb="xs" wrap="nowrap">
           {swatches.map((color) => (
@@ -84,7 +96,10 @@ function ThemeSwatch({
           {theme.source === "builtin" ? "Built-in" : "Custom"} · {theme.id}
         </Text>
       </UnstyledButton>
-      {theme.source === "custom" && onDelete ? (
+      <span className={[classes.check, active ? classes.checkVisible : ""].filter(Boolean).join(" ")} aria-hidden>
+        <ThemeSwatchCheckIcon />
+      </span>
+      {showDelete ? (
         <Tooltip label="Delete custom theme">
           <ActionIcon
             variant="subtle"

@@ -1,0 +1,23 @@
+.column {
+  opacity: 0;
+  animation: ptb-empty-in var(--ptb-duration-in) var(--ptb-ease) forwards;
+}
+
+.delay0 {
+  animation-delay: 0ms;
+}
+
+.delay1 {
+  animation-delay: 60ms;
+}
+
+.delay2 {
+  animation-delay: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column {
+    animation: none;
+    opacity: 1;
+  }
+}

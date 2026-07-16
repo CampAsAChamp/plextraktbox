@@ -66,7 +66,7 @@ export function LoginPage() {
 
   return (
     <Center mih="60vh" px="md">
-      <Paper withBorder p="xl" maw={420} w="100%">
+      <Paper withBorder p="xl" maw={420} w="100%" className="ptbAuthEnter">
         <Stack gap="md">
           <Title order={3}>Sign in</Title>
           <Text c="dimmed" size="sm">

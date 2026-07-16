@@ -256,7 +256,9 @@ export function AppLayout({ username, avatarUrl, showLogout = false }: AppLayout
       ) : null}
 
       <AppShell.Main>
-        <Outlet />
+        <div key={location.pathname} className="ptbRouteFade">
+          <Outlet />
+        </div>
       </AppShell.Main>
     </AppShell>
   )

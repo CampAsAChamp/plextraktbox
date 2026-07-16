@@ -22,19 +22,25 @@ describe("TestConnectionButton", () => {
   it("shows a status icon after a successful test", () => {
     renderButton("success")
 
-    expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).not.toBeNull()
+    const button = screen.getByRole("button", { name: /test connection/i })
+    expect(button.querySelector("svg")).not.toBeNull()
+    expect(button.querySelector("[class*='iconPop']")).not.toBeNull()
   })
 
   it("shows a status icon after a failed test", () => {
     renderButton("error")
 
-    expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).not.toBeNull()
+    const button = screen.getByRole("button", { name: /test connection/i })
+    expect(button.querySelector("svg")).not.toBeNull()
+    expect(button.querySelector("[class*='iconPop']")).not.toBeNull()
   })
 
   it("shows a test icon before testing", () => {
     renderButton("idle")
 
-    expect(screen.getByRole("button", { name: /test connection/i }).querySelector("svg")).not.toBeNull()
+    const button = screen.getByRole("button", { name: /test connection/i })
+    expect(button.querySelector("svg")).not.toBeNull()
+    expect(button.querySelector("[class*='iconPop']")).toBeNull()
   })
 
   it("calls onClick when pressed", async () => {

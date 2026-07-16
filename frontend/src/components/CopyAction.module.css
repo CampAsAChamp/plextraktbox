@@ -1,0 +1,15 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconEnter {
+  animation: ptb-icon-pop 200ms var(--ptb-ease, ease) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconEnter {
+    animation: none;
+  }
+}

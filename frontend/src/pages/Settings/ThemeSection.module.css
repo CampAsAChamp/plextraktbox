@@ -1,0 +1,66 @@
+.swatch {
+  display: block;
+  width: 100%;
+  border-radius: var(--mantine-radius-lg);
+  border: 1px solid var(--mantine-color-dark-4);
+  padding: 12px;
+  background: var(--mantine-color-dark-7);
+  text-align: left;
+  transition:
+    border-color var(--ptb-duration-fast) var(--ptb-ease),
+    background-color var(--ptb-duration-fast) var(--ptb-ease),
+    transform var(--ptb-duration-fast) var(--ptb-ease);
+}
+
+.swatch:hover {
+  border-color: var(--mantine-color-dark-2);
+}
+
+.swatchActive {
+  border: 2px solid var(--mantine-primary-color-filled);
+  transform: scale(1.02);
+}
+
+.check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-color-dark-9);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition:
+    opacity var(--ptb-duration-fast) var(--ptb-ease),
+    transform var(--ptb-duration-fast) var(--ptb-ease);
+}
+
+.checkVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.swatchWithDelete .checkVisible {
+  right: 36px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch,
+  .check {
+    transition-duration: 1ms;
+  }
+
+  .swatchActive {
+    transform: none;
+  }
+
+  .check {
+    transform: none;
+  }
+}

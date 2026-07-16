@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 
 import type { Job } from "src/api/jobs"
 import type { RunListItem } from "src/api/runs"
+import classes from "src/components/dashboard/DashboardGlanceStrip.module.css"
 import { TimestampLabel } from "src/components/TimestampLabel"
 import { aggregateGlanceStats, type GlanceWindow } from "src/utils/runGlanceStats"
 
@@ -29,7 +30,14 @@ function WindowStats({ label, window, jobs, runs }: { label: string; window: Gla
           {stats.partial} partial
         </Badge>
         {stats.running > 0 ? (
-          <Badge component={Link} to="/runs?status=running" variant="light" color="blue" style={{ cursor: "pointer" }}>
+          <Badge
+            component={Link}
+            to="/runs?status=running"
+            variant="light"
+            color="blue"
+            className="ptbPulseOpacity"
+            style={{ cursor: "pointer" }}
+          >
             {stats.running} running
           </Badge>
         ) : null}
@@ -47,20 +55,26 @@ export function DashboardGlanceStrip({ jobs, runs }: DashboardGlanceStripProps) 
   return (
     <Paper withBorder radius="md" p="md">
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="lg">
-        <WindowStats label="Last 24 hours" window="24h" jobs={jobs} runs={runs} />
-        <WindowStats label="Last 7 days" window="7d" jobs={jobs} runs={runs} />
-        <Stack gap={6}>
-          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Next scheduled
-          </Text>
-          {nextRunAt ? (
-            <TimestampLabel value={nextRunAt} variant="schedule" size="sm" relativeOnly />
-          ) : (
-            <Text size="sm" c="dimmed">
-              None
+        <div className={`${classes.column} ${classes.delay0}`}>
+          <WindowStats label="Last 24 hours" window="24h" jobs={jobs} runs={runs} />
+        </div>
+        <div className={`${classes.column} ${classes.delay1}`}>
+          <WindowStats label="Last 7 days" window="7d" jobs={jobs} runs={runs} />
+        </div>
+        <div className={`${classes.column} ${classes.delay2}`}>
+          <Stack gap={6}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Next scheduled
             </Text>
-          )}
-        </Stack>
+            {nextRunAt ? (
+              <TimestampLabel value={nextRunAt} variant="schedule" size="sm" relativeOnly />
+            ) : (
+              <Text size="sm" c="dimmed">
+                None
+              </Text>
+            )}
+          </Stack>
+        </div>
       </Group>
     </Paper>
   )

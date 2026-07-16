@@ -24,7 +24,7 @@ export function TestConnectionButton({
       classNames={{ root: classes.button, section: classes.section }}
       data-status={testStatus}
       leftSection={
-        <span className={classes.iconSlot}>
+        <span key={testStatus} className={[classes.iconSlot, testStatus !== "idle" ? classes.iconPop : ""].filter(Boolean).join(" ")}>
           {testStatus === "success" ? (
             <StatusCheckIcon size={16} />
           ) : testStatus === "error" ? (

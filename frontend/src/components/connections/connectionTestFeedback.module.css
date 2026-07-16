@@ -28,3 +28,17 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
+.iconPop {
+  animation: ptb-icon-pop 200ms var(--ptb-ease, ease) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition-duration: 1ms;
+  }
+
+  .iconPop {
+    animation: none;
+  }
+}

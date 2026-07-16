@@ -5,12 +5,12 @@ import { HomeIcon } from "src/components/icons/HomeIcon"
 
 export function FinishedStep({ onGoToDashboard }: { onGoToDashboard: () => void }) {
   return (
-    <Stack gap="md">
+    <Stack gap="md" className="ptbSuccessIn">
       <Alert
         color="green"
         title="All connections successful"
         icon={
-          <span style={{ display: "inline-flex" }}>
+          <span className="ptbIconPop" style={{ display: "inline-flex" }}>
             <StatusCheckIcon size={16} />
           </span>
         }

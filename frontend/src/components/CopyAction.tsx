@@ -1,6 +1,8 @@
 import { ActionIcon, Tooltip } from "@mantine/core"
 import { useClipboard } from "@mantine/hooks"
 
+import { StatusCheckIcon } from "src/components/connections/StatusCheckIcon"
+import classes from "src/components/CopyAction.module.css"
 import { showToast } from "src/toast"
 
 interface CopyActionProps {
@@ -36,6 +38,7 @@ export function CopyAction({ value, label = "Copy", size = 14 }: CopyActionProps
       <ActionIcon
         variant="subtle"
         size="sm"
+        color={clipboard.copied ? "green" : undefined}
         aria-label={label}
         onClick={(event) => {
           event.preventDefault()
@@ -44,7 +47,15 @@ export function CopyAction({ value, label = "Copy", size = 14 }: CopyActionProps
           showToast({ color: "green", message: "Copied" })
         }}
       >
-        <CopyIcon size={size} />
+        {clipboard.copied ? (
+          <span key="check" className={`${classes.icon} ${classes.iconEnter}`}>
+            <StatusCheckIcon size={size} />
+          </span>
+        ) : (
+          <span key="copy" className={classes.icon}>
+            <CopyIcon size={size} />
+          </span>
+        )}
       </ActionIcon>
     </Tooltip>
   )
