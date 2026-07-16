@@ -1,4 +1,4 @@
-import { Box, Button, Group, Loader, Modal, Stack, Table, Text, Title } from "@mantine/core"
+import { Box, Button, Group, Modal, Skeleton, Stack, Table, Text, Title } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -7,10 +7,12 @@ import { ApiError } from "src/api/client"
 import { cloneJob, deleteJob, listJobs } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
 import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "src/api/jobs"
+import { EmptyState } from "src/components/EmptyState"
 import { PlusIcon } from "src/components/icons/PlusIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
 import { JobActions } from "src/components/jobs/JobActions"
 import { JobListCard } from "src/components/jobs/JobListCard"
+import { ListPageSkeleton } from "src/components/loading/PageSkeletons"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
@@ -85,10 +87,13 @@ export function JobsPage() {
 
   if (jobsQuery.isLoading) {
     return (
-      <Group>
-        <Loader size="sm" />
-        <Text>Loading jobs…</Text>
-      </Group>
+      <Stack gap="md">
+        <Group justify="space-between" wrap="wrap" gap="sm">
+          <Title order={3}>Sync jobs</Title>
+          <Skeleton height={36} width={110} radius="xl" />
+        </Group>
+        <ListPageSkeleton />
+      </Stack>
     )
   }
 
@@ -124,7 +129,9 @@ export function JobsPage() {
       </Group>
 
       {jobs.length === 0 ? (
-        <Text c="dimmed">No jobs yet. Create one to start syncing on a schedule.</Text>
+        <EmptyState>
+          <Text c="dimmed">No jobs yet. Create one to start syncing on a schedule.</Text>
+        </EmptyState>
       ) : (
         <>
           <Stack gap="sm" hiddenFrom="sm">

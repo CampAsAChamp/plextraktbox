@@ -1,4 +1,4 @@
-import { Alert, Badge, Box, Button, Group, Loader, Stack, Table, Text, Title } from "@mantine/core"
+import { Alert, Badge, Box, Button, Group, Stack, Table, Text, Title } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -10,12 +10,14 @@ import type { Job } from "src/api/jobs"
 import { listRuns } from "src/api/runs"
 import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge"
 import { DashboardGlanceStrip } from "src/components/dashboard/DashboardGlanceStrip"
+import { EmptyState } from "src/components/EmptyState"
 import { ConnectIcon } from "src/components/icons/ConnectIcon"
 import { ListIcon } from "src/components/icons/ListIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
 import { JobActions } from "src/components/jobs/JobActions"
 import { JobListCard } from "src/components/jobs/JobListCard"
+import { GlanceStripSkeleton, ListPageSkeleton } from "src/components/loading/PageSkeletons"
 import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
@@ -183,7 +185,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
         </Alert>
       ) : null}
 
-      {!jobsQuery.isLoading && !runsQuery.isLoading ? <DashboardGlanceStrip jobs={jobs} runs={runs} /> : null}
+      {jobsQuery.isLoading || runsQuery.isLoading ? <GlanceStripSkeleton /> : <DashboardGlanceStrip jobs={jobs} runs={runs} />}
 
       <Stack gap="xs">
         <Text fw={500}>Connections</Text>
@@ -211,22 +213,21 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
         </Group>
 
         {jobsQuery.isLoading ? (
-          <Group>
-            <Loader size="sm" />
-            <Text size="sm">Loading jobs…</Text>
-          </Group>
+          <ListPageSkeleton />
         ) : jobsQuery.isError ? (
           <Text c="red" size="sm">
             Could not load jobs.
           </Text>
         ) : jobs.length === 0 ? (
-          <Text c="dimmed" size="sm">
-            No jobs yet.{" "}
-            <Text component={Link} to="/jobs/new" span c="blue">
-              Create your first job
+          <EmptyState>
+            <Text c="dimmed" size="sm">
+              No jobs yet.{" "}
+              <Text component={Link} to="/jobs/new" span c="blue">
+                Create your first job
+              </Text>
+              .
             </Text>
-            .
-          </Text>
+          </EmptyState>
         ) : (
           <>
             <Stack gap="sm" hiddenFrom="sm">

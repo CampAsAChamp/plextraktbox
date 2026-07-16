@@ -1,4 +1,4 @@
-import { Alert, Button, Group, Loader, Menu, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core"
+import { Alert, Button, Group, Menu, SimpleGrid, Stack, Text, Title, Tooltip } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useLocation, useParams } from "react-router-dom"
 
@@ -7,6 +7,7 @@ import { downloadRunLogs, type LogExportFormat } from "src/api/logs"
 import { cancelRun, getRun } from "src/api/runs"
 import { DownloadIcon } from "src/components/icons/DownloadIcon"
 import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon"
+import { RunDetailSkeleton } from "src/components/loading/PageSkeletons"
 import { LogViewer } from "src/components/LogViewer/LogViewer"
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
 import { UnmatchedItemsSection } from "src/components/runs/UnmatchedItemsSection"
@@ -89,12 +90,7 @@ export function RunDetailPage() {
   }
 
   if (runQuery.isLoading) {
-    return (
-      <Group>
-        <Loader size="sm" />
-        <Text>Loading run…</Text>
-      </Group>
-    )
+    return <RunDetailSkeleton />
   }
 
   if (runQuery.isError || !runQuery.data) {

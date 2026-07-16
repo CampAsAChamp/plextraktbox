@@ -1,4 +1,4 @@
-import { ActionIcon, Alert, Box, Button, Group, Loader, Select, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
+import { ActionIcon, Alert, Box, Button, Group, Select, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
@@ -7,6 +7,8 @@ import { listJobs } from "src/api/jobApi"
 import type { RunListItem } from "src/api/jobs"
 import { SOURCE_PAIR_LABELS } from "src/api/jobs"
 import { listRuns } from "src/api/runs"
+import { EmptyState } from "src/components/EmptyState"
+import { FiltersSkeleton, ListPageSkeleton } from "src/components/loading/PageSkeletons"
 import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
 import { RunListCard } from "src/components/runs/RunListCard"
 import { RunStatusMultiSelect } from "src/components/runs/RunStatusMultiSelect"
@@ -124,10 +126,13 @@ export function RunHistoryPage() {
 
   if (runsQuery.isLoading || jobsQuery.isLoading) {
     return (
-      <Group>
-        <Loader size="sm" />
-        <Text>Loading run history…</Text>
-      </Group>
+      <Stack gap="md">
+        <Group justify="space-between" wrap="wrap" gap="sm">
+          <Title order={3}>Run history</Title>
+        </Group>
+        <FiltersSkeleton />
+        <ListPageSkeleton />
+      </Stack>
     )
   }
 
@@ -227,13 +232,15 @@ export function RunHistoryPage() {
       ) : null}
 
       {runs.length === 0 ? (
-        <Text c="dimmed">
-          {allRuns.length === 0
-            ? deletedJob
-              ? "No runs were recorded for this deleted job."
-              : "No runs yet. Run a job manually or wait for the scheduler."
-            : "No runs match the current filters."}
-        </Text>
+        <EmptyState>
+          <Text c="dimmed">
+            {allRuns.length === 0
+              ? deletedJob
+                ? "No runs were recorded for this deleted job."
+                : "No runs yet. Run a job manually or wait for the scheduler."
+              : "No runs match the current filters."}
+          </Text>
+        </EmptyState>
       ) : (
         <>
           <Stack gap="sm" hiddenFrom="sm">

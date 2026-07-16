@@ -1,4 +1,4 @@
-import { Button, Group, Loader, Stack, Text, Title } from "@mantine/core"
+import { Button, Skeleton, Stack, Text, Title } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
@@ -6,6 +6,7 @@ import { ApiError } from "src/api/client"
 import { getJob, updateJob } from "src/api/jobApi"
 import type { JobInput } from "src/api/jobs"
 import { JobForm } from "src/components/JobForm/JobForm"
+import { JobFormSkeleton } from "src/components/loading/PageSkeletons"
 import { showToast } from "src/toast"
 
 export function JobEditPage() {
@@ -39,10 +40,13 @@ export function JobEditPage() {
 
   if (jobQuery.isLoading) {
     return (
-      <Group>
-        <Loader size="sm" />
-        <Text>Loading job…</Text>
-      </Group>
+      <Stack gap="md">
+        <Stack gap="xs">
+          <Skeleton height={28} width={110} radius="xl" />
+          <Title order={3}>Edit job</Title>
+        </Stack>
+        <JobFormSkeleton />
+      </Stack>
     )
   }
 
