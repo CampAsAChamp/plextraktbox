@@ -34,3 +34,4 @@ HTTP listen port defaults to **8000** (`PORT` env for prod compose / container).
 - Minimize scope; match existing code style.
 - Only create git commits when the user asks.
 - Run `mise run check` (or relevant subset) after substantive changes.
+- A Cursor `stop` / `subagentStop` hook runs `mise run lint-fix` before an agent turn is marked complete when `backend/` or `frontend/` is dirty; fix any follow-up failures before finishing.

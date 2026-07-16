@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": ".cursor/hooks/lint-fix-on-stop.sh",
+        "timeout": 300,
+        "loop_limit": 5
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": ".cursor/hooks/lint-fix-on-stop.sh",
+        "timeout": 300,
+        "loop_limit": 5,
+        "matcher": "generalPurpose|best-of-n-runner"
+      }
+    ]
+  }
+}
