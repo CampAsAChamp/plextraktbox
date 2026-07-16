@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.5.0...v0.6.0) (2026-07-16)
+
+
+### Features
+
+* add PUID/PGID mounts and opt-in corporate CA for Docker ([7f331f2](https://github.com/CampAsAChamp/plextraktbox/commit/7f331f2bfbd2e8eab4973034007ef85da6290a61))
+
 # [0.5.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.4.0...v0.5.0) (2026-07-15)
 
 
