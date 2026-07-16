@@ -10,6 +10,7 @@ from plextraktbox.logging_setup import (
     _UppercaseLogLevelFormatter,
     _http_method_styles,
     _strip_logger_prefix,
+    _uvicorn_color_message,
     configure_logging,
 )
 
@@ -86,6 +87,50 @@ def test_strip_logger_prefix_leaves_other_loggers_unchanged() -> None:
     result = _strip_logger_prefix(None, "info", event_dict)
 
     assert result["logger_name"] == "uvicorn.error"
+
+
+def test_uvicorn_color_message_dropped_without_colors() -> None:
+    record = logging.LogRecord(
+        name="uvicorn.error",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=1,
+        msg="Finished server process [%d]",
+        args=(184,),
+        exc_info=None,
+    )
+    event_dict = {
+        "event": "Finished server process [184]",
+        "color_message": "Finished server process [\x1b[36m%d\x1b[0m]",
+        "_record": record,
+    }
+
+    result = _uvicorn_color_message(colors=False)(None, "info", event_dict)
+
+    assert "color_message" not in result
+    assert result["event"] == "Finished server process [184]"
+
+
+def test_uvicorn_color_message_applied_with_colors() -> None:
+    record = logging.LogRecord(
+        name="uvicorn.error",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=1,
+        msg="Finished server process [%d]",
+        args=(184,),
+        exc_info=None,
+    )
+    event_dict = {
+        "event": "Finished server process [184]",
+        "color_message": "Finished server process [\x1b[36m%d\x1b[0m]",
+        "_record": record,
+    }
+
+    result = _uvicorn_color_message(colors=True)(None, "info", event_dict)
+
+    assert "color_message" not in result
+    assert result["event"] == "Finished server process [\x1b[36m184\x1b[0m]"
 
 
 def test_configure_logging_writes_to_stdout() -> None:

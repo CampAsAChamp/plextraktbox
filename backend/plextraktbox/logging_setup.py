@@ -122,6 +122,38 @@ def _strip_logger_prefix(
     return event_dict
 
 
+def _uvicorn_color_message(*, colors: bool) -> structlog.types.Processor:
+    """Handle uvicorn's ``extra={"color_message": ...}`` without leaking it as a KV.
+
+    Uvicorn's ColourizedFormatter swaps in ``color_message`` (ANSI %-format) for the
+    plain msg. ExtraAdder would otherwise dump the uninterpolated template as
+    ``color_message='...\\x1b[36m%d...'``. Drop it always; when console colors are on,
+    apply the template to the event using the LogRecord args.
+    """
+
+    def processor(
+        _logger: object, _method: str, event_dict: structlog.types.EventDict
+    ) -> structlog.types.EventDict:
+        color_message = event_dict.pop("color_message", None)
+        if not colors or not isinstance(color_message, str):
+            return event_dict
+
+        record = event_dict.get("_record")
+        if not isinstance(record, logging.LogRecord):
+            return event_dict
+
+        try:
+            if record.args:
+                event_dict["event"] = color_message % record.args
+            elif "%" not in color_message.replace("%%", ""):
+                event_dict["event"] = color_message
+        except (TypeError, ValueError):
+            pass
+        return event_dict
+
+    return processor
+
+
 def _repr_value(val: object) -> str:
     if isinstance(val, str):
         if set(val) & {" ", "\t", "=", "\r", "\n", '"', "'"}:
@@ -228,6 +260,7 @@ def configure_logging() -> None:
         timestamper,
         structlog.processors.StackInfoRenderer(),
         structlog.stdlib.ExtraAdder(),
+        _uvicorn_color_message(colors=use_colors),
         redact_log_processor,
         run_log_processor,
     ]
