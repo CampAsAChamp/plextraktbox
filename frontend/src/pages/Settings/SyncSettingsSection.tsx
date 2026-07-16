@@ -1,4 +1,4 @@
-import { Button, Group, Paper, SegmentedControl, Select, Stack, Switch, Text, Textarea, TextInput } from "@mantine/core"
+import { Accordion, Badge, Button, Group, Paper, SegmentedControl, Select, Stack, Switch, Text, Textarea, TextInput } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react"
 import { z } from "zod"
@@ -89,6 +89,7 @@ export function SyncSettingsSection() {
   const timezoneMode: TimezoneMode = getTimezoneMode(asTimezonePreference(cronTimezone))
   const manualTimezone = getManualTimezone(asTimezonePreference(cronTimezone))
   const browserTimezone = getBrowserTimezone()
+  const excludeCount = parseExcludeLines(tmdb).length + parseExcludeLines(imdb).length + parseExcludeLines(tvdb).length
 
   const timezoneOptions = useMemo(
     () =>
@@ -117,7 +118,6 @@ export function SyncSettingsSection() {
       void queryClient.setQueryData(["settings"], data)
       void queryClient.invalidateQueries({ queryKey: ["schedule-preview"] })
       void queryClient.invalidateQueries({ queryKey: ["jobs"] })
-      showToast({ color: "green", message: "Sync settings saved" })
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError ? String(error.message) : "Save failed"
@@ -125,16 +125,90 @@ export function SyncSettingsSection() {
     },
   })
 
+  function buildSettingsInput(nextCronTimezone: string): AppSettingsInput | null {
+    const parsed = syncSchema.safeParse({
+      default_cron: defaultCron,
+      cron_timezone: nextCronTimezone,
+      global_dry_run: globalDryRun,
+    })
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of parsed.error.issues) {
+        fieldErrors[String(issue.path[0] ?? "form")] = issue.message
+      }
+      setErrors(fieldErrors)
+      return null
+    }
+    if (retentionDays < 1) {
+      setErrors({ log_retention_days: "Must be at least 1 day" })
+      return null
+    }
+    setErrors({})
+    const input: AppSettingsInput = {
+      default_cron: defaultCron.trim(),
+      cron_timezone: nextCronTimezone,
+      log_retention_days: retentionDays,
+      global_dry_run: globalDryRun,
+      exclude_ids: {
+        tmdb: parseExcludeLines(tmdb),
+        imdb: parseExcludeLines(imdb),
+        tvdb: parseExcludeLines(tvdb),
+      },
+      letterboxd_export_cache_ttl_hours: settingsQuery.data?.letterboxd_export_cache_ttl_hours ?? 24,
+      trakt_list_cache_ttl_minutes: settingsQuery.data?.trakt_list_cache_ttl_minutes ?? 30,
+    }
+    if (nextCronTimezone === "local") {
+      input.cron_local_zone = browserTimezone
+    }
+    return input
+  }
+
+  /** Persist cron timezone immediately (matches display preference UX). Uses last-saved settings for other fields. */
+  function persistCronTimezone(nextCronTimezone: string) {
+    const data = settingsQuery.data
+    if (!data || nextCronTimezone === cronTimezone) return
+    const timezoneOk =
+      nextCronTimezone === "UTC" || nextCronTimezone === "local" || isValidIanaTimezone(nextCronTimezone)
+    if (!timezoneOk) {
+      setErrors({ cron_timezone: "Choose a valid timezone" })
+      showToast({ color: "red", message: "Choose a valid timezone" })
+      return
+    }
+    setErrors((prev) => {
+      if (!prev.cron_timezone) return prev
+      const next = { ...prev }
+      delete next.cron_timezone
+      return next
+    })
+    setCronTimezone(nextCronTimezone)
+    const input: AppSettingsInput = {
+      default_cron: data.default_cron,
+      cron_timezone: nextCronTimezone,
+      log_retention_days: data.log_retention_days,
+      global_dry_run: data.global_dry_run,
+      exclude_ids: data.exclude_ids,
+      letterboxd_export_cache_ttl_hours: data.letterboxd_export_cache_ttl_hours,
+      trakt_list_cache_ttl_minutes: data.trakt_list_cache_ttl_minutes,
+    }
+    if (nextCronTimezone === "local") {
+      input.cron_local_zone = browserTimezone
+    }
+    saveMutation.mutate(input, {
+      onSuccess: () => showToast({ color: "green", message: "Cron timezone saved" }),
+      onError: () => setCronTimezone(data.cron_timezone),
+    })
+  }
+
   function handleTimezoneModeChange(value: string) {
     if (value === "local") {
-      setCronTimezone("local")
+      persistCronTimezone("local")
       return
     }
     if (value === "utc") {
-      setCronTimezone("UTC")
+      persistCronTimezone("UTC")
       return
     }
-    setCronTimezone(manualTimezone)
+    persistCronTimezone(manualTimezone)
   }
 
   function cronTimezoneLabel(preference: string): string {
@@ -148,41 +222,11 @@ export function SyncSettingsSection() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const parsed = syncSchema.safeParse({
-      default_cron: defaultCron,
-      cron_timezone: cronTimezone,
-      global_dry_run: globalDryRun,
+    const input = buildSettingsInput(cronTimezone)
+    if (!input) return
+    saveMutation.mutate(input, {
+      onSuccess: () => showToast({ color: "green", message: "Sync settings saved" }),
     })
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {}
-      for (const issue of parsed.error.issues) {
-        fieldErrors[String(issue.path[0] ?? "form")] = issue.message
-      }
-      setErrors(fieldErrors)
-      return
-    }
-    if (retentionDays < 1) {
-      setErrors({ log_retention_days: "Must be at least 1 day" })
-      return
-    }
-    setErrors({})
-    const input: AppSettingsInput = {
-      default_cron: defaultCron.trim(),
-      cron_timezone: cronTimezone,
-      log_retention_days: retentionDays,
-      global_dry_run: globalDryRun,
-      exclude_ids: {
-        tmdb: parseExcludeLines(tmdb),
-        imdb: parseExcludeLines(imdb),
-        tvdb: parseExcludeLines(tvdb),
-      },
-      letterboxd_export_cache_ttl_hours: settingsQuery.data?.letterboxd_export_cache_ttl_hours ?? 24,
-      trakt_list_cache_ttl_minutes: settingsQuery.data?.trakt_list_cache_ttl_minutes ?? 30,
-    }
-    if (cronTimezone === "local") {
-      input.cron_local_zone = browserTimezone
-    }
-    saveMutation.mutate(input)
   }
 
   return (
@@ -191,7 +235,7 @@ export function SyncSettingsSection() {
         <Stack gap="md">
           <SettingsSectionTitle icon={<SyncIcon size={18} />}>Sync defaults & safety</SettingsSectionTitle>
           <Text size="sm" c="dimmed">
-            Defaults apply to new jobs. Exclude lists skip matching items during sync (global ∪ per-job).
+            Defaults apply to new jobs.
           </Text>
 
           <Switch
@@ -211,7 +255,7 @@ export function SyncSettingsSection() {
               value={timezoneMode}
               onChange={handleTimezoneModeChange}
               data={[...CRON_TIMEZONE_MODE_OPTIONS]}
-              disabled={settingsQuery.isLoading}
+              disabled={settingsQuery.isLoading || saveMutation.isPending}
             />
             {timezoneMode === "local" ? (
               <Text size="sm" c="dimmed">
@@ -229,9 +273,9 @@ export function SyncSettingsSection() {
                 nothingFoundMessage="No timezones found"
                 data={timezoneOptions}
                 value={manualTimezone}
-                onChange={(value) => value && setCronTimezone(value)}
+                onChange={(value) => value && persistCronTimezone(value)}
                 error={errors.cron_timezone}
-                disabled={settingsQuery.isLoading}
+                disabled={settingsQuery.isLoading || saveMutation.isPending}
                 styles={TIMEZONE_SELECT_STYLES}
               />
             ) : null}
@@ -258,30 +302,51 @@ export function SyncSettingsSection() {
             disabled={settingsQuery.isLoading}
           />
 
-          <Textarea
-            label="Exclude TMDB IDs"
-            description="e.g. 550 — one numeric ID per line"
-            minRows={2}
-            value={tmdb}
-            onChange={(event) => setTmdb(event.currentTarget.value)}
-            disabled={settingsQuery.isLoading}
-          />
-          <Textarea
-            label="Exclude IMDb IDs"
-            description="e.g. tt0111161 — one per line"
-            minRows={2}
-            value={imdb}
-            onChange={(event) => setImdb(event.currentTarget.value)}
-            disabled={settingsQuery.isLoading}
-          />
-          <Textarea
-            label="Exclude TVDB IDs"
-            description="e.g. 81189 — one numeric ID per line"
-            minRows={2}
-            value={tvdb}
-            onChange={(event) => setTvdb(event.currentTarget.value)}
-            disabled={settingsQuery.isLoading}
-          />
+          <Accordion variant="contained" chevronPosition="left">
+            <Accordion.Item value="excludes">
+              <Accordion.Control>
+                <Group gap="sm">
+                  <Text fw={500}>Exclude IDs</Text>
+                  {excludeCount > 0 ? (
+                    <Badge variant="light" size="sm">
+                      {excludeCount}
+                    </Badge>
+                  ) : null}
+                </Group>
+              </Accordion.Control>
+              <Accordion.Panel>
+                <Stack gap="md">
+                  <Text size="sm" c="dimmed">
+                    Skip matching items during sync (global ∪ per-job). Rarely needed.
+                  </Text>
+                  <Textarea
+                    label="Exclude TMDB IDs"
+                    description="e.g. 550 — one numeric ID per line"
+                    minRows={2}
+                    value={tmdb}
+                    onChange={(event) => setTmdb(event.currentTarget.value)}
+                    disabled={settingsQuery.isLoading}
+                  />
+                  <Textarea
+                    label="Exclude IMDb IDs"
+                    description="e.g. tt0111161 — one per line"
+                    minRows={2}
+                    value={imdb}
+                    onChange={(event) => setImdb(event.currentTarget.value)}
+                    disabled={settingsQuery.isLoading}
+                  />
+                  <Textarea
+                    label="Exclude TVDB IDs"
+                    description="e.g. 81189 — one numeric ID per line"
+                    minRows={2}
+                    value={tvdb}
+                    onChange={(event) => setTvdb(event.currentTarget.value)}
+                    disabled={settingsQuery.isLoading}
+                  />
+                </Stack>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
 
           <Group>
             <Button type="submit" loading={saveMutation.isPending} leftSection={<SaveIcon />} disabled={settingsQuery.isLoading}>
