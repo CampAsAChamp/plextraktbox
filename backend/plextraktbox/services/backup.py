@@ -38,18 +38,14 @@ def validate_sqlite_backup(path: Path) -> None:
 
     try:
         try:
-            rows = conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            ).fetchall()
+            rows = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
         except sqlite3.Error as exc:
             raise BackupRestoreError(f"Not a valid SQLite database: {exc}") from exc
 
         tables = {str(row[0]) for row in rows}
         missing = sorted(REQUIRED_TABLES - tables)
         if missing:
-            raise BackupRestoreError(
-                "Backup is missing required tables: " + ", ".join(missing)
-            )
+            raise BackupRestoreError("Backup is missing required tables: " + ", ".join(missing))
 
         try:
             conn.execute("SELECT id, username FROM user LIMIT 1").fetchone()
@@ -61,9 +57,7 @@ def validate_sqlite_backup(path: Path) -> None:
 
 def _assert_no_running_jobs() -> None:
     with Session(db.engine) as session:
-        running = session.exec(
-            select(JobRun).where(JobRun.status == JobRunStatus.RUNNING).limit(1)
-        ).first()
+        running = session.exec(select(JobRun).where(JobRun.status == JobRunStatus.RUNNING).limit(1)).first()
         if running is not None:
             raise BackupRestoreError(
                 "Cannot restore while a sync run is in progress. Wait for it to finish.",
