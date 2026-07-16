@@ -1,3 +1,18 @@
+# [0.9.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.8.0...v0.9.0) (2026-07-16)
+
+
+### Bug Fixes
+
+* update dashboard tests after signed-in subtitle removal ([804f9a7](https://github.com/CampAsAChamp/plextraktbox/commit/804f9a772902e2264a955b2984aeaedca792d84f))
+* wait for cron timezone control before clicking Local ([457863e](https://github.com/CampAsAChamp/plextraktbox/commit/457863e5da908d91a184a9d30338eea77e10fcb8))
+
+
+### Features
+
+* add local-only endpoint to seed in-app notifications ([068fe7b](https://github.com/CampAsAChamp/plextraktbox/commit/068fe7b104393a9b0a874025baf3856015a50004))
+* polish notification bell with swipe animations and unread badge ([7c201d1](https://github.com/CampAsAChamp/plextraktbox/commit/7c201d1c3721bd2fd4a0178092866efaac54cb48))
+* toast on theme list refresh ([514a565](https://github.com/CampAsAChamp/plextraktbox/commit/514a565792601ac772b9a63b62dc4c64efba2e4d))
+
 # [0.8.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.3...v0.8.0) (2026-07-16)
 
 
