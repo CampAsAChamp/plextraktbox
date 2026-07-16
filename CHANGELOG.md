@@ -1,3 +1,10 @@
+## [0.7.3](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.2...v0.7.3) (2026-07-16)
+
+
+### Bug Fixes
+
+* add printing of the app version on startup ([3be0b04](https://github.com/CampAsAChamp/plextraktbox/commit/3be0b0495e355b4e4210253767319079e70fd43f))
+
 ## [0.7.2](https://github.com/CampAsAChamp/plextraktbox/compare/v0.7.1...v0.7.2) (2026-07-16)
 
 
