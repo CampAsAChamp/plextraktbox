@@ -202,11 +202,13 @@ function NotificationItem({
 export function NotificationBell() {
   const queryClient = useQueryClient()
   const unreadErrorToasted = useRef(false)
+  const prevUnreadRef = useRef<number | null>(null)
   const swipeTimeouts = useRef<number[]>([])
   const [exitingIds, setExitingIds] = useState<Set<number>>(() => new Set())
   const [dimmingIds, setDimmingIds] = useState<Set<number>>(() => new Set())
   const [clearingAll, setClearingAll] = useState(false)
   const [markingAll, setMarkingAll] = useState(false)
+  const [ringing, setRinging] = useState(false)
 
   const localDevQuery = useQuery({
     queryKey: ["dev", "local"],
@@ -245,6 +247,19 @@ export function NotificationBell() {
       for (const id of swipeTimeouts.current) window.clearTimeout(id)
     }
   }, [])
+
+  const unreadCount = unreadQuery.data?.unread_count ?? 0
+
+  useEffect(() => {
+    if (unreadQuery.isPending || unreadQuery.isError) return
+    const prev = prevUnreadRef.current
+    prevUnreadRef.current = unreadCount
+    // First successful load: remember count, don't ring for already-unread items.
+    if (prev === null) return
+    if (prev === 0 && unreadCount > 0 && !prefersReducedMotion()) {
+      setRinging(true)
+    }
+  }, [unreadCount, unreadQuery.isPending, unreadQuery.isError])
 
   const markRead = useMutation({
     mutationFn: markInAppRead,
@@ -389,7 +404,6 @@ export function NotificationBell() {
   })
 
   const items = listQuery.data?.items ?? []
-  const unreadCount = unreadQuery.data?.unread_count ?? 0
   const itemCount = items.length
   const unreadItems = items.filter((item) => !item.read)
   const animating = clearingAll || markingAll || exitingIds.size > 0 || dimmingIds.size > 0
@@ -460,7 +474,12 @@ export function NotificationBell() {
           aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         >
           <Indicator inline disabled={unreadCount === 0} color="blue" size={16} offset={2} label={unreadCount > 99 ? "99+" : unreadCount}>
-            <BellIcon filled={unreadCount > 0} />
+            <span
+              className={[classes.bellIcon, ringing ? classes.ringing : ""].filter(Boolean).join(" ")}
+              onAnimationEnd={() => setRinging(false)}
+            >
+              <BellIcon filled={unreadCount > 0} />
+            </span>
           </Indicator>
         </ActionIcon>
       </Menu.Target>
