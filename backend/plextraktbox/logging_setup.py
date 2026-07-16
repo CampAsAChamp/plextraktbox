@@ -209,7 +209,8 @@ def _use_colors(log_format: str) -> bool:
         return False
     if os.environ.get("FORCE_COLOR") or os.environ.get("CLICOLOR_FORCE"):
         return True
-    return sys.stderr.isatty()
+    # Console logs go to stdout; match TTY detection to that stream.
+    return sys.stdout.isatty()
 
 
 def configure_logging() -> None:
@@ -254,13 +255,20 @@ def configure_logging() -> None:
         ],
     )
 
-    handler = logging.StreamHandler()
+    # stdout so Docker/Dozzle treat app logs as the default stream, not stderr.
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
 
     root = logging.getLogger()
     root.handlers.clear()
     root.addHandler(handler)
     root.setLevel(level)
+
+    # uvicorn installs its own stderr handlers with propagate=False; fold them into root.
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        uv_logger = logging.getLogger(name)
+        uv_logger.handlers.clear()
+        uv_logger.propagate = True
 
     # httpx logs raw outbound requests at INFO; oauth poll handlers emit structured events.
     logging.getLogger("httpx").setLevel(logging.WARNING)

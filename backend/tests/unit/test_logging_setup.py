@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+import sys
+
 from plextraktbox.logging_setup import (
     _HTTP_METHOD_COLORS,
     _HttpMethodEventFormatter,
@@ -7,6 +10,7 @@ from plextraktbox.logging_setup import (
     _UppercaseLogLevelFormatter,
     _http_method_styles,
     _strip_logger_prefix,
+    configure_logging,
 )
 
 
@@ -82,3 +86,17 @@ def test_strip_logger_prefix_leaves_other_loggers_unchanged() -> None:
     result = _strip_logger_prefix(None, "info", event_dict)
 
     assert result["logger_name"] == "uvicorn.error"
+
+
+def test_configure_logging_writes_to_stdout() -> None:
+    configure_logging()
+
+    root = logging.getLogger()
+    assert len(root.handlers) == 1
+    assert isinstance(root.handlers[0], logging.StreamHandler)
+    assert root.handlers[0].stream is sys.stdout
+
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        uv_logger = logging.getLogger(name)
+        assert uv_logger.handlers == []
+        assert uv_logger.propagate is True
