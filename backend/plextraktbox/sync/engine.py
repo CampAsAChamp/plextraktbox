@@ -16,20 +16,16 @@ from plextraktbox.sync.plans import (
     RunSummary,
     UnmatchedItem,
 )
-from plextraktbox.sync.plugins import get_plugin_manager
 from plextraktbox.sync.reconcilers import DEFAULT_RECONCILERS
 from plextraktbox.sync.reconcilers.base import Reconciler
 
 
 async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None) -> RunSummary:
     """Fetch → plan → log → apply for each enabled data type."""
-    pm = get_plugin_manager()
     summary = RunSummary()
     log = ctx.log or structlog.get_logger("sync")
     active = reconcilers or DEFAULT_RECONCILERS
     active_by_type = {reconciler.data_type: reconciler for reconciler in active}
-
-    pm.hook.before_run(ctx=ctx)
 
     for data_type in (DataType.WATCHLIST, DataType.RATINGS, DataType.WATCHED):
         if data_type not in ctx.data_types:
@@ -114,12 +110,6 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
                     error=str(exc),
                 )
                 summary.errors += len(changes)
-                pm.hook.after_item(
-                    ctx=ctx,
-                    data_type=data_type.value,
-                    message=str(exc),
-                    error=exc,
-                )
                 continue
 
             error_suffix = f" ({result.errors} error(s))" if result.errors else ""
@@ -146,14 +136,6 @@ async def run_sync(ctx: SyncContext, reconcilers: list[Reconciler] | None = None
 
             _merge_summary(summary, data_type, action, result, changes)
 
-            for change in changes:
-                pm.hook.after_item(
-                    ctx=ctx,
-                    data_type=data_type.value,
-                    message=change.message,
-                )
-
-    pm.hook.after_run(ctx=ctx, summary=summary)
     return summary
 
 

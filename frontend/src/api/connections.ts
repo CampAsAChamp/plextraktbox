@@ -20,11 +20,6 @@ export interface ConnectionTestResult {
   details?: Record<string, string>
 }
 
-export interface PlexConnectionInput {
-  url: string
-  token: string
-}
-
 export interface PlexPinStart {
   pin_id: number
   pin_code: string

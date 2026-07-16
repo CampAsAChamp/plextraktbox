@@ -7,7 +7,6 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from plextraktbox.models.inapp_notification import InAppLevel, InAppNotification
-from plextraktbox.models.job import NotifyMode
 from plextraktbox.models.notification_config import (
     NotificationChannel,
     NotificationConfig,
@@ -100,11 +99,3 @@ class UnreadCountResponse(BaseModel):
 class NotificationTestResponse(BaseModel):
     ok: bool
     message: str
-
-
-class JobNotifyModeRequest(BaseModel):
-    mode: NotifyMode
-
-
-class JobNotifyModeResponse(BaseModel):
-    mode: NotifyMode

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from sqlmodel import Session, select
 
-from plextraktbox.models.job import Job, NotifyMode
+from plextraktbox.models.job import Job
 from plextraktbox.models.notification_config import (
     NotificationChannel,
     NotificationConfig,
@@ -126,11 +126,3 @@ def _apply_channel_input(config: NotificationConfig, body: NotificationConfigCre
         return
 
     raise ValueError(f"Unsupported channel: {config.channel}")
-
-
-def set_job_notify_mode(session: Session, job: Job, mode: NotifyMode) -> Job:
-    job.notify_override_json = Job.dump_notify_mode(mode)
-    session.add(job)
-    session.commit()
-    session.refresh(job)
-    return job

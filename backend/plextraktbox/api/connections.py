@@ -54,14 +54,6 @@ def connections_status(
     )
 
 
-@router.get("", response_model=list[ConnectionSummary])
-def list_connections(_user: CurrentUserDep, session: SessionDep) -> list[ConnectionSummary]:
-    by_service = conn_svc.list_connections(session)
-    return [
-        ConnectionSummary.from_connection(by_service[service], service) for service in conn_svc.ALL_SERVICES
-    ]
-
-
 @router.post(
     "/plex",
     response_model=ConnectionSummary,
@@ -466,17 +458,3 @@ def clear_connections(
     session: SessionDep,
 ) -> None:
     conn_svc.clear_all_connections(session)
-
-
-@router.post(
-    "/{service}/test",
-    response_model=ConnectionTestResponse,
-    dependencies=[Depends(require_csrf)],
-)
-def test_saved_connection(
-    service: Service,
-    _user: CurrentUserDep,
-    session: SessionDep,
-) -> ConnectionTestResponse:
-    result = conn_svc.test_saved_connection(session, service)
-    return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)

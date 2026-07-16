@@ -140,24 +140,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/connections": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Connections */
-        get: operations["list_connections_api_connections_get"];
-        put?: never;
-        post?: never;
-        /** Clear Connections */
-        delete: operations["clear_connections_api_connections_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/connections/plex": {
         parameters: {
             query?: never;
@@ -383,7 +365,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/connections/{service}/test": {
+    "/api/connections": {
         parameters: {
             query?: never;
             header?: never;
@@ -392,9 +374,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Test Saved Connection */
-        post: operations["test_saved_connection_api_connections__service__test_post"];
-        delete?: never;
+        post?: never;
+        /** Clear Connections */
+        delete: operations["clear_connections_api_connections_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1856,55 +1838,6 @@ export interface operations {
             };
         };
     };
-    list_connections_api_connections_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConnectionSummary"][];
-                };
-            };
-        };
-    };
-    clear_connections_api_connections_delete: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-requested-with"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     save_plex_api_connections_plex_post: {
         parameters: {
             query?: never;
@@ -2368,27 +2301,23 @@ export interface operations {
             };
         };
     };
-    test_saved_connection_api_connections__service__test_post: {
+    clear_connections_api_connections_delete: {
         parameters: {
             query?: never;
             header?: {
                 "x-requested-with"?: string | null;
             };
-            path: {
-                service: components["schemas"]["Service"];
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
             /** @description Successful Response */
-            200: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["ConnectionTestResponse"];
-                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -8,7 +8,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, select
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.trakt_list_cache import TraktListCache
@@ -192,8 +192,3 @@ def get_or_fetch_list(
     items = fetch()
     store_list(list_kind, access_token, items)
     return items
-
-
-def trakt_list_cache_count(session: Session) -> int:
-    rows = session.exec(select(col(TraktListCache.list_kind))).all()
-    return len(list(rows))

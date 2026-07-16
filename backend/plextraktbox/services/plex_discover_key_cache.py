@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, select
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.plex_discover_key_cache import PlexDiscoverKeyCache
@@ -101,8 +101,3 @@ def invalidate_discover_key(item: MediaItem) -> None:
             if row is not None:
                 session.delete(row)
         session.commit()
-
-
-def discover_key_cache_count(session: Session) -> int:
-    rows = session.exec(select(col(PlexDiscoverKeyCache.discover_key))).all()
-    return len(list(rows))

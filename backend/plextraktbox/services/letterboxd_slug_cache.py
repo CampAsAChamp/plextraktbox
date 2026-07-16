@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, select
 
 from plextraktbox.logging_setup import get_logger
 from plextraktbox.models.letterboxd_slug_cache import LetterboxdSlugCache
@@ -165,8 +165,3 @@ def wrap_resolver(
         "newly_resolved": newly_resolved,
     }
     return resolve
-
-
-def slug_cache_count(session: Session) -> int:
-    rows = session.exec(select(col(LetterboxdSlugCache.slug))).all()
-    return len(list(rows))

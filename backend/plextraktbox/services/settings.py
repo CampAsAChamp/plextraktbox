@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from plextraktbox.cron import (
     DEFAULT_CRON_TIMEZONE,
@@ -234,7 +234,3 @@ def update_ui_theme(session: Session, theme_id: str) -> str:
     _write_json(session, KEY_UI_THEME, cleaned)
     session.commit()
     return cleaned
-
-
-def list_all_setting_rows(session: Session) -> list[Setting]:
-    return list(session.exec(select(Setting).order_by(Setting.key)).all())
