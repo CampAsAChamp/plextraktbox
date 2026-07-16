@@ -446,7 +446,6 @@ export function NotificationBell() {
       position="bottom-end"
       width="min(360px, calc(100vw - 2rem))"
       withinPortal
-      styles={{ item: { borderRadius: "var(--mantine-radius-md)" } }}
       onOpen={() => {
         void listQuery.refetch()
       }}

@@ -53,10 +53,10 @@ export const sharedTheme: MantineThemeOverride = {
     Textarea: { defaultProps: { radius: "lg" } },
     SegmentedControl: { defaultProps: { radius: "xl" } },
     Menu: {
-      defaultProps: { radius: "lg" },
+      defaultProps: { radius: "sm" },
       styles: {
-        item: { borderRadius: "var(--mantine-radius-xl)" },
-        dropdown: { borderRadius: "var(--mantine-radius-lg)" },
+        item: { borderRadius: "var(--mantine-radius-xs)" },
+        dropdown: { borderRadius: "var(--mantine-radius-sm)" },
       },
     },
     Tooltip: { defaultProps: { radius: "xl" } },
