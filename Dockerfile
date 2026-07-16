@@ -24,7 +24,8 @@ RUN if [ "$USE_CORPORATE_CA" = "1" ]; then export NODE_EXTRA_CA_CERTS=/tmp/zscal
     npm run build -- --outDir dist --emptyOutDir
 
 # ---- Stage 2: python runtime ----
-FROM python:3.14-slim AS runtime
+# alpine: Debian slim currently ships unfixed HIGH/CRITICAL CVEs (perl/ncurses/etc.).
+FROM python:3.14-alpine AS runtime
 ARG GIT_SHA=
 ARG BUILD_TIME=
 ARG USE_CORPORATE_CA=0
@@ -35,11 +36,18 @@ ENV PYTHONUNBUFFERED=1 \
     PLEXTRAKTBOX_GIT_SHA=${GIT_SHA} \
     PLEXTRAKTBOX_BUILD_TIME=${BUILD_TIME}
 
-# gosu: drop from root to PUID/PGID after chown'ing /data (TrueNAS ZFS mounts).
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gosu \
-    && rm -rf /var/lib/apt/lists/* \
-    && gosu nobody true
+# bash/shadow: entrypoint user management. su-exec: drop to PUID/PGID (TrueNAS ZFS mounts).
+# Corporate CA is used only for apk/pip when USE_CORPORATE_CA=1, then removed from the trust store.
+COPY docker/certs/zscaler-root-ca.pem /tmp/zscaler-root-ca.pem
+RUN if [ "$USE_CORPORATE_CA" = "1" ]; then \
+      cp /etc/ssl/certs/ca-certificates.crt /tmp/ca-backup.crt \
+      && cat /tmp/zscaler-root-ca.pem >> /etc/ssl/certs/ca-certificates.crt; \
+    fi \
+    && apk add --no-cache bash shadow su-exec \
+    && if [ "$USE_CORPORATE_CA" = "1" ]; then \
+         mv /tmp/ca-backup.crt /etc/ssl/certs/ca-certificates.crt; \
+       fi \
+    && su-exec nobody true
 
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
@@ -48,7 +56,6 @@ COPY backend/migrations ./migrations
 COPY backend/alembic.ini ./
 # Corporate CA is used only for this pip install when USE_CORPORATE_CA=1, then deleted.
 # The published runtime image must not ship SSL_CERT_FILE / PIP_CERT pointing at Zscaler.
-COPY docker/certs/zscaler-root-ca.pem /tmp/zscaler-root-ca.pem
 RUN if [ "$USE_CORPORATE_CA" = "1" ]; then \
       export SSL_CERT_FILE=/tmp/zscaler-root-ca.pem \
              REQUESTS_CA_BUNDLE=/tmp/zscaler-root-ca.pem \

@@ -123,8 +123,7 @@ When both are set, the entrypoint:
 
 1. Ensures a user/group with those IDs exists inside the container
 2. `chown`s `/data` to that user
-3. Runs migrations and uvicorn as that user (via `gosu`)
-
+3. Runs migrations and uvicorn as that user (via `su-exec`)
 When unset, the process runs as the container’s default user (root in the published image) — fine for
 local compose experiments, but on TrueNAS always set `PUID`/`PGID` to match the dataset ACL so
 snapshots and host-side tools see consistent ownership.

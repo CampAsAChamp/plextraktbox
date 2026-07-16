@@ -30,7 +30,7 @@ configure_permissions() {
 # Run a command as PUID:PGID when set; otherwise as current user (usually root).
 run_privileged_or_user() {
   if [[ -n "$PUID" && -n "$PGID" ]]; then
-    gosu "${PUID}:${PGID}" "$@"
+    su-exec "${PUID}:${PGID}" "$@"
   else
     "$@"
   fi
@@ -58,7 +58,7 @@ main() {
   # Step 3: start the ASGI server on 0.0.0.0:8000.
   log_step "Step 3/3: starting uvicorn"
   if [[ -n "$PUID" && -n "$PGID" ]]; then
-    exec gosu "${PUID}:${PGID}" uvicorn plextraktbox.main:app --host 0.0.0.0 --port 8000 --no-access-log
+    exec su-exec "${PUID}:${PGID}" uvicorn plextraktbox.main:app --host 0.0.0.0 --port 8000 --no-access-log
   fi
   exec uvicorn plextraktbox.main:app --host 0.0.0.0 --port 8000 --no-access-log
 }
