@@ -7,12 +7,13 @@ import { listJobs } from "src/api/jobApi"
 import type { RunListItem } from "src/api/jobs"
 import { SOURCE_PAIR_LABELS } from "src/api/jobs"
 import { listRuns } from "src/api/runs"
-import { DryRunBadge, renderRunTriggerOption, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
+import { DryRunBadge, RunStatusBadge, RunTriggerBadge } from "src/components/runs/RunBadges"
 import { RunListCard } from "src/components/runs/RunListCard"
 import { RunStatusMultiSelect } from "src/components/runs/RunStatusMultiSelect"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
-import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh"
+import { SortableTh } from "src/components/table/SortableTh"
+import { sortedColumnCellClass } from "src/components/table/sortedColumnCellClass"
 import classes from "src/pages/RunHistoryPage.module.css"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
@@ -207,7 +208,7 @@ export function RunHistoryPage() {
           onChange={(value) => updateSearchParam("trigger", value)}
           clearable
           placeholder="All triggers"
-          renderOption={renderRunTriggerOption}
+          renderOption={({ option }) => <RunTriggerBadge trigger={option.value} />}
           leftSection={triggerFilter ? <RunTriggerBadge trigger={triggerFilter} /> : undefined}
           leftSectionPointerEvents="none"
           leftSectionWidth={triggerFilter ? 104 : undefined}

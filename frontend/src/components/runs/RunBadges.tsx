@@ -1,4 +1,3 @@
-import type { SelectProps } from "@mantine/core"
 import { Badge, CloseButton, Group } from "@mantine/core"
 
 function CheckIcon({ size = 14 }: { size?: number }) {
@@ -19,7 +18,7 @@ function CheckIcon({ size = 14 }: { size?: number }) {
   )
 }
 
-export function runStatusColor(status: string) {
+function runStatusColor(status: string) {
   if (status === "success") return "green"
   if (status === "failed") return "red"
   if (status === "partial") return "orange"
@@ -27,7 +26,7 @@ export function runStatusColor(status: string) {
   return "gray"
 }
 
-export function runTriggerColor(trigger: string) {
+function runTriggerColor(trigger: string) {
   if (trigger === "scheduled") return "violet"
   if (trigger === "manual") return "teal"
   return "gray"
@@ -94,9 +93,3 @@ export function RunStatusOptionRow({ status, checked }: { status: string; checke
     </Group>
   )
 }
-
-export const renderRunStatusOption: SelectProps["renderOption"] = ({ option, checked }) => (
-  <RunStatusOptionRow status={option.value} checked={!!checked} />
-)
-
-export const renderRunTriggerOption: SelectProps["renderOption"] = ({ option }) => <RunTriggerBadge trigger={option.value} />

@@ -1,3 +1,5 @@
+/* Provider modules export the hook alongside the provider — Fast Refresh is fine here. */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react"
 
 import {

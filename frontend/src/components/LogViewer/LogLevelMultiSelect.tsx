@@ -1,6 +1,7 @@
 import { Combobox, Pill, PillsInput, useCombobox } from "@mantine/core"
 
-import { LOG_LEVEL_OPTIONS, type LogLevel, LogLevelBadge, LogLevelOptionRow } from "src/components/LogViewer/logLevels"
+import { LOG_LEVEL_OPTIONS, type LogLevel } from "src/components/LogViewer/logLevelOptions"
+import { LogLevelBadge, LogLevelOptionRow } from "src/components/LogViewer/logLevels"
 
 type LogLevelMultiSelectProps = {
   label?: string

@@ -24,7 +24,7 @@ function modeLabel(icon: ReactNode, text: string, title: string) {
 }
 
 /** Shared Local → UTC → Manual order for display prefs and cron timezone. */
-export const TIMEZONE_MODE_OPTIONS = [
+const TIMEZONE_MODE_OPTIONS = [
   {
     value: "local",
     label: modeLabel(<MapPinIcon size={14} />, "Local", "Uses your device timezone"),

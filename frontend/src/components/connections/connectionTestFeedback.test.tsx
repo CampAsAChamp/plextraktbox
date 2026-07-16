@@ -5,7 +5,8 @@ import { act, renderHook } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { TestConnectionButton, useConnectionTestFeedback } from "src/components/connections/connectionTestFeedback"
+import { TestConnectionButton } from "src/components/connections/connectionTestFeedback"
+import { useConnectionTestFeedback } from "src/components/connections/useConnectionTestFeedback"
 import { theme } from "src/theme"
 
 function renderButton(testStatus: "idle" | "success" | "error") {

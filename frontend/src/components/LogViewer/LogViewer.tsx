@@ -4,7 +4,8 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { listRunLogs, type LogEntry } from "src/api/logs"
-import { ColoredJson, ColoredJsonSpans, JSON_SYNTAX_COLORS } from "src/components/LogViewer/ColoredJson"
+import { ColoredJson, ColoredJsonSpans } from "src/components/LogViewer/ColoredJson"
+import { JSON_SYNTAX_COLORS } from "src/components/LogViewer/jsonTokens"
 import { LiveStreamAccent, LiveStreamIndicator } from "src/components/LogViewer/LiveStreamIndicator"
 import {
   estimateLogLineHeight,
@@ -20,7 +21,8 @@ import {
   shouldSyntaxHighlightContextValue,
 } from "src/components/LogViewer/logFormat"
 import { LogLevelMultiSelect } from "src/components/LogViewer/LogLevelMultiSelect"
-import { type LogLevel, LogLevelBadge } from "src/components/LogViewer/logLevels"
+import type { LogLevel } from "src/components/LogViewer/logLevelOptions"
+import { LogLevelBadge } from "src/components/LogViewer/logLevels"
 import { useLogStream } from "src/components/LogViewer/useLogStream"
 import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
@@ -239,9 +241,8 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
 
   const stream = useLogStream(runId, { enabled: isLive })
 
-  const rawLines = isLive ? stream.lines : (historyQuery.data?.items ?? [])
-
   const filteredLines = useMemo(() => {
+    const rawLines = isLive ? stream.lines : (historyQuery.data?.items ?? [])
     const needle = search.trim().toLowerCase()
     const levelSet = new Set(levelFilters)
     return rawLines.filter((line) => {
@@ -250,7 +251,7 @@ export function LogViewer({ runId, isLive }: LogViewerProps) {
       const haystack = `${formatLogDisplayMessage(line)} ${line.message} ${line.logger} ${JSON.stringify(line.context)}`.toLowerCase()
       return haystack.includes(needle)
     })
-  }, [rawLines, levelFilters, search])
+  }, [isLive, stream.lines, historyQuery.data?.items, levelFilters, search])
 
   const rowVirtualizer = useVirtualizer({
     count: filteredLines.length,

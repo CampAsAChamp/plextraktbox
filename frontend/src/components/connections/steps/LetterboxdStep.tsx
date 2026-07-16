@@ -11,9 +11,10 @@ import {
   savedUsername,
   secretPlaceholderInputProps,
 } from "src/components/connections/connectionFormHelpers"
-import { TestConnectionButton, useConnectionTestFeedback } from "src/components/connections/connectionTestFeedback"
+import { TestConnectionButton } from "src/components/connections/connectionTestFeedback"
 import { ClearConnectionButton } from "src/components/connections/steps/ClearConnectionButton"
 import { FieldLabel } from "src/components/connections/steps/FieldLabel"
+import { useConnectionTestFeedback } from "src/components/connections/useConnectionTestFeedback"
 import { LockIcon } from "src/components/icons/LockIcon"
 import { SaveIcon } from "src/components/icons/SaveIcon"
 import { UserIcon } from "src/components/icons/UserIcon"
@@ -37,11 +38,10 @@ export function LetterboxdStep({
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    const nextConfigured = isConnectionConfigured(connection)
-    setUsername(savedUsername(connection))
-    setPassword(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "")
+    setUsername(baselineUsername)
+    setPassword(baselinePassword)
     setErrors({})
-  }, [connection?.service, connection?.status, connection?.config.username])
+  }, [baselineUsername, baselinePassword])
 
   const isDirty = username !== baselineUsername || password !== baselinePassword
   const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()

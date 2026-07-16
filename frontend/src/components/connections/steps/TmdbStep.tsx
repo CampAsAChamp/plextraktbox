@@ -11,9 +11,10 @@ import {
   SAVED_SECRET_PLACEHOLDER,
   secretPlaceholderInputProps,
 } from "src/components/connections/connectionFormHelpers"
-import { TestConnectionButton, useConnectionTestFeedback } from "src/components/connections/connectionTestFeedback"
+import { TestConnectionButton } from "src/components/connections/connectionTestFeedback"
 import { ClearConnectionButton } from "src/components/connections/steps/ClearConnectionButton"
 import { FieldLabel } from "src/components/connections/steps/FieldLabel"
+import { useConnectionTestFeedback } from "src/components/connections/useConnectionTestFeedback"
 import { KeyIcon } from "src/components/icons/KeyIcon"
 import { SaveIcon } from "src/components/icons/SaveIcon"
 import { showToast } from "src/toast"
@@ -120,11 +121,10 @@ export function TmdbStep({
   const [showTmdbHelp, setShowTmdbHelp] = useState(!configured)
 
   useEffect(() => {
-    const nextConfigured = isConnectionConfigured(connection)
-    setApiKey(nextConfigured ? SAVED_SECRET_PLACEHOLDER : "")
+    setApiKey(baselineApiKey)
     setErrors({})
-    setShowTmdbHelp(!nextConfigured)
-  }, [connection?.service, connection?.status])
+    setShowTmdbHelp(!configured)
+  }, [baselineApiKey, configured])
 
   const isDirty = apiKey !== baselineApiKey
   const { testStatus, onTestSuccess, onTestError, resetTestStatus } = useConnectionTestFeedback()

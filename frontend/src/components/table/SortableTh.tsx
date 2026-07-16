@@ -105,8 +105,3 @@ export function SortableTh<TColumn extends string>({
     </Table.Th>
   )
 }
-
-/** Class for body cells that belong to the active sort column. */
-export function sortedColumnCellClass<TColumn extends string>(sort: SortState<TColumn> | null, column: TColumn): string | undefined {
-  return sort?.column === column ? classes.sortedCell : undefined
-}
