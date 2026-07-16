@@ -18,6 +18,10 @@ export function updateSettings(input: AppSettingsInput): Promise<AppSettings> {
   return api.put<AppSettings>("/settings", input)
 }
 
+export function appendExcludeIds(input: ExcludeIds): Promise<AppSettings> {
+  return api.post<AppSettings>("/settings/exclude-ids", input)
+}
+
 export function clearSyncCaches(input: ClearSyncCachesInput = {}): Promise<ClearSyncCachesResult> {
   return api.post<ClearSyncCachesResult>("/settings/clear-sync-caches", {
     letterboxd_export: input.letterboxd_export ?? true,

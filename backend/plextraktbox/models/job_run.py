@@ -12,6 +12,19 @@ from sqlmodel import Field, SQLModel
 from plextraktbox.sync.plans import RunSummary
 
 
+def _parse_identifiers(raw: object) -> dict[str, str]:
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, str] = {}
+    for key in ("tmdb", "imdb", "tvdb"):
+        value = raw.get(key)
+        if isinstance(value, str) and value.strip():
+            out[key] = value.strip()
+        elif isinstance(value, (int, float)) and not isinstance(value, bool):
+            out[key] = str(int(value)) if float(value).is_integer() else str(value)
+    return out
+
+
 class RunTrigger(StrEnum):
     SCHEDULED = "scheduled"
     MANUAL = "manual"
@@ -57,6 +70,7 @@ class JobRun(SQLModel, table=True):
                         title=str(entry.get("title", "")),
                         source_key=str(entry.get("source_key", "")),
                         reason=str(entry.get("reason", "")),
+                        identifiers=_parse_identifiers(entry.get("identifiers")),
                     )
                 )
 

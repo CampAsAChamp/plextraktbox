@@ -23,6 +23,7 @@ from plextraktbox.schemas.job import (
     SchedulePreviewResponse,
     exclude_ids_from_request,
 )
+from plextraktbox.schemas.settings import ExcludeIds
 from plextraktbox.services import jobs as job_svc
 from plextraktbox.services import runs as run_svc
 from plextraktbox.services import settings as settings_svc
@@ -230,6 +231,35 @@ def clone_job(job_id: int, _user: CurrentUserDep, session: SessionDep) -> JobRes
         cron_timezone=app_settings.cron_timezone,
         cron_local_zone=app_settings.cron_local_zone,
         last_run=None,
+    )
+
+
+@router.post(
+    "/{job_id}/exclude-ids",
+    response_model=JobResponse,
+    dependencies=[Depends(require_csrf)],
+)
+def append_job_exclude_ids(
+    job_id: int,
+    body: ExcludeIds,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> JobResponse:
+    """Merge TMDB/IMDb/TVDB ids into a job's exclude list."""
+    job = job_svc.get_job(session, job_id)
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    job = job_svc.append_exclude_ids(
+        session,
+        job,
+        {"tmdb": body.tmdb, "imdb": body.imdb, "tvdb": body.tvdb},
+    )
+    app_settings = settings_svc.get_app_settings(session)
+    return _job_response(
+        job,
+        cron_timezone=app_settings.cron_timezone,
+        cron_local_zone=app_settings.cron_local_zone,
+        last_run=_last_run_for(session, job),
     )
 
 

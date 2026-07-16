@@ -123,3 +123,20 @@ def clone_job(session: Session, job: Job) -> Job:
         require_dry_run_first=job.require_dry_run_first,
         exclude_ids=dump_exclude_ids(job.exclude_ids()),
     )
+
+
+def append_exclude_ids(session: Session, job: Job, to_add: dict[str, list[str]]) -> Job:
+    """Merge additional TMDB/IMDb/TVDB ids into a job's exclude list."""
+    from plextraktbox.sync.excludes import merge_exclude_ids, normalize_exclude_ids
+
+    merged = dump_exclude_ids(
+        merge_exclude_ids(
+            job.exclude_ids(),
+            normalize_exclude_ids(to_add),
+        )
+    )
+    job.exclude_ids_json = Job.dump_exclude_ids(merged)
+    session.add(job)
+    session.commit()
+    session.refresh(job)
+    return job

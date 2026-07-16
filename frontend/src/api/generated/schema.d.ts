@@ -456,6 +456,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/{job_id}/exclude-ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Append Job Exclude Ids
+         * @description Merge TMDB/IMDb/TVDB ids into a job's exclude list.
+         */
+        post: operations["append_job_exclude_ids_api_jobs__job_id__exclude_ids_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/jobs/{job_id}/run": {
         parameters: {
             query?: never;
@@ -521,6 +541,26 @@ export interface paths {
          * @description Mark a stuck running run as failed. Does not cancel in-flight sync work.
          */
         post: operations["mark_run_failed_api_runs__run_id__mark_failed_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Run
+         * @description Cancel a running sync at the next safe checkpoint and mark the run failed.
+         */
+        post: operations["cancel_run_api_runs__run_id__cancel_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -745,6 +785,26 @@ export interface paths {
         /** Update Settings Endpoint */
         put: operations["update_settings_endpoint_api_settings_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/exclude-ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Append Exclude Ids Endpoint
+         * @description Merge TMDB/IMDb/TVDB ids into the global exclude list.
+         */
+        post: operations["append_exclude_ids_endpoint_api_settings_exclude_ids_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2604,6 +2664,43 @@ export interface operations {
             };
         };
     };
+    append_job_exclude_ids_api_jobs__job_id__exclude_ids_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcludeIds"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     run_job_api_jobs__job_id__run_post: {
         parameters: {
             query?: never;
@@ -2706,6 +2803,39 @@ export interface operations {
         };
     };
     mark_run_failed_api_runs__run_id__mark_failed_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunListItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_run_api_runs__run_id__cancel_post: {
         parameters: {
             query?: never;
             header?: {
@@ -3213,6 +3343,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SettingsUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    append_exclude_ids_endpoint_api_settings_exclude_ids_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-requested-with"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcludeIds"];
             };
         };
         responses: {

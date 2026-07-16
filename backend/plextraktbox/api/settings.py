@@ -22,6 +22,7 @@ from plextraktbox.schemas.settings import (
     BackupRestoreResponse,
     ClearSyncCachesRequest,
     ClearSyncCachesResponse,
+    ExcludeIds,
     SettingsResponse,
     SettingsUpdateRequest,
 )
@@ -51,6 +52,25 @@ def update_settings_endpoint(
     if previous.cron_timezone != updated.cron_timezone:
         # Re-register job triggers so hour/minute walls follow the new zone.
         get_scheduler_manager().load_all_jobs()
+    return SettingsResponse.from_app_settings(updated)
+
+
+@router.post(
+    "/exclude-ids",
+    response_model=SettingsResponse,
+    dependencies=[Depends(require_csrf)],
+)
+def append_exclude_ids_endpoint(
+    body: ExcludeIds,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> SettingsResponse:
+    """Merge TMDB/IMDb/TVDB ids into the global exclude list."""
+    settings_svc.ensure_defaults(session)
+    updated = settings_svc.append_exclude_ids(
+        session,
+        {"tmdb": body.tmdb, "imdb": body.imdb, "tvdb": body.tvdb},
+    )
     return SettingsResponse.from_app_settings(updated)
 
 

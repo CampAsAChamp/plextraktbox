@@ -59,6 +59,19 @@ export function formatLogDisplayMessage(line: LogEntry): string {
   return line.message
 }
 
+/** Plain-text copy of a log line (timestamp, level, logger, message, context). */
+export function formatLogLineForCopy(line: LogEntry, timestamp: string): string {
+  const parts = [`[${timestamp}]`, line.level.toUpperCase()]
+  if (line.logger) parts.push(line.logger)
+  parts.push(formatLogDisplayMessage(line))
+  const context = logContextForDisplay(line.context)
+  const contextBits = Object.entries(context).map(([key, value]) => `${key}=${formatContextValueCompact(value, 200)}`)
+  if (contextBits.length > 0) {
+    parts.push(contextBits.join(" "))
+  }
+  return parts.join(" ")
+}
+
 export function logContextForDisplay(context: Record<string, unknown>): Record<string, unknown> {
   const contextual = context.message
   if (typeof contextual !== "string" || !contextual.trim()) {

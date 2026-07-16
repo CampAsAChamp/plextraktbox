@@ -234,3 +234,19 @@ def update_ui_theme(session: Session, theme_id: str) -> str:
     _write_json(session, KEY_UI_THEME, cleaned)
     session.commit()
     return cleaned
+
+
+def append_exclude_ids(session: Session, to_add: dict[str, list[str]]) -> AppSettings:
+    """Merge additional TMDB/IMDb/TVDB ids into the global exclude list."""
+    from plextraktbox.sync.excludes import merge_exclude_ids
+
+    current = ensure_defaults(session)
+    merged = dump_exclude_ids(
+        merge_exclude_ids(
+            normalize_exclude_ids(current.exclude_ids),
+            normalize_exclude_ids(to_add),
+        )
+    )
+    _write_json(session, KEY_EXCLUDE_IDS, merged)
+    session.commit()
+    return get_app_settings(session)

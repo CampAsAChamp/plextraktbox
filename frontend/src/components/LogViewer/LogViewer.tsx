@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { listRunLogs, type LogEntry } from "src/api/logs"
+import { CopyAction } from "src/components/CopyAction"
 import { ColoredJson, ColoredJsonSpans } from "src/components/LogViewer/ColoredJson"
 import { JSON_SYNTAX_COLORS } from "src/components/LogViewer/jsonTokens"
 import { LiveStreamAccent, LiveStreamIndicator } from "src/components/LogViewer/LiveStreamIndicator"
@@ -12,6 +13,7 @@ import {
   formatContextValue,
   formatContextValueCompact,
   formatLogDisplayMessage,
+  formatLogLineForCopy,
   hasExpandableContext,
   LOG_LOGGER_BRACKET_COLOR,
   LOG_LOGGER_NAME_COLOR,
@@ -163,6 +165,8 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
   const displayMessage = formatLogDisplayMessage(line)
   const displayContext = logContextForDisplay(line.context)
   const expandable = hasExpandableContext(displayContext)
+  const timestamp = formatTimestamp(line.ts, displayPreferences)
+  const copyText = formatLogLineForCopy(line, timestamp)
 
   return (
     <Box
@@ -178,7 +182,7 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
     >
       <Group gap="xs" wrap="nowrap" align={expanded ? "flex-start" : "center"}>
         <Text span c="dimmed" style={{ minWidth: 72, flexShrink: 0 }}>
-          {formatTimestamp(line.ts, displayPreferences)}
+          {timestamp}
         </Text>
         <LogLevelBadge level={level} fixedWidth />
         {line.logger ? <LogLoggerLabel logger={line.logger} /> : null}
@@ -201,6 +205,7 @@ function LogLine({ line, expanded, displayPreferences, onToggle }: LogLineProps)
             </Box>
           )}
         </Box>
+        <CopyAction value={copyText} label="Copy log line" />
         {expandable ? (
           <ActionIcon
             size="lg"

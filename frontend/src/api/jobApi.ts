@@ -1,5 +1,6 @@
 import { api } from "src/api/client"
 import type { Job, JobInput, JobRun, SchedulePreview } from "src/api/jobs"
+import type { ExcludeIds } from "src/api/settings"
 
 export function listJobs() {
   return api.get<Job[]>("/jobs")
@@ -23,6 +24,10 @@ export function deleteJob(id: number) {
 
 export function cloneJob(id: number) {
   return api.post<Job>(`/jobs/${id}/clone`)
+}
+
+export function appendJobExcludeIds(id: number, input: ExcludeIds) {
+  return api.post<Job>(`/jobs/${id}/exclude-ids`, input)
 }
 
 export function runJob(id: number, dryRun?: boolean) {
