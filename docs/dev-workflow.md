@@ -76,8 +76,8 @@ mise run check-doppler   # lint + tests with Doppler-injected env
 mise run down-dev
 ```
 
-`up-dev-doppler` is an alias of `up-dev`. Without Doppler, use `mise run up-dev-env` and put secrets
-in `.env` (see [`.env.example`](../.env.example)).
+Without Doppler, use `mise run up-dev-env` and put secrets in `.env` (see
+[`.env.example`](../.env.example)).
 
 GitHub Actions still stubs a dummy `.env` for the default `check` job (no Doppler required). To
 run optional live-credential CI later, add a Doppler service token as `DOPPLER_TOKEN` and wrap
@@ -128,8 +128,8 @@ curl -s -b cookies.txt http://localhost:8000/api/jobs
 
 ## Dev bootstrap (after wiping `./data`)
 
-After `mise run down-v`, `mise run clean-data`, or `mise run rebuild`, skip the setup wizard by
-seeding from Doppler (or a filled `.env` if not using Doppler):
+After `mise run down-v` or `mise run clean-data`, skip the setup wizard by seeding from Doppler (or
+a filled `.env` if not using Doppler):
 
 1. **Once**, after configuring connections in the UI, capture secrets into Doppler (or `.env`):
 

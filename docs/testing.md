@@ -32,7 +32,6 @@ Open **http://localhost:8000**.
 ```bash
 mise run down      # stop, keep ./data
 mise run down-v    # stop and wipe ./data (fresh DB / first-run wizard)
-mise run rebuild   # down-v + build + up
 ```
 
 ## Automated checks
