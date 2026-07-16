@@ -164,3 +164,32 @@ def mark_all_inapp_read(_user: CurrentUserDep, session: SessionDep) -> None:
         row.read = True
         session.add(row)
     session.commit()
+
+
+@router.delete(
+    "/inapp/clear-all",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+)
+def clear_all_inapp_notifications(_user: CurrentUserDep, session: SessionDep) -> None:
+    rows = list_inapp_notifications(session, limit=10_000, unread_only=False)
+    for row in rows:
+        session.delete(row)
+    session.commit()
+
+
+@router.delete(
+    "/inapp/{notification_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+)
+def delete_inapp_notification(
+    notification_id: int,
+    _user: CurrentUserDep,
+    session: SessionDep,
+) -> None:
+    row = session.get(InAppNotification, notification_id)
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+    session.delete(row)
+    session.commit()

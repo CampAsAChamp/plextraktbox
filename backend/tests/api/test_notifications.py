@@ -108,3 +108,49 @@ def test_mark_inapp_read(client: TestClient) -> None:
     mark_all = client.post("/api/notifications/inapp/read-all", headers=HEADERS)
     assert mark_all.status_code == 204
     assert client.get("/api/notifications/inapp/unread-count").json()["unread_count"] == 0
+
+
+def test_delete_inapp_notification(client: TestClient) -> None:
+    _create_user_and_login(client)
+    create = client.post(
+        "/api/notifications/configs",
+        json={"channel": "inapp", "scope": "global"},
+        headers=HEADERS,
+    )
+    config_id = create.json()["id"]
+    client.post(f"/api/notifications/configs/{config_id}/test", headers=HEADERS)
+
+    items = client.get("/api/notifications/inapp").json()["items"]
+    notification_id = items[0]["id"]
+
+    deleted = client.delete(f"/api/notifications/inapp/{notification_id}", headers=HEADERS)
+    assert deleted.status_code == 204
+
+    remaining_ids = [item["id"] for item in client.get("/api/notifications/inapp").json()["items"]]
+    assert notification_id not in remaining_ids
+
+    missing = client.delete(f"/api/notifications/inapp/{notification_id}", headers=HEADERS)
+    assert missing.status_code == 404
+
+
+def test_clear_all_inapp_notifications(client: TestClient) -> None:
+    _create_user_and_login(client)
+    create = client.post(
+        "/api/notifications/configs",
+        json={"channel": "inapp", "scope": "global"},
+        headers=HEADERS,
+    )
+    config_id = create.json()["id"]
+    client.post(f"/api/notifications/configs/{config_id}/test", headers=HEADERS)
+    client.post(f"/api/notifications/configs/{config_id}/test", headers=HEADERS)
+
+    items = client.get("/api/notifications/inapp").json()["items"]
+    assert len(items) >= 2
+
+    cleared = client.delete("/api/notifications/inapp/clear-all", headers=HEADERS)
+    assert cleared.status_code == 204
+
+    remaining = client.get("/api/notifications/inapp").json()
+    assert remaining["items"] == []
+    assert remaining["unread_count"] == 0
+    assert client.get("/api/notifications/inapp/unread-count").json()["unread_count"] == 0

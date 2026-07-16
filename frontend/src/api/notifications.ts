@@ -61,3 +61,11 @@ export function markInAppRead(id: number) {
 export function markAllInAppRead() {
   return api.post<void>("/notifications/inapp/read-all")
 }
+
+export function deleteInAppNotification(id: number) {
+  return api.del<void>(`/notifications/inapp/${id}`)
+}
+
+export function clearAllInAppNotifications() {
+  return api.del<void>("/notifications/inapp/clear-all")
+}

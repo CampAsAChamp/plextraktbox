@@ -3,7 +3,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 
-import { getUnreadCount, type InAppNotification, listInAppNotifications, markAllInAppRead, markInAppRead } from "src/api/notifications"
+import {
+  clearAllInAppNotifications,
+  deleteInAppNotification,
+  getUnreadCount,
+  type InAppNotification,
+  listInAppNotifications,
+  markAllInAppRead,
+  markInAppRead,
+} from "src/api/notifications"
+import { CheckIcon } from "src/components/icons/CheckIcon"
+import { TrashIcon } from "src/components/icons/TrashIcon"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import { showToast } from "src/toast"
 import { formatDateTime } from "src/utils/dateTimeFormat"
@@ -44,17 +54,48 @@ function errorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback
 }
 
-function NotificationItem({ item, onRead }: { item: InAppNotification; onRead: (id: number) => void }) {
+function NotificationItem({
+  item,
+  onRead,
+  onDelete,
+  deleting,
+}: {
+  item: InAppNotification
+  onRead: (id: number) => void
+  onDelete: (id: number) => void
+  deleting: boolean
+}) {
   const { preferences } = useDisplayPreferences()
+
+  const deleteButton = (
+    <ActionIcon
+      size="sm"
+      variant="subtle"
+      color="gray"
+      aria-label="Delete notification"
+      loading={deleting}
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        onDelete(item.id)
+      }}
+    >
+      <TrashIcon size={12} />
+    </ActionIcon>
+  )
+
   const content = (
     <Stack gap={2}>
       <Group justify="space-between" wrap="nowrap" gap="xs">
         <Text size="sm" fw={item.read ? 400 : 600} lineClamp={1}>
           {item.title}
         </Text>
-        <Badge size="xs" color={levelColor(item.level)} variant="light">
-          {item.level}
-        </Badge>
+        <Group gap={4} wrap="nowrap">
+          <Badge size="xs" color={levelColor(item.level)} variant="light">
+            {item.level}
+          </Badge>
+          {deleteButton}
+        </Group>
       </Group>
       <Text size="xs" c="dimmed" lineClamp={2}>
         {item.body}
@@ -137,7 +178,35 @@ export function NotificationBell() {
     },
   })
 
+  const remove = useMutation({
+    mutationFn: deleteInAppNotification,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] })
+    },
+    onError: (error: unknown) => {
+      showToast({
+        color: "red",
+        message: errorMessage(error, "Could not delete notification"),
+      })
+    },
+  })
+
+  const clearAll = useMutation({
+    mutationFn: clearAllInAppNotifications,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      showToast({ color: "green", message: "All notifications cleared" })
+    },
+    onError: (error: unknown) => {
+      showToast({
+        color: "red",
+        message: errorMessage(error, "Could not clear notifications"),
+      })
+    },
+  })
+
   const unreadCount = unreadQuery.data?.unread_count ?? 0
+  const itemCount = listQuery.data?.items.length ?? 0
 
   return (
     <Menu
@@ -156,11 +225,29 @@ export function NotificationBell() {
         </Indicator>
       </Menu.Target>
       <Menu.Dropdown>
-        <Group justify="space-between" px="sm" py={4}>
+        <Group justify="space-between" px="sm" py={4} wrap="nowrap" gap="xs">
           <Menu.Label style={{ padding: 0 }}>Notifications</Menu.Label>
-          <Button variant="subtle" size="compact-xs" disabled={unreadCount === 0 || markAll.isPending} onClick={() => markAll.mutate()}>
-            Mark all read
-          </Button>
+          <Group gap={4} wrap="nowrap">
+            <Button
+              variant="subtle"
+              size="compact-xs"
+              disabled={unreadCount === 0 || markAll.isPending}
+              leftSection={<CheckIcon size={12} />}
+              onClick={() => markAll.mutate()}
+            >
+              Mark all read
+            </Button>
+            <Button
+              variant="subtle"
+              color="red"
+              size="compact-xs"
+              disabled={itemCount === 0 || clearAll.isPending}
+              leftSection={<TrashIcon size={12} />}
+              onClick={() => clearAll.mutate()}
+            >
+              Clear all
+            </Button>
+          </Group>
         </Group>
         <ScrollArea.Autosize mah={360} type="auto">
           {listQuery.isFetching && !listQuery.data ? (
@@ -172,7 +259,15 @@ export function NotificationBell() {
               {errorMessage(listQuery.error, "Could not load notifications")}
             </Text>
           ) : listQuery.data?.items.length ? (
-            listQuery.data.items.map((item) => <NotificationItem key={item.id} item={item} onRead={(id) => markRead.mutate(id)} />)
+            listQuery.data.items.map((item) => (
+              <NotificationItem
+                key={item.id}
+                item={item}
+                onRead={(id) => markRead.mutate(id)}
+                onDelete={(id) => remove.mutate(id)}
+                deleting={remove.isPending && remove.variables === item.id}
+              />
+            ))
           ) : (
             <Text size="sm" c="dimmed" px="sm" py="md">
               No notifications yet
