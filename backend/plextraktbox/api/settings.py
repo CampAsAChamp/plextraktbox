@@ -8,20 +8,25 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import FileResponse
+from sqlmodel import Session
 from starlette.background import BackgroundTask
 
+from plextraktbox import db
 from plextraktbox.api.deps import CurrentUserDep, SessionDep, require_csrf
 from plextraktbox.config import get_settings
+from plextraktbox.models.user import User
 from plextraktbox.scheduler import get_scheduler_manager
 from plextraktbox.schemas.settings import (
+    BackupRestoreResponse,
     ClearSyncCachesRequest,
     ClearSyncCachesResponse,
     SettingsResponse,
     SettingsUpdateRequest,
 )
 from plextraktbox.schemas.themes import ThemeActiveResponse, ThemeUpdateRequest
+from plextraktbox.services import backup as backup_svc
 from plextraktbox.services import settings as settings_svc
 from plextraktbox.services import sync_caches as sync_caches_svc
 
@@ -121,3 +126,60 @@ def download_backup(_user: CurrentUserDep) -> FileResponse:
         media_type="application/x-sqlite3",
         background=BackgroundTask(_unlink_quiet, tmp_path),
     )
+
+
+def _require_user_id(request: Request) -> int:
+    """Authenticate without holding a session open for the whole request.
+
+    Restore disposes the SQLAlchemy engine mid-request, so ``CurrentUserDep`` /
+    ``SessionDep`` must not keep a live session across the replace.
+    """
+    user_id = request.session.get("user_id")
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    with Session(db.engine) as session:
+        user = session.get(User, user_id)
+        if user is None:
+            request.session.clear()
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        return int(user.id) if user.id is not None else int(user_id)
+
+
+@router.post(
+    "/backup/restore",
+    response_model=BackupRestoreResponse,
+    dependencies=[Depends(require_csrf)],
+)
+async def restore_backup(
+    request: Request,
+    file: UploadFile = File(...),
+) -> BackupRestoreResponse:
+    """Replace the live database with an uploaded SQLite backup."""
+    _require_user_id(request)
+
+    suffix = Path(file.filename or "backup.db").suffix.lower()
+    if suffix and suffix not in {".db", ".sqlite", ".sqlite3"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Upload a SQLite database file (.db)",
+        )
+
+    fd, tmp_name = tempfile.mkstemp(prefix="plextraktbox-restore-", suffix=".db")
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        with tmp_path.open("wb") as out:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+
+        try:
+            backup_svc.restore_database(tmp_path)
+        except backup_svc.BackupRestoreError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+    finally:
+        _unlink_quiet(tmp_path)
+
+    return BackupRestoreResponse()

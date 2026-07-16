@@ -14,7 +14,8 @@ These apply whenever touching Dockerfile, compose, or entrypoint — not only at
 - **Single container** — FastAPI serves the SPA, runs the scheduler, SQLite on `/data`
 - **`/data` on a ZFS dataset** — host-path mount, not a Docker-managed volume, so the DB survives
   app reinstalls. Prefer ZFS snapshots of that dataset for routine backups; Settings also offers an
-  ad-hoc SQLite download (`GET /api/settings/backup`).
+  ad-hoc SQLite download (`GET /api/settings/backup`) and restore (`POST /api/settings/backup/restore`).
+  Restore replaces the live DB file (a `.pre-restore` copy is left beside it); reload the UI afterward.
 - **One HTTP port** (8000) — no host networking, no privileged mode, no Docker-socket access
 - **No hardcoded UIDs** — support `PUID`/`PGID` env vars so file ownership on the mounted dataset
   behaves on TrueNAS

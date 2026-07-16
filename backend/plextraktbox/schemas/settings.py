@@ -112,3 +112,8 @@ class ClearSyncCachesResponse(BaseModel):
     letterboxd_slug: int
     trakt_lists: int
     discover_keys: int
+
+
+class BackupRestoreResponse(BaseModel):
+    ok: bool = True
+    message: str = "Database restored. Reload the page to continue."

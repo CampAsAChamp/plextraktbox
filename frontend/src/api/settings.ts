@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api } from "src/api/client";
 
 export interface ExcludeIds {
   tmdb: string[];
@@ -80,6 +80,32 @@ export async function downloadBackup(): Promise<void> {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+export async function restoreBackup(file: File): Promise<{ ok: boolean; message: string }> {
+  const body = new FormData();
+  body.append("file", file);
+  const resp = await fetch("/api/settings/backup/restore", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body,
+  });
+  if (!resp.ok) {
+    let detail = `Restore failed (${resp.status})`;
+    try {
+      const payload = (await resp.json()) as { detail?: unknown };
+      if (typeof payload.detail === "string") {
+        detail = payload.detail;
+      }
+    } catch {
+      // keep status message
+    }
+    throw new Error(detail);
+  }
+  return resp.json() as Promise<{ ok: boolean; message: string }>;
 }
 
 export function changePassword(currentPassword: string, newPassword: string): Promise<void> {
