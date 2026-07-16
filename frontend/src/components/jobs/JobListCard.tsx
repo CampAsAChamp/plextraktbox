@@ -1,4 +1,4 @@
-import { Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core"
+import { Box, Group, Paper, Stack, Text, useMantineTheme } from "@mantine/core"
 import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 
@@ -8,14 +8,13 @@ import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
-import { RowActionsMenu } from "src/components/table/RowActionsMenu"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
 import { formatDateTime, formatScheduleDateTime } from "src/utils/dateTimeFormat"
 
 type JobListCardProps = {
   job: Job
-  /** Labeled menu actions (Run, Edit, …). */
+  /** Icon action buttons (Run, Edit, …). */
   actions: ReactNode
   /** When true, show last-run summary (Dashboard). */
   showLastRun?: boolean
@@ -85,7 +84,7 @@ export function JobListCard({ job, actions, showLastRun = false }: JobListCardPr
               <DryRunBadge dryRun={job.dry_run} />
             </Group>
           </Stack>
-          <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>{actions}</RowActionsMenu>
+          <Box style={{ flexShrink: 0 }}>{actions}</Box>
         </Group>
 
         <Stack gap={4}>

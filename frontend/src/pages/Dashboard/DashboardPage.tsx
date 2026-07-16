@@ -1,4 +1,4 @@
-import { Alert, Badge, Box, Button, Group, Loader, Menu, Stack, Table, Text, Title } from "@mantine/core"
+import { ActionIcon, Alert, Badge, Box, Button, Group, Loader, Stack, Table, Text, Title, Tooltip } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -9,13 +9,15 @@ import type { ConnectionSummary } from "src/api/connections"
 import { listJobs, runJob } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
 import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge"
+import { ListIcon } from "src/components/icons/ListIcon"
+import { PencilIcon } from "src/components/icons/PencilIcon"
+import { PlusIcon } from "src/components/icons/PlusIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
 import { JobListCard } from "src/components/jobs/JobListCard"
 import { RunStatusBadge } from "src/components/runs/RunBadges"
 import { RunSummaryStats } from "src/components/runs/RunSummaryStats"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
-import { RowActionsMenu } from "src/components/table/RowActionsMenu"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
 import { showToast } from "src/toast"
@@ -86,17 +88,34 @@ function LastRunCell({ job }: { job: Job }) {
 
 function jobActions(job: Job, isRunning: (job: Job, mode: RunMode) => boolean, onRun: (job: Job, mode: RunMode) => void) {
   return (
-    <>
-      <Menu.Item disabled={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
-        {isRunning(job, "run") ? "Running…" : "Run now"}
-      </Menu.Item>
-      <Menu.Item disabled={isRunning(job, "dry-run")} onClick={() => onRun(job, "dry-run")}>
-        {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
-      </Menu.Item>
-      <Menu.Item component={Link} to={`/jobs/${job.id}/edit`}>
-        Edit
-      </Menu.Item>
-    </>
+    <Group gap={4} wrap="wrap">
+      <Tooltip label="Run now">
+        <ActionIcon
+          variant="light"
+          aria-label={`Run ${job.name}`}
+          loading={isRunning(job, "run")}
+          onClick={() => onRun(job, "run")}
+        >
+          ▶
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Dry-run">
+        <ActionIcon
+          variant="light"
+          color="blue"
+          aria-label={`Dry-run ${job.name}`}
+          loading={isRunning(job, "dry-run")}
+          onClick={() => onRun(job, "dry-run")}
+        >
+          ▷
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Edit">
+        <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} variant="subtle" aria-label={`Edit ${job.name}`}>
+          <PencilIcon />
+        </ActionIcon>
+      </Tooltip>
+    </Group>
   )
 }
 
@@ -148,7 +167,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
             Signed in as <strong>{user.username}</strong> · job health at a glance
           </Text>
         </Stack>
-        <Button component={Link} to="/jobs/new" variant="light" size="sm">
+        <Button component={Link} to="/jobs/new" variant="light" size="sm" leftSection={<PlusIcon />}>
           New job
         </Button>
       </Group>
@@ -212,7 +231,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
               {jobs.length}
             </Badge>
           </Group>
-          <Button component={Link} to="/jobs" variant="light" size="xs">
+          <Button component={Link} to="/jobs" variant="light" size="xs" leftSection={<ListIcon />}>
             Manage jobs
           </Button>
         </Group>
@@ -277,7 +296,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
                         <LastRunCell job={job} />
                       </Table.Td>
                       <Table.Td>
-                        <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>{jobActions(job, isRunning, onRun)}</RowActionsMenu>
+                        {jobActions(job, isRunning, onRun)}
                       </Table.Td>
                     </Table.Tr>
                   ))}

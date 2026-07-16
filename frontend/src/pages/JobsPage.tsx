@@ -1,4 +1,4 @@
-import { Box, Button, Group, Loader, Menu, Modal, Stack, Table, Text, Title } from "@mantine/core"
+import { ActionIcon, Box, Button, Group, Loader, Modal, Stack, Table, Text, Title, Tooltip } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -7,13 +7,14 @@ import { ApiError } from "src/api/client"
 import { cloneJob, deleteJob, listJobs, runJob } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
 import { DATA_TYPE_LABELS, SOURCE_PAIR_LABELS } from "src/api/jobs"
+import { PencilIcon } from "src/components/icons/PencilIcon"
+import { PlusIcon } from "src/components/icons/PlusIcon"
 import { TrashIcon } from "src/components/icons/TrashIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
 import { JobListCard } from "src/components/jobs/JobListCard"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
 import { RoundedTable } from "src/components/table/RoundedTable"
-import { RowActionsMenu } from "src/components/table/RowActionsMenu"
 import { SortableTh, sortedColumnCellClass } from "src/components/table/SortableTh"
 import { useDisplayPreferences } from "src/settings/DisplayPreferencesProvider"
 import dryRunRowClasses from "src/styles/dryRunRow.module.css"
@@ -42,24 +43,6 @@ function StrokeIcon({ size = 14, children }: { size?: number; children: React.Re
   )
 }
 
-function PlusIcon() {
-  return (
-    <StrokeIcon>
-      <path d="M12 5v14" />
-      <path d="M5 12h14" />
-    </StrokeIcon>
-  )
-}
-
-function PencilIcon() {
-  return (
-    <StrokeIcon>
-      <path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4L4 16v4" />
-      <path d="M13.5 6.5l4 4" />
-    </StrokeIcon>
-  )
-}
-
 function HistoryIcon() {
   return (
     <StrokeIcon>
@@ -76,6 +59,58 @@ function CloneIcon() {
       <rect x="9" y="9" width="13" height="13" rx="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </StrokeIcon>
+  )
+}
+
+type JobActionsProps = {
+  job: Job
+  isRunning: (job: Job, mode: RunMode) => boolean
+  onRun: (job: Job, mode: RunMode) => void
+  onClone: (job: Job) => void
+  clonePending: boolean
+  onDelete: (job: Job) => void
+}
+
+function JobActions({ job, isRunning, onRun, onClone, clonePending, onDelete }: JobActionsProps) {
+  return (
+    <Group gap={4} wrap="wrap">
+      <Tooltip label="Run now">
+        <ActionIcon variant="light" aria-label="Run now" loading={isRunning(job, "run")} onClick={() => onRun(job, "run")}>
+          ▶
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Dry-run">
+        <ActionIcon
+          variant="light"
+          color="blue"
+          aria-label="Dry-run"
+          loading={isRunning(job, "dry-run")}
+          onClick={() => onRun(job, "dry-run")}
+        >
+          ▷
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Edit">
+        <ActionIcon component={Link} to={`/jobs/${job.id}/edit`} variant="subtle" aria-label="Edit">
+          <PencilIcon />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Clone">
+        <ActionIcon variant="subtle" aria-label="Clone" loading={clonePending} onClick={() => onClone(job)}>
+          <CloneIcon />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="History">
+        <ActionIcon component={Link} to={`/runs?job_id=${job.id}`} variant="subtle" aria-label="History">
+          <HistoryIcon />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Delete">
+        <ActionIcon color="red" variant="subtle" aria-label="Delete" onClick={() => onDelete(job)}>
+          <TrashIcon />
+        </ActionIcon>
+      </Tooltip>
+    </Group>
   )
 }
 
@@ -206,31 +241,14 @@ export function JobsPage() {
                 key={job.id}
                 job={job}
                 actions={
-                  <>
-                    <Menu.Item disabled={isRunning(job, "run")} onClick={() => runMutation.mutate({ job, mode: "run" })}>
-                      {isRunning(job, "run") ? "Running…" : "Run now"}
-                    </Menu.Item>
-                    <Menu.Item disabled={isRunning(job, "dry-run")} onClick={() => runMutation.mutate({ job, mode: "dry-run" })}>
-                      {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
-                    </Menu.Item>
-                    <Menu.Item component={Link} to={`/jobs/${job.id}/edit`} leftSection={<PencilIcon />}>
-                      Edit
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<CloneIcon />}
-                      disabled={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
-                      onClick={() => cloneMutation.mutate(job)}
-                    >
-                      Clone
-                    </Menu.Item>
-                    <Menu.Item component={Link} to={`/runs?job_id=${job.id}`} leftSection={<HistoryIcon />}>
-                      History
-                    </Menu.Item>
-                    <Menu.Divider />
-                    <Menu.Item color="red" leftSection={<TrashIcon />} onClick={() => setJobPendingDelete(job)}>
-                      Delete
-                    </Menu.Item>
-                  </>
+                  <JobActions
+                    job={job}
+                    isRunning={isRunning}
+                    onRun={(j, mode) => runMutation.mutate({ job: j, mode })}
+                    onClone={(j) => cloneMutation.mutate(j)}
+                    clonePending={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+                    onDelete={setJobPendingDelete}
+                  />
                 }
               />
             ))}
@@ -275,31 +293,14 @@ export function JobsPage() {
                       <JobStatusBadge enabled={job.enabled} />
                     </Table.Td>
                     <Table.Td>
-                      <RowActionsMenu ariaLabel={`Actions for ${job.name}`}>
-                        <Menu.Item disabled={isRunning(job, "run")} onClick={() => runMutation.mutate({ job, mode: "run" })}>
-                          {isRunning(job, "run") ? "Running…" : "Run now"}
-                        </Menu.Item>
-                        <Menu.Item disabled={isRunning(job, "dry-run")} onClick={() => runMutation.mutate({ job, mode: "dry-run" })}>
-                          {isRunning(job, "dry-run") ? "Dry-running…" : "Dry-run"}
-                        </Menu.Item>
-                        <Menu.Item component={Link} to={`/jobs/${job.id}/edit`} leftSection={<PencilIcon />}>
-                          Edit
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<CloneIcon />}
-                          disabled={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
-                          onClick={() => cloneMutation.mutate(job)}
-                        >
-                          Clone
-                        </Menu.Item>
-                        <Menu.Item component={Link} to={`/runs?job_id=${job.id}`} leftSection={<HistoryIcon />}>
-                          History
-                        </Menu.Item>
-                        <Menu.Divider />
-                        <Menu.Item color="red" leftSection={<TrashIcon />} onClick={() => setJobPendingDelete(job)}>
-                          Delete
-                        </Menu.Item>
-                      </RowActionsMenu>
+                      <JobActions
+                        job={job}
+                        isRunning={isRunning}
+                        onRun={(j, mode) => runMutation.mutate({ job: j, mode })}
+                        onClone={(j) => cloneMutation.mutate(j)}
+                        clonePending={cloneMutation.isPending && cloneMutation.variables?.id === job.id}
+                        onDelete={setJobPendingDelete}
+                      />
                     </Table.Td>
                   </Table.Tr>
                 ))}
