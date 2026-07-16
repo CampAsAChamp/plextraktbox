@@ -278,9 +278,7 @@ def _login(
 
 def _raise_challenge_or_reraise(exc: httpx.HTTPStatusError) -> None:
     response = exc.response
-    if response is not None and (
-        response.status_code == 403 or _looks_like_cloudflare_challenge(response)
-    ):
+    if response is not None and (response.status_code == 403 or _looks_like_cloudflare_challenge(response)):
         if not get_settings().flaresolverr_url:
             raise ValueError(_CF_HINT) from exc
         raise ValueError(
