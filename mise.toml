@@ -58,7 +58,7 @@ depends = ["install-backend", "install-frontend", "check-api-types"]
 run = '''
 backend/.venv/bin/ruff check backend/plextraktbox
 backend/.venv/bin/ruff format --check backend/plextraktbox
-backend/.venv/bin/mypy backend/plextraktbox
+backend/.venv/bin/mypy --config-file backend/pyproject.toml backend/plextraktbox
 cd frontend && npm run lint && npm run format:check && npm run typecheck
 '''
 

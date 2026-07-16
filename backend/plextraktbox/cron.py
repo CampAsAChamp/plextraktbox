@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from apscheduler.triggers.cron import CronTrigger  # type: ignore[import-untyped]
+from apscheduler.triggers.cron import CronTrigger
 from tzlocal import get_localzone_name
 
 DEFAULT_CRON_TIMEZONE = "UTC"
