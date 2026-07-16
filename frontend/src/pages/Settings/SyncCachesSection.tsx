@@ -6,6 +6,7 @@ import { ApiError } from "src/api/client"
 import { type AppSettingsInput, clearSyncCaches, getSettings, updateSettings } from "src/api/settings"
 import { SaveIcon } from "src/components/icons/SaveIcon"
 import { SyncIcon } from "src/components/icons/SyncIcon"
+import { TrashIcon } from "src/components/icons/TrashIcon"
 import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
 import { showToast } from "src/toast"
 
@@ -85,9 +86,9 @@ export function SyncCachesSection() {
   }
 
   return (
-    <Paper id="settings-sync-caches" withBorder p="md" data-settings-section="Sync caches" style={{ scrollMarginTop: 80 }}>
+    <Paper id="settings-sync-caches" withBorder p="md" data-settings-section="Caches" style={{ scrollMarginTop: 80 }}>
       <Stack gap="md">
-        <SettingsSectionTitle icon={<SyncIcon size={18} />}>Sync caches</SettingsSectionTitle>
+        <SettingsSectionTitle icon={<SyncIcon size={18} />}>Caches</SettingsSectionTitle>
         <Text size="sm" c="dimmed">
           Reuse Letterboxd exports, Trakt lists, slug→ID resolves, and Plex Discover keys across sync runs. Plex library walks are still
           once-per-run only (not persisted).
@@ -138,6 +139,7 @@ export function SyncCachesSection() {
           <Button
             variant="light"
             color="red"
+            leftSection={<TrashIcon />}
             loading={clearMutation.isPending}
             disabled={!clearExport && !clearSlug && !clearTrakt && !clearDiscover}
             onClick={() => clearMutation.mutate()}

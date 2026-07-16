@@ -11,7 +11,7 @@ import { UserIcon } from "src/components/icons/UserIcon"
 const INITIAL_SECTIONS = [
   { id: "settings-account", value: "Account", depth: 1 },
   { id: "settings-sync", value: "Sync defaults & safety", depth: 1 },
-  { id: "settings-sync-caches", value: "Sync caches", depth: 1 },
+  { id: "settings-sync-caches", value: "Caches", depth: 1 },
   { id: "settings-backup", value: "Backup", depth: 1 },
   { id: "settings-display", value: "Display preferences", depth: 1 },
   { id: "settings-theme", value: "Theme", depth: 1 },

@@ -9,6 +9,7 @@ import type { ConnectionSummary } from "src/api/connections"
 import { listJobs, runJob } from "src/api/jobApi"
 import type { Job } from "src/api/jobs"
 import { ConnectionStatusBadge } from "src/components/connections/ConnectionStatusBadge"
+import { ConnectIcon } from "src/components/icons/ConnectIcon"
 import { ListIcon } from "src/components/icons/ListIcon"
 import { PencilIcon } from "src/components/icons/PencilIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
@@ -176,7 +177,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
         <Alert color="orange" title="Re-authorization required">
           <Stack gap="xs">
             <Text size="sm">One or more service connections need attention. Update credentials to resume sync jobs.</Text>
-            <Button component={Link} to="/connections" variant="light" size="xs" w="fit-content">
+            <Button component={Link} to="/connections" variant="light" size="xs" w="fit-content" leftSection={<ConnectIcon />}>
               Manage connections
             </Button>
           </Stack>
@@ -218,7 +219,7 @@ export function DashboardPage({ user, connections = [] }: DashboardPageProps) {
             <ConnectionStatusBadge key={item.service} connection={item} />
           ))}
         </Group>
-        <Button component={Link} to="/connections" variant="subtle" size="xs" w="fit-content">
+        <Button component={Link} to="/connections" variant="subtle" size="xs" w="fit-content" leftSection={<ConnectIcon />}>
           Manage connections
         </Button>
       </Stack>

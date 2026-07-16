@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Divider, Group, Paper, Stack, Switch, Text, TextInput } from "@mantine/core"
+import { Button, Checkbox, Divider, Group, Paper, Stack, Switch, Text, TextInput } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
@@ -16,6 +16,7 @@ import {
 import { BellIcon } from "src/components/icons/BellIcon"
 import { DiscordIcon } from "src/components/icons/DiscordIcon"
 import { SaveIcon } from "src/components/icons/SaveIcon"
+import { TrashIcon } from "src/components/icons/TrashIcon"
 import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
 import { showToast } from "src/toast"
 
@@ -164,10 +165,16 @@ function ChannelSettings({
         </Button>
         {config ? (
           <>
-            <Button variant="light" loading={test.isPending} onClick={() => test.mutate()}>
+            <Button variant="light" loading={test.isPending} onClick={() => test.mutate()} leftSection={<BellIcon />}>
               Send test
             </Button>
-            <Button variant="subtle" color="red" loading={remove.isPending} onClick={() => remove.mutate()}>
+            <Button
+              variant="subtle"
+              color="red"
+              loading={remove.isPending}
+              onClick={() => remove.mutate()}
+              leftSection={<TrashIcon />}
+            >
               Remove
             </Button>
           </>
@@ -175,21 +182,6 @@ function ChannelSettings({
       </Group>
     </Stack>
   )
-
-  if (channel === "discord") {
-    return (
-      <Box
-        p="sm"
-        style={{
-          borderLeft: `3px solid ${DISCORD_BLURPLE}`,
-          borderRadius: "var(--mantine-radius-lg)",
-          background: "color-mix(in srgb, var(--mantine-color-body) 92%, #5865F2 8%)",
-        }}
-      >
-        {body}
-      </Box>
-    )
-  }
 
   return body
 }

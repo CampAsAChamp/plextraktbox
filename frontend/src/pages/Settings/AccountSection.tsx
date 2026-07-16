@@ -6,6 +6,7 @@ import { z } from "zod"
 import type { User } from "src/api/auth"
 import { ApiError } from "src/api/client"
 import { changePassword } from "src/api/settings"
+import { LockIcon } from "src/components/icons/LockIcon"
 import { UserIcon } from "src/components/icons/UserIcon"
 import { SettingsSectionTitle } from "src/components/SettingsSectionTitle"
 import { showToast } from "src/toast"
@@ -112,7 +113,7 @@ export function AccountSection({ user }: AccountSectionProps) {
               required
             />
             <Group>
-              <Button type="submit" loading={mutation.isPending}>
+              <Button type="submit" loading={mutation.isPending} leftSection={<LockIcon />}>
                 Update password
               </Button>
             </Group>

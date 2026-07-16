@@ -96,7 +96,7 @@ export function BackupSection() {
             <Button variant="default" disabled={restoreLoading} onClick={() => setPendingFile(null)}>
               Cancel
             </Button>
-            <Button color="orange" loading={restoreLoading} onClick={() => void handleRestoreConfirm()}>
+            <Button color="orange" loading={restoreLoading} leftSection={<UploadIcon />} onClick={() => void handleRestoreConfirm()}>
               Restore
             </Button>
           </Group>
