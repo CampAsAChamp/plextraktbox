@@ -178,6 +178,16 @@ export function ThemeSection() {
     uploadMutation.mutate({ css, filename: file.name })
   }
 
+  async function handleRefreshThemes() {
+    const result = await themesQuery.refetch()
+    if (result.error) {
+      const message = result.error instanceof Error ? result.error.message : "Failed to refresh themes"
+      showToast({ color: "red", message })
+      return
+    }
+    showToast({ color: "green", message: "Themes refreshed" })
+  }
+
   return (
     <Paper id="settings-theme" withBorder p="md" data-settings-section="Theme" style={{ scrollMarginTop: 80 }}>
       <Stack gap="lg">
@@ -204,7 +214,7 @@ export function ThemeSection() {
         </SimpleGrid>
 
         <Group gap="sm">
-          <Button variant="light" loading={themesQuery.isFetching} onClick={() => void themesQuery.refetch()} leftSection={<SyncIcon />}>
+          <Button variant="light" loading={themesQuery.isFetching} onClick={() => void handleRefreshThemes()} leftSection={<SyncIcon />}>
             Refresh themes
           </Button>
           <FileButton onChange={(file) => void handleFile(file)} accept=".css,text/css">
