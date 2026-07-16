@@ -119,7 +119,35 @@ flowchart LR
   M -->|3rd| TVDB[tvdb]
 ```
 
-Letterboxd titles resolve `letterboxd.com/...` → TMDB id (via TMDB client) → `tmdb://` before match.
+### Letterboxd ID resolution
+
+Letterboxd CSV rows carry film URLs/slugs, not TMDB/IMDb. Before matching, each title is resolved
+to external IDs (via TMDB), then stored on the `MediaItem` as `tmdb` / `imdb`.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant LB as LetterboxdSource
+  participant Exp as CSV export (/data TTL)
+  participant Cache as letterboxd_slug_cache
+  participant TMDB as tmdb_client
+  participant Item as MediaItem
+
+  LB->>Exp: download_export (or reuse TTL cache)
+  Exp-->>LB: ratings / watchlist / diary CSVs
+  loop each row with film URL
+    LB->>LB: letterboxd_slug(url)
+    LB->>Cache: lookup slug
+    alt cache hit
+      Cache-->>LB: tmdb / imdb
+    else cache miss (or expired miss TTL)
+      LB->>TMDB: resolve_letterboxd_film(slug)
+      TMDB-->>LB: identifiers
+      LB->>Cache: write_hit / write_miss
+    end
+    LB->>Item: identifiers{tmdb, imdb, …}
+  end
+```
 
 **Caches:** Letterboxd CSV export TTL + slug→ids; Trakt list TTL; Plex Discover key map; Plex
 library loaded once per run. Cross-service matching remains ID-based.

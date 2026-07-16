@@ -25,8 +25,8 @@ without rework.
 ### Locked decisions (from requirements Q&A)
 
 - **Stack:** Python **FastAPI** backend (reuses `plexapi`/`pytrakt` + PlexTraktSync engine patterns) + **React/TypeScript SPA** frontend.
-- **Deploy:** **single Docker container** — FastAPI serves the built React bundle + runs an in-process scheduler + SQLite.
-- **App auth:** **single local user** (email/username + bcrypt password, session cookie), set in first-run wizard.
+- **Deploy:** **single Docker container** — FastAPI serves the built React bundle + runs an in-process scheduler + SQLite. Diagram: [app-flows.md § Container](app-flows.md#container--process-shape).
+- **App auth:** **single local user** (email/username + bcrypt password, session cookie), set in first-run wizard. Diagram: [app-flows.md § First-run / auth gate](app-flows.md#first-run--auth-gate).
 - **Letterboxd:** **read-only** (scrape reads; no write-back — Letterboxd has no usable write API for personal use).
 - **Jobs:** **per-service-pair jobs**, each independently scheduled/configured.
 - **Notifications:** **Discord webhook + in-app**.
@@ -94,7 +94,8 @@ menus, stacked LogViewer/settings/forms on narrow viewports, `viewport-fit=cover
 Adapts PlexTraktSync's GUID matching, stateless diffing, and dry-run into **Sources** (per-service read/write adapters) + **Reconcilers** (per-data-type source-of-truth logic).
 
 **Flow charts and sequence diagrams** (run lifecycle, watchlist / ratings / watched, matching):
-[sync-flows.md](sync-flows.md).
+[sync-flows.md](sync-flows.md). App-level diagrams (container, auth, log streaming, notifications,
+data model): [app-flows.md](app-flows.md).
 
 - `media_item.py` — service-agnostic `MediaItem`: `identifiers{tmdb,imdb,tvdb + native ids}`, `watchlisted`, `rating`, `watched`/`watched_at`, `media_type` (`movie` | `show` | `episode`), plus `season`/`episode` for episode match keys.
 - `guid.py` — port of PlexTraktSync `PlexGuid`/`MediaFactory`: parse Plex guids → structured `Guid`; LB path resolves URL → TMDB id → `tmdb://<id>`.
@@ -123,6 +124,8 @@ Reference: [plexapi Discover rating discussion](https://github.com/pkkid/python-
 
 ## Data model (SQLite; secrets Fernet-encrypted at rest)
 
+ER diagram: [app-flows.md § Data model](app-flows.md#data-model-sqlite).
+
 - **user** — username, email, password_hash(bcrypt); single row enforced in app. Profile image derived from email via [Gravatar](https://gravatar.com) (`avatar_url` on auth responses).
 - **connection** — service(plex|trakt|letterboxd|tmdb), status, `config_json`(non-secret: urls/usernames/libraries), `secret_enc`(tokens/password/api key), `token_expires_at`.
 - **job** — name, source_pair(e.g. plex_trakt), enabled, cron, dry_run, `require_dry_run_first`, `data_types_json`(subset of watchlist/ratings/watched), `notify_override_json`, `exclude_ids_json`(optional per-job TMDB/IMDb/TVDB ignore list; unioned with global).
@@ -141,6 +144,8 @@ Per-run bound structlog logger → custom processor (`logstream/handler.py`) doe
 SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connect replay historical rows since `?after_id` + ring backlog, then stream live until end. SSE over WS: one-way, proxy-friendly, cookie auth, auto-reconnect.
 **React LogViewer:** `fetch-event-source` (reconnect w/ `after_id` cursor, no dupes); **auto-scroll stick-to-bottom** w/ "jump to latest" pill (disengages on manual scroll-up); **timestamp coloring** (muted) + **level prefix colors** (INFO/WARN/ERROR/DEBUG); level filter + text search (server-side level filter for big runs); **virtualized** list for 10k+ lines. Completed runs page historical `LogEntry` via REST through the same component.
 
+Sequence diagram: [app-flows.md § Live log streaming](app-flows.md#live-log-streaming).
+
 ## Scheduler + run-now + dry-run
 
 `scheduler/manager.py`: AsyncIOScheduler + SQLAlchemyJobStore, started in FastAPI lifespan; on startup register a CronTrigger per enabled job using Settings `cron_timezone` (default UTC); job CRUD calls `sync_job()` to add/reschedule/remove live; changing `cron_timezone` reloads all job triggers; `max_instances=1`+`coalesce=True` (no self-overlap).
@@ -154,6 +159,8 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Notifications
 
 `notifications/dispatcher.py` called at run finalize: resolve job-override-else-global configs filtered by run status vs on_success/on_failure; build payload from RunSummary (name, status, counts, duration, link `/#/runs/{id}`, error excerpt); fan out concurrently to **discord** (httpx embed, color by status), **inapp** (insert row → bell). Each channel isolated (own try/except; failure logs WARN, never aborts run). `POST /api/notifications/{id}/test` sends synthetic payload.
+
+Sequence diagram: [app-flows.md § Notification fan-out](app-flows.md#notification-fan-out).
 
 ## Security
 

@@ -4,6 +4,7 @@
 | --- | ------- |
 | [architecture.md](architecture.md) | Stack, sync engine, data model, security — the "why" |
 | [sync-flows.md](sync-flows.md) | Sync job flow charts + sequence diagrams (per data type) |
+| [app-flows.md](app-flows.md) | Container, auth, log streaming, notifications, data model ER |
 | [phases/README.md](phases/README.md) | Remaining work (TrueNAS catalog) |
 | [testing.md](testing.md) | Smoke tests, automated checks, testing conventions |
 | [dev-workflow.md](dev-workflow.md) | Hot reload, Doppler (optional), `api-login`, dev bootstrap |
@@ -23,6 +24,7 @@ docs/
 ├── README.md           ← you are here
 ├── architecture.md     ← design doc (stable architecture)
 ├── sync-flows.md       ← sync job Mermaid diagrams
+├── app-flows.md        ← container / auth / logs / notifications / ER
 ├── testing.md          ← verification how-to
 ├── dev-workflow.md     ← day-to-day dev ergonomics
 ├── deploy/
