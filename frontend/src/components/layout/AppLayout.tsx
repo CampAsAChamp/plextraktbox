@@ -19,8 +19,11 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import { api } from "src/api/client"
 import { formatVersionLabel, useHealthQuery } from "src/api/health"
+import { ClockIcon } from "src/components/icons/ClockIcon"
 import { GitHubIcon } from "src/components/icons/GitHubIcon"
 import { HomeIcon } from "src/components/icons/HomeIcon"
+import { ListIcon } from "src/components/icons/ListIcon"
+import { PlugIcon } from "src/components/icons/PlugIcon"
 import { ApiHealthBadge } from "src/components/layout/ApiHealthBadge"
 import { NotificationBell } from "src/components/notifications/NotificationBell"
 
@@ -84,12 +87,13 @@ function LogoutIcon({ size = 14 }: { size?: number }) {
 }
 
 const NAV_LINKS = [
-  { to: "/jobs", label: "Jobs", match: (path: string) => path.startsWith("/jobs") },
-  { to: "/runs", label: "Runs", match: (path: string) => path.startsWith("/runs") },
+  { to: "/jobs", label: "Jobs", match: (path: string) => path.startsWith("/jobs"), icon: ListIcon },
+  { to: "/runs", label: "Runs", match: (path: string) => path.startsWith("/runs"), icon: ClockIcon },
   {
     to: "/connections",
     label: "Connections",
     match: (path: string) => path.startsWith("/connections"),
+    icon: PlugIcon,
   },
 ] as const
 
@@ -233,16 +237,20 @@ export function AppLayout({ username, avatarUrl, showLogout = false }: AppLayout
         <Drawer opened={navOpened} onClose={closeNav} title="Navigation" padding="md" size="xs" hiddenFrom="sm" zIndex={300}>
           <Stack gap="xs">
             <NavLink component={Link} to="/" label="Dashboard" leftSection={<HomeIcon size={18} />} active={isHome} onClick={closeNav} />
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                component={Link}
-                to={link.to}
-                label={link.label}
-                active={link.match(location.pathname)}
-                onClick={closeNav}
-              />
-            ))}
+            {NAV_LINKS.map((link) => {
+              const Icon = link.icon
+              return (
+                <NavLink
+                  key={link.to}
+                  component={Link}
+                  to={link.to}
+                  label={link.label}
+                  leftSection={<Icon size={18} />}
+                  active={link.match(location.pathname)}
+                  onClick={closeNav}
+                />
+              )
+            })}
             <NavLink
               component={Link}
               to="/settings"

@@ -1,4 +1,4 @@
-import { Alert, Badge, Box, Button, Group, Stack, Table, Text, Title } from "@mantine/core"
+import { ActionIcon, Alert, Badge, Box, Button, Group, Stack, Table, Text, Title, Tooltip } from "@mantine/core"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Link } from "react-router-dom"
@@ -13,6 +13,7 @@ import { DashboardGlanceStrip } from "src/components/dashboard/DashboardGlanceSt
 import { EmptyState } from "src/components/EmptyState"
 import { ConnectIcon } from "src/components/icons/ConnectIcon"
 import { ListIcon } from "src/components/icons/ListIcon"
+import { PlugIcon } from "src/components/icons/PlugIcon"
 import { PlusIcon } from "src/components/icons/PlusIcon"
 import { DryRunBadge, JobStatusBadge } from "src/components/JobForm/JobForm"
 import { JobActions } from "src/components/jobs/JobActions"
@@ -188,15 +189,19 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
       {jobsQuery.isLoading || runsQuery.isLoading ? <GlanceStripSkeleton /> : <DashboardGlanceStrip jobs={jobs} runs={runs} />}
 
       <Stack gap="xs">
-        <Text fw={500}>Connections</Text>
+        <Group gap="xs" align="center">
+          <Text fw={500}>Connections</Text>
+          <Tooltip label="Manage connections">
+            <ActionIcon component={Link} to="/connections" variant="light" color="gray" size="sm" aria-label="Manage connections">
+              <PlugIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
         <Group gap="xs" wrap="wrap">
           {connections.map((item) => (
             <ConnectionStatusBadge key={item.service} connection={item} />
           ))}
         </Group>
-        <Button component={Link} to="/connections" variant="subtle" size="xs" w="fit-content" leftSection={<ConnectIcon />}>
-          Manage connections
-        </Button>
       </Stack>
 
       <Stack gap="sm">
