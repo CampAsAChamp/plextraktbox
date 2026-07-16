@@ -45,5 +45,5 @@ def test_save_and_delete_custom(tmp_path: Path, monkeypatch: pytest.MonkeyPatch)
 
 def test_resolve_builtin() -> None:
     assert themes_svc.resolve_theme_id("nord") == "nord"
-    assert themes_svc.resolve_theme_id(None) == "one-dark-pro"
-    assert themes_svc.resolve_theme_id("missing") == "one-dark-pro"
+    assert themes_svc.resolve_theme_id(None) == "cinema-night"
+    assert themes_svc.resolve_theme_id("missing") == "cinema-night"

@@ -8,12 +8,12 @@ from pathlib import Path
 
 from plextraktbox.config import get_settings
 
-DEFAULT_THEME_ID = "one-dark-pro"
+DEFAULT_THEME_ID = "cinema-night"
 MAX_THEME_CSS_BYTES = 64 * 1024
 
 BUILTIN_THEMES: tuple[tuple[str, str], ...] = (
-    ("one-dark-pro", "Atom One Dark Pro"),
     ("cinema-night", "Cinema Night"),
+    ("one-dark-pro", "Atom One Dark Pro"),
     ("nord", "Nord"),
     ("dracula", "Dracula"),
 )

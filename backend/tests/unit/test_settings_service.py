@@ -20,7 +20,7 @@ def test_ensure_defaults_seeds_keys(session: Session) -> None:
     assert settings.log_retention_days == 30
     assert settings.global_dry_run is True
     assert settings.exclude_ids == {}
-    assert settings.ui_theme == "one-dark-pro"
+    assert settings.ui_theme == "cinema-night"
     assert settings.letterboxd_export_cache_ttl_hours == 24
     assert settings.trakt_list_cache_ttl_minutes == 30
 

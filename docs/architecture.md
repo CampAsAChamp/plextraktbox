@@ -75,7 +75,7 @@ plextraktbox/
 └── frontend/src/
     ├── App.tsx (router + auth-gate + setup-gate)
     ├── api/ client, jobs, runs, logs(SSE hook), auth, settings, themes
-    ├── themes/ built-in palettes (default Atom One Dark Pro) + ThemeProvider
+    ├── themes/ built-in palettes (default Cinema Night) + ThemeProvider
     ├── settings/ settings UI helpers
     ├── components/ LogViewer/, JobForm/, layout/(responsive AppShell: header nav + mobile drawer)
     └── pages/ SetupWizard, Login, Dashboard, Jobs, RunHistory, RunDetail(embeds LogViewer),
@@ -178,7 +178,7 @@ Sequence diagram: [app-flows.md § Notification fan-out](app-flows.md#notificati
 ## Remaining work
 
 See [phases/README.md](phases/README.md). **Current focus:** TrueNAS catalog
-([Phase 23](phases/phase-23.md)). Themes use Mantine palettes (default Atom One Dark Pro) plus
+([Phase 23](phases/phase-23.md)). Themes use Mantine palettes (default Cinema Night) plus
 optional custom CSS under `{DATA_DIR}/themes/`. Settings supports SQLite backup download and
 restore (`/api/settings/backup`); on TrueNAS prefer ZFS snapshots of `/data` for routine backups.
 

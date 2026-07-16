@@ -1,0 +1,40 @@
+/* @name: Harbor Dusk */
+/* @id: harbor-dusk */
+/*
+  Tweakable starter theme. Change @name / @id, then edit the colors below.
+  dark-0 = brightest text … dark-9 = deepest background.
+  Primary vars tint buttons, links, and the active theme swatch border.
+*/
+:root[data-ptb-theme="harbor-dusk"] {
+  /* Surfaces (cool charcoal → deep teal-black) */
+  --mantine-color-dark-0: #e6f0f2;
+  --mantine-color-dark-1: #b7c9ce;
+  --mantine-color-dark-2: #8aa3ab;
+  --mantine-color-dark-3: #5e7a84;
+  --mantine-color-dark-4: #3d555e;
+  --mantine-color-dark-5: #2c4149;
+  --mantine-color-dark-6: #21333a;
+  --mantine-color-dark-7: #18272d;
+  --mantine-color-dark-8: #111c21;
+  --mantine-color-dark-9: #0b1418;
+
+  /* Accent (sea-glass teal) — filled / hover / light variants */
+  --mantine-primary-color-filled: #2dd4bf;
+  --mantine-primary-color-filled-hover: #14b8a6;
+  --mantine-primary-color-light: rgba(45, 212, 191, 0.14);
+  --mantine-primary-color-light-hover: rgba(45, 212, 191, 0.22);
+  --mantine-primary-color-light-color: #5eead4;
+  --mantine-primary-color-0: #f0fdfa;
+  --mantine-primary-color-1: #ccfbf1;
+  --mantine-primary-color-2: #99f6e4;
+  --mantine-primary-color-3: #5eead4;
+  --mantine-primary-color-4: #2dd4bf;
+  --mantine-primary-color-5: #14b8a6;
+  --mantine-primary-color-6: #0d9488;
+  --mantine-primary-color-7: #0f766e;
+  --mantine-primary-color-8: #115e59;
+  --mantine-primary-color-9: #134e4a;
+
+  /* Page atmosphere */
+  --ptb-body-gradient: linear-gradient(165deg, #0b1418 0%, #111c21 42%, #18272d 100%);
+}

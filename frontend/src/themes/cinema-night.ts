@@ -1,4 +1,4 @@
-/** Cinema Night — amber primary + cool charcoal surfaces (former product baseline). */
+/** Cinema Night — amber primary + cool charcoal surfaces (product default). */
 import { createTheme, type MantineColorsTuple } from "@mantine/core"
 
 import { sharedTheme } from "src/themes/shared"

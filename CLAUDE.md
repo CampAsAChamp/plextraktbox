@@ -84,7 +84,7 @@ the user asks.
 
 See [docs/phases/README.md](docs/phases/README.md). Product development is done; next is TrueNAS
 catalog ([Phase 23](docs/phases/phase-23.md)). Phase 25 (ops/OSS hygiene) is done. Default theme is
-Atom One Dark Pro; custom CSS under `{DATA_DIR}/themes/`. Stay on Mantine.
+Cinema Night; custom CSS under `{DATA_DIR}/themes/`. Stay on Mantine.
 
 **Releases:** Commits that land on `main` (direct push or squash-merge PR title) must use
 Conventional Commits (`feat:` / `fix:` / `feat!:`) so semantic-release can bump and

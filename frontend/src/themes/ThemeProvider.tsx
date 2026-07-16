@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useState } from "react"
 
 import { getSettings } from "src/api/settings"
 import { fetchThemeCss } from "src/api/themes"
-import { customThemeBase, getBuiltinTheme, isBuiltinThemeId } from "src/themes/registry"
+import { customThemeBase, DEFAULT_THEME_ID, getBuiltinTheme, isBuiltinThemeId } from "src/themes/registry"
 import { readCachedThemeId, writeCachedThemeId } from "src/themes/themePreference"
 
 const CUSTOM_STYLE_ID = "ptb-custom-theme"
@@ -94,12 +94,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }, [isCustom, cssQuery.data])
 
-  // Missing/failed custom → fall back visually to One Dark Pro base without clearing setting here.
+  // Missing/failed custom → fall back visually to the default theme without clearing setting here.
   useEffect(() => {
     if (isCustom && cssQuery.isError) {
       removeCustomCss()
-      applyHtmlThemeAttr("one-dark-pro")
-      applyBodyGradient(customThemeBase)
+      const fallback = getBuiltinTheme(DEFAULT_THEME_ID)?.theme ?? customThemeBase
+      applyHtmlThemeAttr(DEFAULT_THEME_ID)
+      applyBodyGradient(fallback)
     }
   }, [isCustom, cssQuery.isError])
 

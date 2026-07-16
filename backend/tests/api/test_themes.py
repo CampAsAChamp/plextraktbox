@@ -43,7 +43,7 @@ def test_settings_default_ui_theme(client: TestClient) -> None:
     _login(client)
     resp = client.get("/api/settings")
     assert resp.status_code == 200
-    assert resp.json()["ui_theme"] == "one-dark-pro"
+    assert resp.json()["ui_theme"] == "cinema-night"
 
 
 def test_put_theme_and_upload_cycle(client: TestClient) -> None:
@@ -89,7 +89,7 @@ def test_put_theme_and_upload_cycle(client: TestClient) -> None:
     assert deleted.status_code == 204
 
     # Missing custom falls back on read.
-    assert client.get("/api/settings").json()["ui_theme"] == "one-dark-pro"
+    assert client.get("/api/settings").json()["ui_theme"] == "cinema-night"
 
 
 def test_cannot_delete_builtin(client: TestClient) -> None:
