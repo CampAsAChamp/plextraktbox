@@ -10,7 +10,7 @@ import { IdCardIcon } from "src/components/icons/IdCardIcon"
 import { ListIcon } from "src/components/icons/ListIcon"
 import { ScaleIcon } from "src/components/icons/ScaleIcon"
 
-export const JOB_FORM_SECTIONS = [
+const JOB_FORM_SECTIONS = [
   { id: "job-name", value: "Name", depth: 1 },
   { id: "job-type", value: "Job Type", depth: 1 },
   { id: "job-data-types", value: "Data types", depth: 1 },
@@ -21,9 +21,9 @@ export const JOB_FORM_SECTIONS = [
   { id: "job-notifications", value: "Notifications", depth: 1 },
 ] as const
 
-export type JobFormSectionId = (typeof JOB_FORM_SECTIONS)[number]["id"]
+type JobFormSectionId = (typeof JOB_FORM_SECTIONS)[number]["id"]
 
-export const JOB_FORM_SECTION_ICONS: Record<JobFormSectionId, ComponentType<{ size?: number }>> = {
+const JOB_FORM_SECTION_ICONS: Record<JobFormSectionId, ComponentType<{ size?: number }>> = {
   "job-name": IdCardIcon,
   "job-type": ArrowLeftRightIcon,
   "job-data-types": ListIcon,
