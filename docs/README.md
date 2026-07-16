@@ -11,7 +11,7 @@
 
 ## Quick links
 
-- **Current focus:** see [phases/README.md](phases/README.md); Phases 21 (sync caches) and 24 (UI themes) are done — next is TrueNAS (22–23)
+- **Current focus:** see [phases/README.md](phases/README.md); Phase 22 (TrueNAS personal install) is done — next is catalog (23)
 - **Run checks:** `mise run check`
 - **Container smoke test:** `mise run up` → http://localhost:8000
 - **Human setup guide:** [README.md](../README.md)

@@ -17,8 +17,8 @@ Repo and package name: `plextraktbox`.
 
 The user will run this on **TrueNAS** (not just any Docker host). Packaging constraints and the
 two-milestone deploy plan (personal install → App Catalog) are documented in
-[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so Phase 22
-drops in without rework.
+[deploy/truenas.md](deploy/truenas.md). Keep container shape compatible from Phase 0 so TrueNAS
+installs drop in without rework.
 
 
 
@@ -166,7 +166,7 @@ SSE endpoint `GET /api/runs/{id}/logs/stream` (`EventSourceResponse`): on connec
 ## Phase progress
 
 See [phases/README.md](phases/README.md) for the phase index (status, scope docs, test plans).
-**Current focus:** TrueNAS (22–23); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), mobile layout (20), **sync caches (21)**, and **UI themes (24)** are complete. Themes use Mantine palettes (default Atom One Dark Pro) plus optional custom CSS under `{DATA_DIR}/themes/`.
+**Current focus:** TrueNAS catalog (23); movie + TV sync (Phases 7–8, 11), CI (12), settings/ops (13), dashboard UX (14), Doppler (15), version info (18), releases (19), mobile layout (20), **sync caches (21)**, **TrueNAS personal install (22)**, and **UI themes (24)** are complete. Themes use Mantine palettes (default Atom One Dark Pro) plus optional custom CSS under `{DATA_DIR}/themes/`.
 
 
 

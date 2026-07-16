@@ -28,15 +28,17 @@ Architecture and locked decisions: [architecture.md](../architecture.md). How to
 | 19 | [Automated releases](phase-19.md) | Done | semantic-release, GHCR, semver bumps | [phase-19](test-plans/phase-19-test-plan.md) |
 | 20 | [Mobile & responsive layout](phase-20.md) | Done | Phone/tablet layouts, touch UX | [phase-20](test-plans/phase-20-test-plan.md) |
 | 21 | [Sync fetch & resolve caches](phase-21.md) | Done | LB/Trakt/Discover caches + once-per-run Plex library | [phase-21](test-plans/phase-21-test-plan.md) |
-| 22 | [TrueNAS install](phase-22.md) | Planned | Personal box, GHCR, TLS docs | TBD |
+| 22 | [TrueNAS install](phase-22.md) | Done | Personal box, GHCR, Cloudflare Tunnel | [phase-22](test-plans/phase-22-test-plan.md) |
 | 23 | [TrueNAS catalog](phase-23.md) | Planned | App catalog publication | TBD |
 | 24 | [UI themes](phase-24.md) | Done | Built-ins + custom upload/volume | [phase-24](test-plans/phase-24-test-plan.md) |
 
-**Current focus:** TrueNAS (22–23); Phases 0–8, 11–15, 18–21, and **24** are complete.
+**Current focus:** TrueNAS catalog ([Phase 23](phase-23.md)); Phases 0–8, 11–15, 18–22, and **24**
+are complete.
 
 Phases **9–10** (frontend prototype / redesign) were retired — stay on Mantine. Phases 16–17 were
 retired (TrueNAS moved to **22–23**). [Phase 24](phase-24.md) (UI themes) is done — factory default
-is Atom One Dark Pro. [Phase 21](phase-21.md) (sync caches) is done.
+is Atom One Dark Pro. [Phase 21](phase-21.md) (sync caches) is done. [Phase 22](phase-22.md)
+(personal TrueNAS install) is done.
 
 ## Delivery order
 
@@ -49,7 +51,7 @@ Sync performance      21 ✓ — LB/Trakt/Discover caches + Plex once-per-run
 
 Release                18 ✓ → 12 ✓ → 19 ✓
 
-TrueNAS                22 → 23 — after product + GHCR releases
+TrueNAS                22 ✓ → 23 — personal install done; catalog next
 
 Themes (last)          24 ✓ — Atom One Dark Pro default + custom upload/volume
 
@@ -62,7 +64,7 @@ Maintainer (optional)  15 ✓ — Doppler
 | **Sync perf** | **21** ✓ | LB export/slug, Trakt lists, Discover keys, Plex once-per-run |
 | **Ops** | 13 ✓ → 14 ✓ → 20 ✓ | Settings + dashboard + mobile done |
 | **Release** | 12 ✓ → 19 ✓ | CI + automated releases / GHCR done |
-| **TrueNAS** | **22** → **23** | Personal install then catalog; needs GHCR from 19 ✓ |
+| **TrueNAS** | 22 ✓ → **23** | Personal install done; catalog next |
 | **Themes** | **24** ✓ | Mantine palettes + custom CSS; default Atom One Dark Pro |
 | **Maintainer** | 15 ✓ | Doppler optional for local/CI secrets |
 

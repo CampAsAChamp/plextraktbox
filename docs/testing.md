@@ -82,4 +82,5 @@ Reference for phase test plans and automated tests:
   presets; dashboard ops actions
 - **Doppler (Phase 15):** `mise run up-dev` (default hot reload) / `up-doppler` / `check-doppler`;
   optional CI `DOPPLER_TOKEN` — secrets in Doppler, knobs in `.env` (see [dev-workflow.md](dev-workflow.md))
-- **TrueNAS (Phases 22–23):** real hardware / catalog install — see [deploy/truenas.md](deploy/truenas.md) and phase test plans
+- **TrueNAS personal install (Phase 22):** [phase-22 test plan](phases/test-plans/phase-22-test-plan.md) + [deploy/truenas.md](deploy/truenas.md)
+- **TrueNAS catalog (Phase 23):** catalog install — see [deploy/truenas.md](deploy/truenas.md)

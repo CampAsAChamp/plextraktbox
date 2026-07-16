@@ -1,6 +1,6 @@
 # Phase 22 — TrueNAS deployment (personal install)
 
-**Status:** Planned
+**Status:** Done
 
 ## Goal
 
@@ -9,35 +9,36 @@ no catalog involvement yet. Prove end-to-end on real hardware with a ZFS dataset
 
 This is **milestone 1** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
 Do not conflate with Phase 23 (catalog publication). TrueNAS work stays after product, ops, CI,
-and release pipeline phases; [Phase 24](phase-24.md) (UI themes) is after catalog on the roadmap.
+and release pipeline phases; [Phase 24](phase-24.md) (UI themes) shipped earlier on the roadmap.
 
 ## Deliverables
 
 ### Container permissions
 
-- Confirm `PUID`/`PGID`-style env handling so the app writes correctly to a ZFS-mounted `/data`
-  dataset
-- Document ownership expectations in [deploy/truenas.md](../deploy/truenas.md)
+- `PUID`/`PGID` env handling in [`docker/entrypoint.sh`](../../docker/entrypoint.sh) (`gosu` after
+  `chown` of `/data`) so the app writes correctly to a ZFS-mounted dataset
+- Ownership expectations documented in [deploy/truenas.md](../deploy/truenas.md)
 
 ### Published image
 
-- **GHCR** (or equivalent) with versioned tags — pull without local build
-- Release tagging workflow documented (automated in [Phase 19](phase-19.md))
+- **GHCR** with versioned tags — pull without local build ([Phase 19](phase-19.md))
+- Package should be **public** for unauthenticated TrueNAS pulls (or use a registry credential)
 
-### Reverse proxy / TLS
+### HTTPS / tunnel
 
-- Document Caddy or Traefik example in front of the TrueNAS app (HTTPS, `Secure` cookies)
+- Document **Cloudflare Tunnel** in front of the TrueNAS app (HTTPS, `Secure` cookies). Any HTTPS
+  terminator that forwards to port 8000 also works
 - No host-network or privileged requirements
 
 ### Install documentation
 
 - Step-by-step "Launch Docker Image" / custom-app setup in [deploy/truenas.md](../deploy/truenas.md)
-- Env vars, port mapping, dataset mount path
+- Env vars, port mapping, dataset mount path, `PUID`/`PGID`
 - First-run wizard → connections → job → scheduled run → notification
 
 ### Real install verification
 
-- End-to-end on user's TrueNAS hardware: wizard, cron job fires, logs stream, Discord/in-app notify
+- Hardware checklist in [test-plans/phase-22-test-plan.md](test-plans/phase-22-test-plan.md)
 
 ## Constraints (from day one)
 
@@ -50,7 +51,7 @@ and release pipeline phases; [Phase 24](phase-24.md) (UI themes) is after catalo
 [Phases 7–8](phase-7.md) minimum (real movie sync); [Phase 11](phase-11.md) if TV is in scope before
 deploy. Phases 13–14 strongly recommended for unattended operation.
 
-**Release pipeline:** [Phase 19](phase-19.md) (GHCR publish) should land **before** this phase — see
+**Release pipeline:** [Phase 19](phase-19.md) (GHCR publish) landed before this phase — see
 [delivery order](README.md#delivery-order). [Phase 18](phase-18.md) (version in UI) is already done.
 
 ## Defers to later phases
@@ -61,6 +62,7 @@ deploy. Phases 13–14 strongly recommended for unattended operation.
 
 ## Verification
 
-Test plan TBD — real hardware checklist (dataset permissions, cron, TLS, notifications).
+[test-plans/phase-22-test-plan.md](test-plans/phase-22-test-plan.md) — local PUID smoke + real
+hardware checklist (dataset permissions, cron, Cloudflare Tunnel HTTPS, notifications).
 
 **Next:** [Phase 23 — TrueNAS catalog](phase-23.md) — only after Phase 22 runs successfully for a while
