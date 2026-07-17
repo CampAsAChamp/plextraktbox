@@ -1,3 +1,26 @@
+# [0.12.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.11.0...v0.12.0) (2026-07-17)
+
+
+### Bug Fixes
+
+* accept nested identifiers in run summary schema ([16713e1](https://github.com/CampAsAChamp/plextraktbox/commit/16713e1ff1fdebc92533342ebe7522ddf77a3e02))
+* make running status pill only pulse in main table ([ade382e](https://github.com/CampAsAChamp/plextraktbox/commit/ade382ed911c4e9fd749713abf0553a41a76886c))
+* restore dashboard glance strip visibility ([15c5059](https://github.com/CampAsAChamp/plextraktbox/commit/15c50594e0425af22bf2063f0a8936c7a0dce985))
+* satisfy react-refresh in JobFormToc ([c330b8c](https://github.com/CampAsAChamp/plextraktbox/commit/c330b8c4b8b4db4206288568f7f158ed6df13743))
+
+
+### Features
+
+* add icons for nav links and connections entry ([37cbf3e](https://github.com/CampAsAChamp/plextraktbox/commit/37cbf3e56545c67129ad12342095b05d526d3686))
+* add micro-interactions across UI chrome ([c5597b1](https://github.com/CampAsAChamp/plextraktbox/commit/c5597b142e36c9f63a3e9b4170c4a51075595a5e))
+* add page skeletons and empty-state entrances ([5434798](https://github.com/CampAsAChamp/plextraktbox/commit/5434798c4438c9a0b5c073f3ff755c4548392972))
+* add shared motion tokens and utilities ([36f52b5](https://github.com/CampAsAChamp/plextraktbox/commit/36f52b52a4454df472ea46198cef0f40561eac35))
+* add sticky TOC and section nav to job form ([b11e8b9](https://github.com/CampAsAChamp/plextraktbox/commit/b11e8b9cfca353680b504765f46c40762eab9ff9))
+* add toast on successful run fetch ([a5224cb](https://github.com/CampAsAChamp/plextraktbox/commit/a5224cbbad0a508c81f3ef3e5376225d853d7a3b))
+* ring notification bell when unread arrives ([d75e9ff](https://github.com/CampAsAChamp/plextraktbox/commit/d75e9ffea1e7b433689b0dd7414484448226e0e2))
+* show relative timestamps on dashboard with copyable absolute ([d8874a5](https://github.com/CampAsAChamp/plextraktbox/commit/d8874a5cb7f39d6c4166b5d0485d79218733c54c))
+* show service logos in source-of-truth callout ([54a6cef](https://github.com/CampAsAChamp/plextraktbox/commit/54a6cef6053ea9e5a7c597d699511ccabe73741a))
+
 # [0.11.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.10.0...v0.11.0) (2026-07-16)
 
 
