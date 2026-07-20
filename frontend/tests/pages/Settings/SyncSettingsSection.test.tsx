@@ -36,26 +36,32 @@ afterEach(() => {
 
 describe("SyncSettingsSection cron timezone", () => {
   it("saves immediately and toasts when Local is selected", async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     renderWithProviders(<SyncSettingsSection />)
 
     // Wait until settings hydrate — persistCronTimezone no-ops while data is undefined,
     // and the SegmentedControl stays disabled during isLoading (flaky under full-suite load).
-    const localRadio = await screen.findByRole("radio", { name: /Local/i })
-    await waitFor(() => {
-      expect(localRadio).toBeEnabled()
-    })
+    const localRadio = await screen.findByRole("radio", { name: /Local/i }, { timeout: 10_000 })
+    await waitFor(
+      () => {
+        expect(localRadio).toBeEnabled()
+      },
+      { timeout: 10_000 },
+    )
 
     await user.click(localRadio)
 
-    await waitFor(() => {
-      expect(settingsApi.updateSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          cron_timezone: "local",
-          cron_local_zone: expect.any(String),
-        }),
-      )
-    })
+    await waitFor(
+      () => {
+        expect(settingsApi.updateSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            cron_timezone: "local",
+            cron_local_zone: expect.any(String),
+          }),
+        )
+      },
+      { timeout: 10_000 },
+    )
     expect(toast.showToast).toHaveBeenCalledWith(expect.objectContaining({ color: "green", message: "Cron timezone saved" }))
-  })
+  }, 15_000)
 })

@@ -80,8 +80,9 @@ test("account menu links to the GitHub repo near version", async () => {
 
   await user.click(await screen.findByRole("button", { name: "Account menu" }))
 
-  const github = await screen.findByRole("menuitem", { name: "GitHub Repo" })
+  const menu = await screen.findByRole("menu")
+  const github = within(menu).getByRole("menuitem", { name: "GitHub Repo" })
   expect(github).toHaveAttribute("href", "https://github.com/CampAsAChamp/plextraktbox")
   expect(github).toHaveAttribute("target", "_blank")
-  expect(await screen.findByText("v0.1.0 · abcdef1")).toBeInTheDocument()
+  expect(within(menu).getByText("v0.1.0 · abcdef1")).toBeInTheDocument()
 })

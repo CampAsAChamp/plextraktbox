@@ -33,7 +33,8 @@ describe("LetterboxdStep", () => {
   })
 
   it("includes FlareSolverr fields in the save payload", async () => {
-    const user = userEvent.setup()
+    // No per-keystroke delay — typing many fields is slow under full-suite load.
+    const user = userEvent.setup({ delay: null })
     const fetchMock = vi.mocked(fetch)
     fetchMock.mockResolvedValue(
       jsonResponse({
@@ -73,7 +74,7 @@ describe("LetterboxdStep", () => {
     expect(payload.flaresolverr_url).toBe("http://fs.local/")
     expect(payload.flaresolverr_timeout_ms).toBe(45000)
     await waitFor(() => expect(onSaved).toHaveBeenCalled())
-  })
+  }, 15_000)
 
   it("opens FlareSolverr and prefills fields when already configured", () => {
     renderWithProviders(

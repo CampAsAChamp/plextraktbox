@@ -14,7 +14,7 @@ export function renderWithProviders(ui: ReactElement) {
     defaultOptions: { queries: { retry: false } },
   })
   return render(
-    <MantineProvider theme={theme} forceColorScheme="dark" cssVariablesResolver={v8CssVariablesResolver}>
+    <MantineProvider theme={theme} forceColorScheme="dark" cssVariablesResolver={v8CssVariablesResolver} env="test">
       <QueryClientProvider client={queryClient}>
         <DisplayPreferencesProvider>
           <MemoryRouter>{ui}</MemoryRouter>
