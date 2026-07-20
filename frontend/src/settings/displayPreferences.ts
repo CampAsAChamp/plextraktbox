@@ -1,18 +1,21 @@
 export type TimezonePreference = "local" | "utc" | (string & {})
 export type TimeFormatPreference = "12h" | "24h"
 export type DateFormatPreference = "mdy" | "dmy"
+export type YearFormatPreference = "numeric" | "2-digit"
 export type TimezoneMode = "local" | "utc" | "manual"
 
 export type DisplayPreferences = {
   timezone: TimezonePreference
   timeFormat: TimeFormatPreference
   dateFormat: DateFormatPreference
+  yearFormat: YearFormatPreference
 }
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
   timezone: "local",
   timeFormat: "24h",
   dateFormat: "mdy",
+  yearFormat: "2-digit",
 }
 
 const STORAGE_KEY = "plextraktbox.displayPreferences"
@@ -41,6 +44,10 @@ function isTimeFormatPreference(value: unknown): value is TimeFormatPreference {
 
 function isDateFormatPreference(value: unknown): value is DateFormatPreference {
   return value === "mdy" || value === "dmy"
+}
+
+function isYearFormatPreference(value: unknown): value is YearFormatPreference {
+  return value === "numeric" || value === "2-digit"
 }
 
 export function isValidIanaTimezone(value: string): boolean {
@@ -136,6 +143,7 @@ export function normalizeDisplayPreferences(value: unknown): DisplayPreferences 
     timezone: isTimezonePreference(record.timezone) ? record.timezone : DEFAULT_DISPLAY_PREFERENCES.timezone,
     timeFormat: isTimeFormatPreference(record.timeFormat) ? record.timeFormat : DEFAULT_DISPLAY_PREFERENCES.timeFormat,
     dateFormat: isDateFormatPreference(record.dateFormat) ? record.dateFormat : DEFAULT_DISPLAY_PREFERENCES.dateFormat,
+    yearFormat: isYearFormatPreference(record.yearFormat) ? record.yearFormat : DEFAULT_DISPLAY_PREFERENCES.yearFormat,
   }
 }
 

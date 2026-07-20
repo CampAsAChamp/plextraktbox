@@ -16,7 +16,9 @@ const STORAGE_KEY = "plextraktbox.displayPreferences"
 describe("normalizeDisplayPreferences", () => {
   it("falls back to defaults for invalid values", () => {
     expect(normalizeDisplayPreferences(null)).toEqual(DEFAULT_DISPLAY_PREFERENCES)
-    expect(normalizeDisplayPreferences({ timezone: "pst", timeFormat: "military", dateFormat: "ymd" })).toEqual(DEFAULT_DISPLAY_PREFERENCES)
+    expect(normalizeDisplayPreferences({ timezone: "pst", timeFormat: "military", dateFormat: "ymd", yearFormat: "yy" })).toEqual(
+      DEFAULT_DISPLAY_PREFERENCES,
+    )
   })
 
   it("keeps valid values", () => {
@@ -25,26 +27,30 @@ describe("normalizeDisplayPreferences", () => {
         timezone: "utc",
         timeFormat: "12h",
         dateFormat: "dmy",
+        yearFormat: "numeric",
       }),
     ).toEqual({
       timezone: "utc",
       timeFormat: "12h",
       dateFormat: "dmy",
+      yearFormat: "numeric",
     })
     expect(
       normalizeDisplayPreferences({
         timezone: "America/Chicago",
         timeFormat: "24h",
         dateFormat: "mdy",
+        yearFormat: "2-digit",
       }),
     ).toEqual({
       timezone: "America/Chicago",
       timeFormat: "24h",
       dateFormat: "mdy",
+      yearFormat: "2-digit",
     })
   })
 
-  it("defaults dateFormat when missing from older stored prefs", () => {
+  it("defaults dateFormat and yearFormat when missing from older stored prefs", () => {
     expect(
       normalizeDisplayPreferences({
         timezone: "utc",
@@ -54,6 +60,7 @@ describe("normalizeDisplayPreferences", () => {
       timezone: "utc",
       timeFormat: "12h",
       dateFormat: "mdy",
+      yearFormat: "2-digit",
     })
   })
 })
@@ -89,11 +96,12 @@ describe("display preference storage", () => {
   })
 
   it("persists and reloads preferences", () => {
-    saveDisplayPreferences({ timezone: "utc", timeFormat: "12h", dateFormat: "dmy" })
+    saveDisplayPreferences({ timezone: "utc", timeFormat: "12h", dateFormat: "dmy", yearFormat: "numeric" })
     expect(loadDisplayPreferences()).toEqual({
       timezone: "utc",
       timeFormat: "12h",
       dateFormat: "dmy",
+      yearFormat: "numeric",
     })
   })
 })

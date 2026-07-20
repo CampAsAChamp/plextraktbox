@@ -50,7 +50,7 @@ export function formatDateTime(value: string | null, preferences: DisplayPrefere
   const date = parseUtcTimestamp(value)
   const parts = new Intl.DateTimeFormat(undefined, {
     ...dateTimeOptions(preferences),
-    year: "numeric",
+    year: preferences.yearFormat,
     month: "numeric",
     day: "numeric",
     hour: "2-digit",
@@ -81,7 +81,7 @@ export function formatScheduleDateTimeParts(value: string, preferences: DisplayP
   const parts = new Intl.DateTimeFormat(undefined, {
     ...dateTimeOptions(preferences),
     weekday: "short",
-    year: "numeric",
+    year: preferences.yearFormat,
     month: "numeric",
     day: "numeric",
     hour: "2-digit",

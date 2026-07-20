@@ -10,6 +10,7 @@ import {
   saveDisplayPreferences,
   type TimeFormatPreference,
   type TimezonePreference,
+  type YearFormatPreference,
 } from "src/settings/displayPreferences"
 import { showToast } from "src/toast"
 
@@ -18,12 +19,13 @@ type DisplayPreferencesContextValue = {
   setTimezone: (timezone: TimezonePreference) => void
   setTimeFormat: (timeFormat: TimeFormatPreference) => void
   setDateFormat: (dateFormat: DateFormatPreference) => void
+  setYearFormat: (yearFormat: YearFormatPreference) => void
 }
 
 const DisplayPreferencesContext = createContext<DisplayPreferencesContextValue | null>(null)
 
 function preferencesEqual(a: DisplayPreferences, b: DisplayPreferences): boolean {
-  return a.timezone === b.timezone && a.timeFormat === b.timeFormat && a.dateFormat === b.dateFormat
+  return a.timezone === b.timezone && a.timeFormat === b.timeFormat && a.dateFormat === b.dateFormat && a.yearFormat === b.yearFormat
 }
 
 export function DisplayPreferencesProvider({ children }: { children: ReactNode }) {
@@ -54,6 +56,7 @@ export function DisplayPreferencesProvider({ children }: { children: ReactNode }
       setTimezone: (timezone: TimezonePreference) => updatePreferences({ timezone }),
       setTimeFormat: (timeFormat: TimeFormatPreference) => updatePreferences({ timeFormat }),
       setDateFormat: (dateFormat: DateFormatPreference) => updatePreferences({ dateFormat }),
+      setYearFormat: (yearFormat: YearFormatPreference) => updatePreferences({ yearFormat }),
     }),
     [preferences, updatePreferences],
   )
@@ -69,6 +72,7 @@ export function useDisplayPreferences() {
       setTimezone: () => {},
       setTimeFormat: () => {},
       setDateFormat: () => {},
+      setYearFormat: () => {},
     }
   }
   return context

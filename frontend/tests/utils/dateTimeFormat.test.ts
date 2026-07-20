@@ -13,6 +13,7 @@ const preferences = {
   timezone: "utc",
   timeFormat: "24h",
   dateFormat: "mdy",
+  yearFormat: "2-digit",
 } as const
 
 describe("parseUtcTimestamp", () => {
@@ -32,7 +33,7 @@ describe("formatTimestamp", () => {
   it("formats naive UTC timestamps the same as explicit Z timestamps", () => {
     const naive = "2026-07-11T19:31:05.685"
     const explicit = "2026-07-11T19:31:05.685Z"
-    const prefs = { timezone: "local", timeFormat: "12h", dateFormat: "mdy" } as const
+    const prefs = { timezone: "local", timeFormat: "12h", dateFormat: "mdy", yearFormat: "2-digit" } as const
     expect(formatTimestamp(naive, prefs)).toBe(formatTimestamp(explicit, prefs))
   })
 
@@ -43,6 +44,7 @@ describe("formatTimestamp", () => {
       timezone: "America/Chicago",
       timeFormat: "24h",
       dateFormat: "mdy",
+      yearFormat: "2-digit",
     })
     expect(chicago).not.toBe(utc)
   })
@@ -55,7 +57,7 @@ describe("formatDateTime", () => {
 
   it("formats UTC datetimes in 24-hour time with month-first date", () => {
     const value = "2026-07-11T18:30:45.123Z"
-    expect(formatDateTime(value, preferences)).toMatch(/7\/11\/2026/)
+    expect(formatDateTime(value, preferences)).toMatch(/7\/11\/26/)
     expect(formatDateTime(value, preferences)).toMatch(/18:30:45/)
   })
 
@@ -65,9 +67,21 @@ describe("formatDateTime", () => {
       timezone: "utc",
       timeFormat: "24h",
       dateFormat: "dmy",
+      yearFormat: "2-digit",
     })
-    expect(formatted).toMatch(/11\/7\/2026/)
-    expect(formatted).not.toMatch(/^7\/11\/2026/)
+    expect(formatted).toMatch(/11\/7\/26/)
+    expect(formatted).not.toMatch(/^7\/11\/26/)
+  })
+
+  it("formats four-digit years when configured", () => {
+    const value = "2026-07-11T18:30:45.123Z"
+    const formatted = formatDateTime(value, {
+      timezone: "utc",
+      timeFormat: "24h",
+      dateFormat: "mdy",
+      yearFormat: "numeric",
+    })
+    expect(formatted).toMatch(/7\/11\/2026/)
   })
 
   it("uses 12-hour time when configured", () => {
@@ -76,17 +90,24 @@ describe("formatDateTime", () => {
       timezone: "utc",
       timeFormat: "12h",
       dateFormat: "mdy",
+      yearFormat: "2-digit",
     })
     expect(formatted).toMatch(/PM|AM/)
   })
 
   it("formats fixed IANA timezones", () => {
     const value = "2026-07-11T18:30:45.123Z"
-    const utc = formatDateTime(value, { timezone: "utc", timeFormat: "24h", dateFormat: "mdy" })
+    const utc = formatDateTime(value, {
+      timezone: "utc",
+      timeFormat: "24h",
+      dateFormat: "mdy",
+      yearFormat: "2-digit",
+    })
     const chicago = formatDateTime(value, {
       timezone: "America/Chicago",
       timeFormat: "24h",
       dateFormat: "mdy",
+      yearFormat: "2-digit",
     })
     expect(chicago).not.toBe(utc)
   })
@@ -98,7 +119,7 @@ describe("formatScheduleDateTime", () => {
     const value = "2026-07-11T18:30:00Z"
     const formatted = formatScheduleDateTime(value, preferences)
     expect(formatted).toMatch(/Sat/)
-    expect(formatted).toMatch(/7\/11\/2026/)
+    expect(formatted).toMatch(/7\/11\/26/)
     expect(formatted).toMatch(/18:30/)
     expect(formatted).not.toMatch(/18:30:00/)
   })
@@ -112,7 +133,7 @@ describe("formatScheduleDateTimeParts", () => {
   it("splits weekday, date, and time into columns", () => {
     const parts = formatScheduleDateTimeParts("2026-07-11T18:30:00Z", preferences)
     expect(parts.weekday).toMatch(/Sat/)
-    expect(parts.date).toBe("7/11/2026")
+    expect(parts.date).toBe("7/11/26")
     expect(parts.time).toMatch(/18:30/)
   })
 
@@ -121,8 +142,9 @@ describe("formatScheduleDateTimeParts", () => {
       timezone: "utc",
       timeFormat: "24h",
       dateFormat: "dmy",
+      yearFormat: "2-digit",
     })
-    expect(parts.date).toBe("11/7/2026")
+    expect(parts.date).toBe("11/7/26")
   })
 })
 

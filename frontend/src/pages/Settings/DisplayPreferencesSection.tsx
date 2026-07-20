@@ -11,16 +11,21 @@ const TIME_FORMAT_OPTIONS = [
   { value: "12h", label: "12-hour (AM/PM)" },
 ] as const
 
-const DATE_FORMAT_OPTIONS = [
-  { value: "mdy", label: "MM/DD/YYYY" },
-  { value: "dmy", label: "DD/MM/YYYY" },
+const YEAR_FORMAT_OPTIONS = [
+  { value: "2-digit", label: "YY" },
+  { value: "numeric", label: "YYYY" },
 ] as const
 
 /** Afternoon in US zones so 24h vs 12h (e.g. 15:30 vs 3:30 PM) is obvious. */
 const PREVIEW_TIMESTAMP = "2026-07-11T22:30:45.123Z"
 
 export function DisplayPreferencesSection() {
-  const { preferences, setTimeFormat, setDateFormat } = useDisplayPreferences()
+  const { preferences, setTimeFormat, setDateFormat, setYearFormat } = useDisplayPreferences()
+  const yearToken = preferences.yearFormat === "2-digit" ? "YY" : "YYYY"
+  const dateFormatOptions = [
+    { value: "mdy", label: `MM/DD/${yearToken}` },
+    { value: "dmy", label: `DD/MM/${yearToken}` },
+  ]
 
   return (
     <Paper id="settings-display" withBorder p="md" data-settings-section="Display preferences" style={{ scrollMarginTop: 80 }}>
@@ -37,7 +42,20 @@ export function DisplayPreferencesSection() {
             fullWidth
             value={preferences.dateFormat}
             onChange={(value) => setDateFormat(value as typeof preferences.dateFormat)}
-            data={[...DATE_FORMAT_OPTIONS]}
+            data={dateFormatOptions}
+          />
+        </Stack>
+
+        <Stack gap="xs">
+          <Text fw={500}>Year format</Text>
+          <Text size="sm" c="dimmed">
+            Show years as two digits (26) or four digits (2026).
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={preferences.yearFormat}
+            onChange={(value) => setYearFormat(value as typeof preferences.yearFormat)}
+            data={[...YEAR_FORMAT_OPTIONS]}
           />
         </Stack>
 
