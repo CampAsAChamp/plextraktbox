@@ -80,11 +80,14 @@ class Job(SQLModel, table=True):
         services = self.services_for_pair()
         for data_type in self.data_types():
             if data_type == DataType.WATCHLIST and self.source_pair != SourcePair.PLEX_TRAKT:
-                errors.append("watchlist requires a plex_trakt job")
+                errors.append("Watchlist sync is only available for Plex ↔ Trakt jobs")
             if data_type == DataType.RATINGS and "letterboxd" not in services:
-                errors.append("ratings requires letterboxd in the source pair")
+                errors.append("Ratings sync requires a Letterboxd job type")
             if data_type == DataType.WATCHED and "trakt" not in services:
-                errors.append("watched requires trakt in the source pair")
+                errors.append(
+                    "Watched history sync requires a job type that includes Trakt "
+                    "(Plex ↔ Trakt or Letterboxd → Trakt)"
+                )
         return errors
 
     @staticmethod

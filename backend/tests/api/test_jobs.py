@@ -245,7 +245,7 @@ def test_create_job_validates_data_types(client: TestClient) -> None:
         headers=HEADERS,
     )
     assert resp.status_code == 400
-    assert "watchlist" in resp.json()["detail"]
+    assert "Watchlist sync is only available" in resp.json()["detail"]
 
 
 def test_create_job_validates_cron(client: TestClient) -> None:

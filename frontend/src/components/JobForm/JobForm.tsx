@@ -104,10 +104,14 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
   }, [initial, defaultsApplied, settingsQuery.data])
 
   useEffect(() => {
-    if (initial) return
     const allowed = DATA_TYPES_BY_PAIR[sourcePair]
-    setDataTypes((current) => current.filter((dt) => allowed.includes(dt)))
-  }, [sourcePair, initial])
+    setDataTypes((current) => {
+      const next = current.filter((dt) => allowed.includes(dt))
+      // Drop types that don't apply to the new job type (e.g. Watched on Letterboxd → Plex).
+      // If none remain, select all allowed defaults so save isn't blocked with a hidden mismatch.
+      return next.length > 0 ? next : [...allowed]
+    })
+  }, [sourcePair])
 
   function toggleDataType(dataType: DataType) {
     setDataTypes((current) => (current.includes(dataType) ? current.filter((item) => item !== dataType) : [...current, dataType]))
