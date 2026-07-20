@@ -256,7 +256,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
                 </Table.Thead>
                 <Table.Tbody>
                   {jobs.map((job) => (
-                    <Table.Tr key={job.id} className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
+                    <Table.Tr key={job.id} className={!job.enabled ? dryRunRowClasses.disabledRow : undefined}>
                       <Table.Td>
                         <Text fw={500}>{job.name}</Text>
                       </Table.Td>
@@ -269,7 +269,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
                       <Table.Td>
                         <DryRunBadge dryRun={job.dry_run} compact mode="responsive" />
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td className={!job.enabled ? dryRunRowClasses.statusBright : undefined}>
                         <JobStatusBadge enabled={job.enabled} mode="responsive" />
                       </Table.Td>
                       <Table.Td>

@@ -70,55 +70,63 @@ function LastRunSummary({ job, relativeOnly }: { job: Job; relativeOnly: boolean
 
 /** Mobile job card — used below `sm` on Jobs and Dashboard. */
 export function JobListCard({ job, actions, showLastRun = false, relativeTimestamps = false }: JobListCardProps) {
+  const muted = !job.enabled ? dryRunRowClasses.disabledMuted : undefined
+
   return (
-    <Paper withBorder radius="lg" p="md" className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
+    <Paper withBorder radius="lg" p="md" className={!job.enabled ? dryRunRowClasses.disabledRow : undefined}>
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
           <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
-            <Text fw={600} size="md" style={{ wordBreak: "break-word" }}>
+            <Text fw={600} size="md" className={muted} style={{ wordBreak: "break-word" }}>
               {job.name}
             </Text>
             <Group gap="xs" wrap="wrap">
               <JobStatusBadge enabled={job.enabled} />
-              <DryRunBadge dryRun={job.dry_run} />
+              <Box className={muted} style={{ display: "inline-flex" }}>
+                <DryRunBadge dryRun={job.dry_run} />
+              </Box>
             </Group>
           </Stack>
-          <Box style={{ flexShrink: 0 }}>{actions}</Box>
+          <Box className={muted} style={{ flexShrink: 0 }}>
+            {actions}
+          </Box>
         </Group>
 
-        <Stack gap={4}>
-          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Job type
-          </Text>
-          <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
-        </Stack>
-
-        <Stack gap={4}>
-          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Data
-          </Text>
-          <Group gap={4} wrap="wrap">
-            {job.data_types.map((dt) => (
-              <DataTypeBadge key={dt} dataType={dt} />
-            ))}
-          </Group>
-        </Stack>
-
-        <Stack gap={4}>
-          <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Schedule
-          </Text>
-          <ScheduleSummary job={job} relativeOnly={relativeTimestamps} />
-        </Stack>
-
-        {showLastRun ? (
+        <Stack gap="sm" className={muted}>
           <Stack gap={4}>
             <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-              Last run
+              Job type
             </Text>
-            <LastRunSummary job={job} relativeOnly={relativeTimestamps} />
+            <SourcePairLabel sourcePair={job.source_pair} variant="icons" />
           </Stack>
-        ) : null}
+
+          <Stack gap={4}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Data
+            </Text>
+            <Group gap={4} wrap="wrap">
+              {job.data_types.map((dt) => (
+                <DataTypeBadge key={dt} dataType={dt} />
+              ))}
+            </Group>
+          </Stack>
+
+          <Stack gap={4}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+              Schedule
+            </Text>
+            <ScheduleSummary job={job} relativeOnly={relativeTimestamps} />
+          </Stack>
+
+          {showLastRun ? (
+            <Stack gap={4}>
+              <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+                Last run
+              </Text>
+              <LastRunSummary job={job} relativeOnly={relativeTimestamps} />
+            </Stack>
+          ) : null}
+        </Stack>
       </Stack>
     </Paper>
   )

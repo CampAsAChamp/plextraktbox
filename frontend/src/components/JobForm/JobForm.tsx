@@ -446,6 +446,8 @@ export function JobStatusBadge({ enabled, mode = "label" }: { enabled: boolean; 
       color={enabled ? "green" : "red"}
       icon={enabled ? <CheckIcon size={14} /> : <XIcon size={14} />}
       mode={mode}
+      // Filled when disabled so it stays readable on muted/hatched job rows.
+      variant={enabled ? "light" : "filled"}
     />
   )
 }

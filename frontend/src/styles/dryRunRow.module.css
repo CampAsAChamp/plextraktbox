@@ -1,5 +1,6 @@
-/* Dry-run rows: faint hatch + reduced opacity so they read as preview,
-   without stealing the blue sorted-column fill. */
+/* Muted rows: faint hatch + reduced opacity.
+   dryRunRow — past runs that did not write (whole row muted).
+   disabledRow — jobs that are not scheduled; status cell/badge stays bright. */
 .dryRunRow {
   opacity: 0.58;
   background-image: repeating-linear-gradient(
@@ -9,4 +10,29 @@
     color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 5px,
     color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 6px
   ) !important;
+}
+
+.disabledRow {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 5px,
+    color-mix(in srgb, var(--mantine-color-gray-6) 14%, transparent) 6px
+  ) !important;
+}
+
+/* Table: dim every cell except the status column (parent opacity can't be undone). */
+.disabledRow > :global(td):not(.statusBright) {
+  opacity: 0.58;
+}
+
+/* Marker: status cell stays at full opacity on disabled rows. */
+.statusBright {
+  opacity: 1;
+}
+
+/* Card / non-table: mute chunks while leaving JobStatusBadge at full opacity. */
+.disabledMuted {
+  opacity: 0.58;
 }

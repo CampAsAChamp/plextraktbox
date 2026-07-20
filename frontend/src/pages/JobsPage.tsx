@@ -168,7 +168,7 @@ export function JobsPage() {
               </Table.Thead>
               <Table.Tbody>
                 {jobs.map((job) => (
-                  <Table.Tr key={job.id} className={job.dry_run ? dryRunRowClasses.dryRunRow : undefined}>
+                  <Table.Tr key={job.id} className={!job.enabled ? dryRunRowClasses.disabledRow : undefined}>
                     <Table.Td className={sortedColumnCellClass(sort, "name")}>
                       <Text fw={500}>{job.name}</Text>
                     </Table.Td>
@@ -188,7 +188,13 @@ export function JobsPage() {
                     <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
                       <DryRunBadge dryRun={job.dry_run} compact mode="responsive" />
                     </Table.Td>
-                    <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
+                    <Table.Td
+                      className={
+                        [sortedColumnCellClass(sort, "enabled"), !job.enabled ? dryRunRowClasses.statusBright : undefined]
+                          .filter(Boolean)
+                          .join(" ") || undefined
+                      }
+                    >
                       <JobStatusBadge enabled={job.enabled} mode="responsive" />
                     </Table.Td>
                     <Table.Td>
