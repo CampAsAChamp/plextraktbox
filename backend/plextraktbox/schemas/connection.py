@@ -4,10 +4,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 from plextraktbox.models.connection import Connection, ConnectionStatus, Service
 from plextraktbox.utils.datetime import UtcDatetime
+
+
+def _normalize_flaresolverr_url(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        msg = "flaresolverr_url must be a string"
+        raise TypeError(msg)
+    stripped = value.strip().rstrip("/")
+    return stripped or None
 
 
 class ConnectionSummary(BaseModel):
@@ -56,11 +66,33 @@ class PlexConnectionTestRequest(BaseModel):
 class LetterboxdConnectionRequest(BaseModel):
     username: str = Field(min_length=1, max_length=64)
     password: str | None = Field(default=None, min_length=1, max_length=128)
+    flaresolverr_url: str | None = Field(
+        default=None,
+        max_length=512,
+        description="Optional FlareSolverr base URL for Cloudflare challenges.",
+    )
+    flaresolverr_timeout_ms: int | None = Field(
+        default=None,
+        ge=1_000,
+        description="Optional FlareSolverr maxTimeout in milliseconds.",
+    )
+
+    @field_validator("flaresolverr_url", mode="before")
+    @classmethod
+    def _normalize_url(cls, value: object) -> str | None:
+        return _normalize_flaresolverr_url(value)
 
 
 class LetterboxdConnectionTestRequest(BaseModel):
     username: str | None = Field(default=None, max_length=64)
     password: str | None = Field(default=None, max_length=128)
+    flaresolverr_url: str | None = Field(default=None, max_length=512)
+    flaresolverr_timeout_ms: int | None = Field(default=None, ge=1_000)
+
+    @field_validator("flaresolverr_url", mode="before")
+    @classmethod
+    def _normalize_url(cls, value: object) -> str | None:
+        return _normalize_flaresolverr_url(value)
 
 
 class TmdbConnectionRequest(BaseModel):

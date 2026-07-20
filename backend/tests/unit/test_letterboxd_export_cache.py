@@ -15,7 +15,13 @@ def test_export_cache_hit_skips_download(
 ) -> None:
     calls = 0
 
-    def fake_download(username: str, password: str) -> LetterboxdExport:
+    def fake_download(
+        username: str,
+        password: str,
+        *,
+        flaresolverr_url: str | None = None,
+        flaresolverr_timeout_ms: int | None = None,
+    ) -> LetterboxdExport:
         nonlocal calls
         calls += 1
         return LetterboxdExport(
@@ -51,7 +57,13 @@ def test_export_cache_force_and_invalidate(
 ) -> None:
     calls = 0
 
-    def fake_download(username: str, password: str) -> LetterboxdExport:
+    def fake_download(
+        username: str,
+        password: str,
+        *,
+        flaresolverr_url: str | None = None,
+        flaresolverr_timeout_ms: int | None = None,
+    ) -> LetterboxdExport:
         nonlocal calls
         calls += 1
         return LetterboxdExport(ratings_csv=f"call,{calls}", watchlist_csv=None, diary_csv=None)

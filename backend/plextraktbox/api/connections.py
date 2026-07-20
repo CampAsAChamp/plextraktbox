@@ -176,6 +176,8 @@ def save_letterboxd(
             session,
             username=body.username,
             password=body.password,
+            flaresolverr_url=body.flaresolverr_url,
+            flaresolverr_timeout_ms=body.flaresolverr_timeout_ms,
         )
     except ValueError as exc:
         raise _value_error_to_http(exc) from exc
@@ -231,6 +233,8 @@ def test_letterboxd(
         session,
         username=body.username,
         password=body.password,
+        flaresolverr_url=body.flaresolverr_url,
+        flaresolverr_timeout_ms=body.flaresolverr_timeout_ms,
     )
     return ConnectionTestResponse(ok=result.ok, message=result.message, details=result.details)
 

@@ -113,12 +113,15 @@ def build_sources(
         connection_id = letterboxd.id
         if connection_id is None:
             raise ValueError("Letterboxd connection is missing an id")
+        fs_url, fs_timeout = conn_svc.letterboxd_flaresolverr_from_config(config)
         sources["letterboxd"] = LetterboxdSource(
             username=str(config.get("username", "")),
             password=str(secrets.get("password", "")),
             connection_id=connection_id,
             export_cache_ttl_hours=app_settings.letterboxd_export_cache_ttl_hours,
             force_export_refresh=force_cache_refresh,
+            flaresolverr_url=fs_url,
+            flaresolverr_timeout_ms=fs_timeout,
             resolve_identifiers=letterboxd_resolver,
             log=run_log,
         )

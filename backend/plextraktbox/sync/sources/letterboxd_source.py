@@ -37,6 +37,8 @@ class LetterboxdSource(ReadOnlySourceMixin, ClientBackedSource):
         connection_id: int | None = None,
         export_cache_ttl_hours: int = 24,
         force_export_refresh: bool = False,
+        flaresolverr_url: str | None = None,
+        flaresolverr_timeout_ms: int | None = None,
         resolve_identifiers: IdentifierResolver | None = None,
         log: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
@@ -46,6 +48,8 @@ class LetterboxdSource(ReadOnlySourceMixin, ClientBackedSource):
         self._connection_id = connection_id
         self._export_cache_ttl_hours = export_cache_ttl_hours
         self._force_export_refresh = force_export_refresh
+        self._flaresolverr_url = flaresolverr_url
+        self._flaresolverr_timeout_ms = flaresolverr_timeout_ms
         self._resolve_identifiers = resolve_identifiers
         self._log = log or structlog.get_logger("sync.letterboxd")
         self._export: LetterboxdExport | None = None
@@ -64,6 +68,8 @@ class LetterboxdSource(ReadOnlySourceMixin, ClientBackedSource):
                     password=self._password,
                     ttl_hours=self._export_cache_ttl_hours,
                     force=self._force_export_refresh,
+                    flaresolverr_url=self._flaresolverr_url,
+                    flaresolverr_timeout_ms=self._flaresolverr_timeout_ms,
                 )
                 self._export = export
                 self._log.info(
@@ -80,6 +86,8 @@ class LetterboxdSource(ReadOnlySourceMixin, ClientBackedSource):
                     letterboxd_client.download_export,
                     self._username,
                     self._password,
+                    flaresolverr_url=self._flaresolverr_url,
+                    flaresolverr_timeout_ms=self._flaresolverr_timeout_ms,
                 )
             ratings_count = _csv_row_count(self._export.ratings_csv)
             watchlist_count = _csv_row_count(self._export.watchlist_csv)

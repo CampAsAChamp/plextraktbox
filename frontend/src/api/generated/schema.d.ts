@@ -1306,6 +1306,16 @@ export interface components {
             username: string;
             /** Password */
             password?: string | null;
+            /**
+             * Flaresolverr Url
+             * @description Optional FlareSolverr base URL for Cloudflare challenges.
+             */
+            flaresolverr_url?: string | null;
+            /**
+             * Flaresolverr Timeout Ms
+             * @description Optional FlareSolverr maxTimeout in milliseconds.
+             */
+            flaresolverr_timeout_ms?: number | null;
         };
         /** LetterboxdConnectionTestRequest */
         LetterboxdConnectionTestRequest: {
@@ -1313,6 +1323,10 @@ export interface components {
             username?: string | null;
             /** Password */
             password?: string | null;
+            /** Flaresolverr Url */
+            flaresolverr_url?: string | null;
+            /** Flaresolverr Timeout Ms */
+            flaresolverr_timeout_ms?: number | null;
         };
         /** LogEntryItem */
         LogEntryItem: {

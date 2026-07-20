@@ -39,8 +39,8 @@ DEFAULT_HEADERS = {
 }
 _CF_HINT = (
     "Letterboxd appears to be behind a Cloudflare challenge. "
-    "Set FLARESOLVERR_URL to a reachable FlareSolverr instance "
-    "(see docs/deploy/truenas.md)."
+    "Set FlareSolverr URL under Connections → Letterboxd "
+    "(or FLARESOLVERR_URL in the environment; see docs/deploy/truenas.md)."
 )
 
 
@@ -53,9 +53,34 @@ class LetterboxdExport:
     diary_csv: str | None
 
 
-def test_connection(username: str, password: str) -> ConnectionTestResult:
+def resolve_flaresolverr(
+    *,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
+) -> tuple[str, int]:
+    """Resolve FlareSolverr settings: connection overrides, else env Settings."""
+    settings = get_settings()
+    url = (flaresolverr_url or "").strip().rstrip("/") or settings.flaresolverr_url
+    timeout_ms = (
+        flaresolverr_timeout_ms if flaresolverr_timeout_ms is not None else settings.flaresolverr_timeout_ms
+    )
+    return url, timeout_ms
+
+
+def test_connection(
+    username: str,
+    password: str,
+    *,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
+) -> ConnectionTestResult:
     try:
-        with _authenticated_client(username, password) as _client:
+        with _authenticated_client(
+            username,
+            password,
+            flaresolverr_url=flaresolverr_url,
+            flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+        ) as _client:
             return ConnectionTestResult(
                 ok=True,
                 message="Letterboxd credentials accepted",
@@ -67,9 +92,20 @@ def test_connection(username: str, password: str) -> ConnectionTestResult:
         return ConnectionTestResult(ok=False, message=f"Letterboxd request failed: {exc}")
 
 
-def download_export(username: str, password: str) -> LetterboxdExport:
+def download_export(
+    username: str,
+    password: str,
+    *,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
+) -> LetterboxdExport:
     """Download and extract the official Letterboxd CSV export (ratings/watchlist/diary)."""
-    with _authenticated_client(username, password) as client:
+    with _authenticated_client(
+        username,
+        password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    ) as client:
         resp = client.get(EXPORT_URL)
         content_type = resp.headers.get("content-type", "")
         if resp.status_code != 200 or "application/zip" not in content_type:
@@ -104,8 +140,15 @@ def fetch_ratings_movies(
     password: str,
     *,
     resolve_identifiers: FilmResolver | None = None,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
 ) -> list[MediaItem]:
-    export = download_export(username, password)
+    export = download_export(
+        username,
+        password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     return items_from_ratings_csv(export.ratings_csv, resolve_identifiers=resolve_identifiers)
 
 
@@ -114,8 +157,15 @@ def fetch_watchlist_movies(
     password: str,
     *,
     resolve_identifiers: FilmResolver | None = None,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
 ) -> list[MediaItem]:
-    export = download_export(username, password)
+    export = download_export(
+        username,
+        password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     return items_from_watchlist_csv(export.watchlist_csv, resolve_identifiers=resolve_identifiers)
 
 
@@ -124,8 +174,15 @@ def fetch_watched_movies(
     password: str,
     *,
     resolve_identifiers: FilmResolver | None = None,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
 ) -> list[MediaItem]:
-    export = download_export(username, password)
+    export = download_export(
+        username,
+        password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     return items_from_diary_csv(export.diary_csv, resolve_identifiers=resolve_identifiers)
 
 
@@ -167,10 +224,17 @@ def items_from_diary_csv(
 
 
 @contextmanager
-def _authenticated_client(username: str, password: str) -> Iterator[httpx.Client]:
-    settings = get_settings()
-    fs_url = settings.flaresolverr_url
-    timeout_ms = settings.flaresolverr_timeout_ms
+def _authenticated_client(
+    username: str,
+    password: str,
+    *,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
+) -> Iterator[httpx.Client]:
+    fs_url, timeout_ms = resolve_flaresolverr(
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     headers = dict(DEFAULT_HEADERS)
     fs_session: str | None = None
 
@@ -199,9 +263,9 @@ def _authenticated_client(username: str, password: str) -> Iterator[httpx.Client
                 )
                 flaresolverr.apply_cookies(client, signin_solution.cookies)
                 client.headers["User-Agent"] = signin_solution.user_agent
-            _login(client, username, password, skip_bootstrap=True)
+            _login(client, username, password, skip_bootstrap=True, flaresolverr_active=True)
         else:
-            _login(client, username, password, skip_bootstrap=False)
+            _login(client, username, password, skip_bootstrap=False, flaresolverr_active=False)
         yield client
     finally:
         if fs_url and fs_session is not None:
@@ -215,23 +279,24 @@ def _login(
     password: str,
     *,
     skip_bootstrap: bool,
+    flaresolverr_active: bool,
 ) -> None:
     if not skip_bootstrap:
         try:
             home = client.get(LETTERBOXD_BASE)
             home.raise_for_status()
-            _raise_if_cloudflare_challenge(home)
+            _raise_if_cloudflare_challenge(home, flaresolverr_active=flaresolverr_active)
         except httpx.HTTPStatusError as exc:
-            _raise_challenge_or_reraise(exc)
+            _raise_challenge_or_reraise(exc, flaresolverr_active=flaresolverr_active)
 
         csrf = client.cookies.get(CSRF_COOKIE)
         if not csrf:
             try:
                 signin = client.get(SIGNIN_URL)
                 signin.raise_for_status()
-                _raise_if_cloudflare_challenge(signin)
+                _raise_if_cloudflare_challenge(signin, flaresolverr_active=flaresolverr_active)
             except httpx.HTTPStatusError as exc:
-                _raise_challenge_or_reraise(exc)
+                _raise_challenge_or_reraise(exc, flaresolverr_active=flaresolverr_active)
             csrf = client.cookies.get(CSRF_COOKIE)
     else:
         csrf = client.cookies.get(CSRF_COOKIE)
@@ -264,7 +329,7 @@ def _login(
         return
 
     if _looks_like_cloudflare_challenge(resp):
-        if get_settings().flaresolverr_url:
+        if flaresolverr_active:
             raise ValueError(
                 "Letterboxd login still looks like a Cloudflare challenge after FlareSolverr bootstrap"
             )
@@ -276,24 +341,24 @@ def _login(
     raise ValueError("Invalid Letterboxd username or password")
 
 
-def _raise_challenge_or_reraise(exc: httpx.HTTPStatusError) -> None:
+def _raise_challenge_or_reraise(exc: httpx.HTTPStatusError, *, flaresolverr_active: bool) -> None:
     response = exc.response
     if response is not None and (response.status_code == 403 or _looks_like_cloudflare_challenge(response)):
-        if not get_settings().flaresolverr_url:
+        if not flaresolverr_active:
             raise ValueError(_CF_HINT) from exc
         raise ValueError(
-            "Letterboxd returned a Cloudflare challenge even with FLARESOLVERR_URL set; "
+            "Letterboxd returned a Cloudflare challenge even with FlareSolverr configured; "
             "check that FlareSolverr can reach letterboxd.com"
         ) from exc
     raise exc
 
 
-def _raise_if_cloudflare_challenge(resp: httpx.Response) -> None:
+def _raise_if_cloudflare_challenge(resp: httpx.Response, *, flaresolverr_active: bool) -> None:
     if _looks_like_cloudflare_challenge(resp):
-        if not get_settings().flaresolverr_url:
+        if not flaresolverr_active:
             raise ValueError(_CF_HINT)
         raise ValueError(
-            "Letterboxd returned a Cloudflare challenge even with FLARESOLVERR_URL set; "
+            "Letterboxd returned a Cloudflare challenge even with FlareSolverr configured; "
             "check that FlareSolverr can reach letterboxd.com"
         )
 

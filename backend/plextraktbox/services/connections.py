@@ -186,6 +186,8 @@ def test_letterboxd_draft_or_saved(
     *,
     username: str | None,
     password: str | None,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
 ) -> ConnectionTestResult:
     if not username:
         return test_saved_connection(session, Service.LETTERBOXD)
@@ -193,7 +195,12 @@ def test_letterboxd_draft_or_saved(
         resolved_password = resolve_letterboxd_password(session, password)
     except ValueError as exc:
         return ConnectionTestResult(ok=False, message=str(exc))
-    return letterboxd_client.test_connection(username, resolved_password)
+    return letterboxd_client.test_connection(
+        username,
+        resolved_password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
 
 
 def test_tmdb_draft_or_saved(
@@ -351,13 +358,20 @@ def save_letterboxd(
     *,
     username: str,
     password: str | None,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
     test: bool = True,
 ) -> Connection:
     from plextraktbox.services import letterboxd_export_cache
 
     resolved_password = resolve_letterboxd_password(session, password)
     if test:
-        result = letterboxd_client.test_connection(username, resolved_password)
+        result = letterboxd_client.test_connection(
+            username,
+            resolved_password,
+            flaresolverr_url=flaresolverr_url,
+            flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+        )
         if not result.ok:
             raise ValueError(result.message)
 
@@ -366,10 +380,15 @@ def save_letterboxd(
     if existing is not None:
         previous_username = str(existing.public_config().get("username", ""))
 
+    config = _letterboxd_config(
+        username,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     connection = _save_connection(
         session,
         service=Service.LETTERBOXD,
-        config={"username": username},
+        config=config,
         secrets={"password": resolved_password},
         status=ConnectionStatus.OK,
     )
@@ -379,6 +398,33 @@ def save_letterboxd(
     ):
         letterboxd_export_cache.invalidate_export_cache(connection.id)
     return connection
+
+
+def _letterboxd_config(
+    username: str,
+    *,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
+) -> dict[str, Any]:
+    config: dict[str, Any] = {"username": username}
+    url = (flaresolverr_url or "").strip().rstrip("/")
+    if url:
+        config["flaresolverr_url"] = url
+    if flaresolverr_timeout_ms is not None:
+        config["flaresolverr_timeout_ms"] = flaresolverr_timeout_ms
+    return config
+
+
+def letterboxd_flaresolverr_from_config(config: dict[str, Any]) -> tuple[str | None, int | None]:
+    raw_url = config.get("flaresolverr_url")
+    url = str(raw_url).strip().rstrip("/") if isinstance(raw_url, str) and raw_url.strip() else None
+    raw_timeout = config.get("flaresolverr_timeout_ms")
+    timeout: int | None = None
+    if isinstance(raw_timeout, int):
+        timeout = raw_timeout
+    elif isinstance(raw_timeout, str) and raw_timeout.strip().isdigit():
+        timeout = int(raw_timeout.strip())
+    return url, timeout
 
 
 def save_tmdb(session: Session, *, api_key: str, test: bool = True) -> Connection:
@@ -542,9 +588,12 @@ def test_saved_connection(session: Session, service: Service) -> ConnectionTestR
         return plex_client.test_connection(config.get("url", ""), secrets.get("token", ""))
 
     if service == Service.LETTERBOXD:
+        fs_url, fs_timeout = letterboxd_flaresolverr_from_config(config)
         return letterboxd_client.test_connection(
             config.get("username", ""),
             secrets.get("password", ""),
+            flaresolverr_url=fs_url,
+            flaresolverr_timeout_ms=fs_timeout,
         )
 
     if service == Service.TMDB:

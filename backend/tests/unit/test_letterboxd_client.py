@@ -132,7 +132,8 @@ def test_test_connection_hints_flaresolverr_on_cloudflare_403(monkeypatch: pytes
 
     result = letterboxd_client.test_connection("nick", "secret")
     assert result.ok is False
-    assert "FLARESOLVERR_URL" in result.message
+    assert "FLARESOLVERR_URL" in result.message or "FlareSolverr" in result.message
+    assert "Connections" in result.message
     config.get_settings.cache_clear()
 
 
@@ -190,6 +191,84 @@ def test_test_connection_bootstraps_via_flaresolverr(monkeypatch: pytest.MonkeyP
     assert b"fs-csrf" in login_route.calls[0].request.content
 
     monkeypatch.delenv("FLARESOLVERR_URL", raising=False)
+    config.get_settings.cache_clear()
+
+
+@respx.mock
+def test_test_connection_connection_url_overrides_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FLARESOLVERR_URL", "http://env-fs.local")
+    config.get_settings.cache_clear()
+
+    def _fs_handler(request: httpx.Request) -> httpx.Response:
+        payload = json.loads(request.content)
+        cmd = payload.get("cmd")
+        if cmd == "sessions.create":
+            return httpx.Response(200, json={"status": "ok", "session": "sess-1"})
+        if cmd == "sessions.destroy":
+            return httpx.Response(200, json={"status": "ok"})
+        if cmd == "request.get":
+            return httpx.Response(
+                200,
+                json={
+                    "status": "ok",
+                    "solution": {
+                        "status": 200,
+                        "userAgent": "Mozilla/5.0 FS-Agent",
+                        "cookies": [
+                            {
+                                "name": "com.xk72.webparts.csrf",
+                                "value": "fs-csrf",
+                                "domain": "letterboxd.com",
+                                "path": "/",
+                            }
+                        ],
+                    },
+                },
+            )
+        return httpx.Response(500, json={"status": "error", "message": f"unexpected {cmd}"})
+
+    env_route = respx.post("http://env-fs.local/v1").mock(side_effect=_fs_handler)
+    ui_route = respx.post("http://ui-fs.local/v1").mock(side_effect=_fs_handler)
+    respx.post("https://letterboxd.com/user/login.do").mock(
+        return_value=httpx.Response(
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    result = letterboxd_client.test_connection(
+        "nick",
+        "secret",
+        flaresolverr_url="http://ui-fs.local",
+        flaresolverr_timeout_ms=45_000,
+    )
+    assert result.ok is True
+    assert ui_route.called
+    assert not env_route.called
+
+    monkeypatch.delenv("FLARESOLVERR_URL", raising=False)
+    config.get_settings.cache_clear()
+
+
+def test_resolve_flaresolverr_prefers_connection_over_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FLARESOLVERR_URL", "http://env-fs.local")
+    monkeypatch.setenv("FLARESOLVERR_TIMEOUT_MS", "12000")
+    config.get_settings.cache_clear()
+
+    url, timeout = letterboxd_client.resolve_flaresolverr(
+        flaresolverr_url="http://ui-fs.local/",
+        flaresolverr_timeout_ms=45_000,
+    )
+    assert url == "http://ui-fs.local"
+    assert timeout == 45_000
+
+    url_env, timeout_env = letterboxd_client.resolve_flaresolverr()
+    assert url_env == "http://env-fs.local"
+    assert timeout_env == 12_000
+
+    monkeypatch.delenv("FLARESOLVERR_URL", raising=False)
+    monkeypatch.delenv("FLARESOLVERR_TIMEOUT_MS", raising=False)
     config.get_settings.cache_clear()
 
 

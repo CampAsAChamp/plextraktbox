@@ -121,6 +121,8 @@ def get_or_download_export(
     password: str,
     ttl_hours: int,
     force: bool = False,
+    flaresolverr_url: str | None = None,
+    flaresolverr_timeout_ms: int | None = None,
 ) -> tuple[LetterboxdExport, str]:
     """Return ``(export, cache_status)`` where status is ``hit``, ``miss``, or ``forced``.
 
@@ -146,6 +148,11 @@ def get_or_download_export(
         connection_id=connection_id,
         ttl_hours=ttl_hours,
     )
-    export = download_export(username, password)
+    export = download_export(
+        username,
+        password,
+        flaresolverr_url=flaresolverr_url,
+        flaresolverr_timeout_ms=flaresolverr_timeout_ms,
+    )
     _write_cached(connection_id, username, export)
     return export, status

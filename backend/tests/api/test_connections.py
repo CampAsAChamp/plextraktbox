@@ -307,6 +307,55 @@ def test_save_letterboxd_connection(client: TestClient) -> None:
 
 
 @respx.mock
+def test_save_letterboxd_persists_flaresolverr_config(client: TestClient) -> None:
+    _create_user_and_login(client)
+    respx.post("http://fs.local/v1").mock(
+        side_effect=lambda request: httpx.Response(
+            200,
+            json={
+                "status": "ok",
+                "session": "sess-1",
+                "solution": {
+                    "status": 200,
+                    "userAgent": "Mozilla/5.0 FS-Agent",
+                    "cookies": [
+                        {
+                            "name": "com.xk72.webparts.csrf",
+                            "value": "fs-csrf",
+                            "domain": "letterboxd.com",
+                            "path": "/",
+                        }
+                    ],
+                },
+            },
+        )
+    )
+    respx.post("https://letterboxd.com/user/login.do").mock(
+        return_value=httpx.Response(
+            200,
+            json={"result": "success"},
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    resp = client.post(
+        "/api/connections/letterboxd",
+        json={
+            "username": "nick",
+            "password": "lb-pass",
+            "flaresolverr_url": "http://fs.local/",
+            "flaresolverr_timeout_ms": 45000,
+        },
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["config"]["username"] == "nick"
+    assert body["config"]["flaresolverr_url"] == "http://fs.local"
+    assert body["config"]["flaresolverr_timeout_ms"] == 45000
+
+
+@respx.mock
 def test_save_letterboxd_keeps_password_when_omitted(client: TestClient) -> None:
     _create_user_and_login(client)
     respx.get("https://letterboxd.com/").mock(
