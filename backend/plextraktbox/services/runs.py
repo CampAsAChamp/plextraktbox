@@ -69,6 +69,12 @@ def resolve_job_name(session: Session, run: JobRun) -> str | None:
     return get_job_name(session, run.job_id)
 
 
+def resolve_source_pair(session: Session, run: JobRun) -> SourcePair | None:
+    if run.source_pair is not None:
+        return run.source_pair
+    return get_job_source_pair(session, run.job_id)
+
+
 def mark_run_failed(session: Session, run: JobRun, *, error: str = MARKED_FAILED_ERROR) -> JobRun:
     """Mark a stuck/running run as failed and close the log stream.
 

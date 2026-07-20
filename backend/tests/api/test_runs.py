@@ -92,7 +92,7 @@ def test_run_history_after_job_run(client: TestClient, monkeypatch: pytest.Monke
     assert len(after_delete.json()["items"]) == 1
     assert after_delete.json()["items"][0]["id"] == run_id
     assert after_delete.json()["items"][0]["job_name"] == "History test"
-    assert after_delete.json()["items"][0]["source_pair"] is None
+    assert after_delete.json()["items"][0]["source_pair"] == "plex_trakt"
 
 
 def test_list_runs_with_unmatched_summary(client: TestClient) -> None:

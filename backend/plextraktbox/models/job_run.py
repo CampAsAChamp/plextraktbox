@@ -9,6 +9,7 @@ from typing import Any
 
 from sqlmodel import Field, SQLModel
 
+from plextraktbox.models.job import SourcePair
 from plextraktbox.sync.plans import RunSummary
 
 
@@ -41,6 +42,8 @@ class JobRun(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     job_id: int = Field(index=True)
     job_name: str | None = Field(default=None, nullable=True)
+    # Snapshotted at run start so history keeps job type after the job is deleted.
+    source_pair: SourcePair | None = Field(default=None, nullable=True)
     trigger: RunTrigger = Field(default=RunTrigger.MANUAL)
     dry_run: bool = Field(default=False)
     status: JobRunStatus = Field(default=JobRunStatus.RUNNING, index=True)

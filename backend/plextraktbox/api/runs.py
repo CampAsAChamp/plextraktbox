@@ -24,7 +24,7 @@ def list_runs(
         RunListItem.from_model(
             run,
             job_name=run_svc.resolve_job_name(session, run),
-            source_pair=run_svc.get_job_source_pair(session, run.job_id),
+            source_pair=run_svc.resolve_source_pair(session, run),
         )
         for run in runs
     ]
@@ -39,7 +39,7 @@ def get_run(run_id: int, _user: CurrentUserDep, session: SessionDep) -> RunListI
     return RunListItem.from_model(
         run,
         job_name=run_svc.resolve_job_name(session, run),
-        source_pair=run_svc.get_job_source_pair(session, run.job_id),
+        source_pair=run_svc.resolve_source_pair(session, run),
     )
 
 
@@ -60,7 +60,7 @@ def mark_run_failed(run_id: int, _user: CurrentUserDep, session: SessionDep) -> 
     return RunListItem.from_model(
         run,
         job_name=run_svc.resolve_job_name(session, run),
-        source_pair=run_svc.get_job_source_pair(session, run.job_id),
+        source_pair=run_svc.resolve_source_pair(session, run),
     )
 
 
@@ -81,5 +81,5 @@ def cancel_run(run_id: int, _user: CurrentUserDep, session: SessionDep) -> RunLi
     return RunListItem.from_model(
         run,
         job_name=run_svc.resolve_job_name(session, run),
-        source_pair=run_svc.get_job_source_pair(session, run.job_id),
+        source_pair=run_svc.resolve_source_pair(session, run),
     )

@@ -121,7 +121,13 @@ def _execute_run_in_session(
         session.commit()
         session.refresh(run)
     else:
-        run = JobRun(job_id=job_id, job_name=job.name, trigger=trigger, dry_run=dry_run)
+        run = JobRun(
+            job_id=job_id,
+            job_name=job.name,
+            source_pair=job.source_pair,
+            trigger=trigger,
+            dry_run=dry_run,
+        )
         session.add(run)
         session.commit()
         session.refresh(run)

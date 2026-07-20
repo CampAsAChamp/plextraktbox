@@ -288,7 +288,13 @@ def run_job(
     dry_run_override = body.dry_run if body is not None else None
     dry_run, _coerced = resolve_dry_run(session, job, dry_run_override=dry_run_override)
 
-    run = JobRun(job_id=job_id, job_name=job.name, trigger=RunTrigger.MANUAL, dry_run=dry_run)
+    run = JobRun(
+        job_id=job_id,
+        job_name=job.name,
+        source_pair=job.source_pair,
+        trigger=RunTrigger.MANUAL,
+        dry_run=dry_run,
+    )
     session.add(run)
     session.commit()
     session.refresh(run)
