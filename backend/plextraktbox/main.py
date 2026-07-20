@@ -30,7 +30,7 @@ from plextraktbox.api import (
     themes,
 )
 from plextraktbox.api import settings as settings_api
-from plextraktbox.config import get_settings
+from plextraktbox.config import format_public_settings_table, get_settings
 from plextraktbox.db import init_db
 from plextraktbox.dev_backend_page import DEV_BACKEND_HTML
 from plextraktbox.http_access import AccessLogMiddleware
@@ -67,6 +67,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         version=__version__,
         git_sha=git_sha(),
     )
+    log.info("plextraktbox.config\n" + format_public_settings_table(get_settings()))
     yield
     scheduler.shutdown(wait=True)
     get_log_writer().stop()

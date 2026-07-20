@@ -8,12 +8,24 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from plextraktbox.version_info import __version__, git_sha
+
+# Settings fields whose values must never appear in startup logs — presence only.
+_PRESENCE_ONLY_ENV_NAMES = frozenset(
+    {
+        "SECRET_KEY",
+        "TRAKT_CLIENT_ID",
+        "TRAKT_CLIENT_SECRET",
+    }
+)
 
 
 class Settings(BaseSettings):
@@ -123,3 +135,47 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def _presence(value: str) -> str:
+    return "***" if value else "unset"
+
+
+def public_settings_rows(settings: Settings) -> list[tuple[str, str]]:
+    """Return sorted (NAME, VALUE) rows safe for startup logging.
+
+    Credential fields are included as keys with ``***`` / ``unset`` only.
+    Does not dump raw ``os.environ`` (avoids leaking shell/Doppler secrets).
+    """
+    rows: dict[str, str] = {
+        "VERSION": __version__,
+        "GIT_SHA": git_sha() or "(unset)",
+        "ENV": settings.env,
+        "DATA_DIR": str(settings.data_dir.resolve()),
+        "SESSION_COOKIE": settings.session_cookie,
+        "SESSION_HTTPS_ONLY": settings.session_https_only_mode,
+        "LOG_LEVEL": settings.log_level,
+        "LOG_FORMAT": settings.log_format,
+        "SYNC_RUN_DELAY_SECONDS": str(settings.sync_run_delay_seconds),
+        "FLARESOLVERR_URL": settings.flaresolverr_url or "(empty)",
+        "FLARESOLVERR_TIMEOUT_MS": str(settings.flaresolverr_timeout_ms),
+        "DATABASE_URL": settings.database_url,
+        "SECRET_KEY": _presence(settings.secret_key),
+        "TRAKT_CLIENT_ID": _presence(settings.trakt_client_id),
+        "TRAKT_CLIENT_SECRET": _presence(settings.trakt_client_secret),
+        "HOST": os.getenv("HOST") or "0.0.0.0 (default)",
+        "PORT": os.getenv("PORT") or "8000 (default)",
+    }
+    assert rows.keys() >= _PRESENCE_ONLY_ENV_NAMES
+    return sorted(rows.items(), key=lambda item: item[0].casefold())
+
+
+def format_public_settings_table(settings: Settings) -> str:
+    """Format public settings as a fixed-width NAME/VALUE table for console logs."""
+    rows = public_settings_rows(settings)
+    name_width = max(len("NAME"), *(len(name) for name, _ in rows))
+    value_width = max(len("VALUE"), *(len(value) for _, value in rows))
+    header = f"{'NAME'.ljust(name_width)}  {'VALUE'.ljust(value_width)}"
+    separator = f"{'-' * name_width}  {'-' * value_width}"
+    body = [f"{name.ljust(name_width)}  {value}" for name, value in rows]
+    return "\n".join([header, separator, *body])
