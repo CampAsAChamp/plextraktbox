@@ -1,3 +1,21 @@
+# [0.13.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.12.0...v0.13.0) (2026-07-20)
+
+
+### Bug Fixes
+
+* align connection step action button order ([c806f29](https://github.com/CampAsAChamp/plextraktbox/commit/c806f294089a2911505640486de8a7bcf459ebb9))
+* clarify job data-type validation and defaults ([7998f00](https://github.com/CampAsAChamp/plextraktbox/commit/7998f006e0ec001173ab045dd687242dfe0769a5))
+
+
+### Features
+
+* add year formatting options ([8676277](https://github.com/CampAsAChamp/plextraktbox/commit/86762777e532d18199eedecbbf63a3dee7d9ea40))
+* configure FlareSolverr on Letterboxd connection ([82ba732](https://github.com/CampAsAChamp/plextraktbox/commit/82ba7326b2179d7519b56b40afe7167ef77f8cfe))
+* mute disabled job rows instead of dry-run ([ce4e091](https://github.com/CampAsAChamp/plextraktbox/commit/ce4e09190a65c04e5143664ae5152893c1cbde0a))
+* resolve git SHA from checkout in local/dev ([fe1afbb](https://github.com/CampAsAChamp/plextraktbox/commit/fe1afbb2005d6470c17aaf528993d42df228a3e9))
+* snapshot source_pair on job runs ([be42036](https://github.com/CampAsAChamp/plextraktbox/commit/be42036b223032f221ed659ff0734c720fb1c677))
+* use icons instead of the pills when the width gets too small ([95d9c40](https://github.com/CampAsAChamp/plextraktbox/commit/95d9c40ebfeab344a7dd9732a53d55c65e732661))
+
 # [0.12.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.11.0...v0.12.0) (2026-07-17)
 
 
