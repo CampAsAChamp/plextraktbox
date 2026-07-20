@@ -85,7 +85,9 @@ def test_public_values_are_readable(settings: Settings, tmp_path: Path) -> None:
     assert str(tmp_path.resolve()) in rows["DATA_DIR"]
     assert "plextraktbox.db" in rows["DATABASE_URL"]
     assert rows["VERSION"]
-    assert rows["GIT_SHA"] == "(unset)"
+    assert rows["GIT_SHA"] == "(unset)" or (
+        isinstance(rows["GIT_SHA"], str) and len(rows["GIT_SHA"]) >= 7
+    )
 
 
 def test_git_sha_from_environ(settings: Settings, monkeypatch: pytest.MonkeyPatch) -> None:

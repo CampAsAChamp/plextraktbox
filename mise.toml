@@ -21,7 +21,11 @@ _.file = ".env"
 description = "[LOCAL] Run uvicorn with reload natively (terminal 1; or use up-dev)"
 depends = ["install-backend", "db-upgrade"]
 dir = "{{ config_root }}/backend"
-run = ".venv/bin/uvicorn plextraktbox.main:app --reload --use-colors --no-access-log"
+# Prefer env override; else current checkout (shown next to version in the profile menu).
+run = """
+PLEXTRAKTBOX_GIT_SHA="${PLEXTRAKTBOX_GIT_SHA:-$(git -C '{{ config_root }}' rev-parse HEAD 2>/dev/null || true)}" \
+  .venv/bin/uvicorn plextraktbox.main:app --reload --use-colors --no-access-log
+"""
 
 [tasks."dev-backend".env]
 DATA_DIR = "{{ config_root }}/data"

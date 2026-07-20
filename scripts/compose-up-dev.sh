@@ -22,6 +22,13 @@ BUILD="${BUILD:-1}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# Bake the checkout SHA into /health (and the profile menu) for the bind-mounted
+# backend image, which has no .git tree. No-op when already set (e.g. CI).
+if [[ -z "${PLEXTRAKTBOX_GIT_SHA:-}" ]] && command -v git >/dev/null 2>&1; then
+  PLEXTRAKTBOX_GIT_SHA="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || true)"
+  export PLEXTRAKTBOX_GIT_SHA
+fi
+
 log_step() {
   echo "[*] $*" >&2
 }

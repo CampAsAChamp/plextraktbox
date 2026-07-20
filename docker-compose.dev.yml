@@ -27,6 +27,8 @@ services:
       SECRET_KEY: ${SECRET_KEY:-}
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
       TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
+      # Set by compose-up-dev.sh (git rev-parse); release images bake this via Dockerfile ARG.
+      PLEXTRAKTBOX_GIT_SHA: ${PLEXTRAKTBOX_GIT_SHA:-}
       # Bind mounts on macOS/Podman often miss fs events; poll so uvicorn --reload works.
       WATCHFILES_FORCE_POLLING: "true"
     healthcheck:

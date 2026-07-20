@@ -14,7 +14,7 @@ def test_health_ok(client: TestClient) -> None:
     body = resp.json()
     assert body["status"] == "ok"
     assert body["version"] == __version__
-    assert body["git_sha"] is None
+    assert body["git_sha"] is None or isinstance(body["git_sha"], str)
     assert body["built_at"] is None
     assert body["db_writable"] is True
     assert body["scheduler_running"] is True

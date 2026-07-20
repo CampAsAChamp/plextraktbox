@@ -6,12 +6,14 @@ Semver comes from ``backend/pyproject.toml`` (bumped by semantic-release).
 from __future__ import annotations
 
 import os
+import subprocess
 import tomllib
 from functools import lru_cache
 from pathlib import Path
 
 _ENV_GIT_SHA = "PLEXTRAKTBOX_GIT_SHA"
 _ENV_BUILD_TIME = "PLEXTRAKTBOX_BUILD_TIME"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 @lru_cache(maxsize=1)
@@ -34,8 +36,30 @@ def package_version() -> str:
 
 
 def git_sha() -> str | None:
+    """Prefer ``PLEXTRAKTBOX_GIT_SHA`` (image builds); else ``git rev-parse`` in a checkout."""
     raw = os.environ.get(_ENV_GIT_SHA, "").strip()
-    return raw or None
+    if raw:
+        return raw
+    return _git_sha_from_repo()
+
+
+@lru_cache(maxsize=1)
+def _git_sha_from_repo() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=_REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except OSError, subprocess.TimeoutExpired:
+        return None
+    if result.returncode != 0:
+        return None
+    sha = result.stdout.strip()
+    return sha or None
 
 
 def built_at() -> str | None:

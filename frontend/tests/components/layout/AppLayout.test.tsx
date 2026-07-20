@@ -19,6 +19,7 @@ beforeEach(() => {
     jsonResponse({
       status: "ok",
       version: "0.1.0",
+      git_sha: "abcdef1234567890",
       db_writable: true,
       scheduler_running: true,
     }),
@@ -82,5 +83,5 @@ test("account menu links to the GitHub repo near version", async () => {
   const github = await screen.findByRole("menuitem", { name: "GitHub Repo" })
   expect(github).toHaveAttribute("href", "https://github.com/CampAsAChamp/plextraktbox")
   expect(github).toHaveAttribute("target", "_blank")
-  expect(await screen.findByText("v0.1.0")).toBeInTheDocument()
+  expect(await screen.findByText("v0.1.0 · abcdef1")).toBeInTheDocument()
 })
