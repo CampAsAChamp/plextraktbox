@@ -25,8 +25,11 @@ import type { DataType, Job, JobInput, NotifyMode, SourcePair } from "src/api/jo
 import { DATA_TYPES_BY_PAIR, SOURCE_PAIR_LABELS } from "src/api/jobs"
 import { NOTIFY_MODE_LABELS } from "src/api/notifications"
 import { formatExcludeLines, getSettings, parseExcludeLines } from "src/api/settings"
+import { type BadgeDisplayMode, ResponsiveBadge } from "src/components/badges/ResponsiveBadge"
+import { CheckIcon } from "src/components/icons/CheckIcon"
 import { HelpCircleIcon } from "src/components/icons/HelpCircleIcon"
 import { SaveIcon } from "src/components/icons/SaveIcon"
+import { XIcon } from "src/components/icons/XIcon"
 import { JobFormMobileNav, JobFormSectionTitle, JobFormToc } from "src/components/JobForm/JobFormToc"
 import { DataTypeBadge } from "src/components/services/DataTypeBadge"
 import { SourcePairLabel } from "src/components/services/SourcePairLabel"
@@ -432,11 +435,14 @@ export function JobForm({ initial, loading = false, onSubmit, onCancel }: JobFor
   )
 }
 
-export function JobStatusBadge({ enabled }: { enabled: boolean }) {
+export function JobStatusBadge({ enabled, mode = "label" }: { enabled: boolean; mode?: BadgeDisplayMode }) {
   return (
-    <Badge color={enabled ? "green" : "red"} variant="light">
-      {enabled ? "Enabled" : "Disabled"}
-    </Badge>
+    <ResponsiveBadge
+      label={enabled ? "Enabled" : "Disabled"}
+      color={enabled ? "green" : "red"}
+      icon={enabled ? <CheckIcon size={14} /> : <XIcon size={14} />}
+      mode={mode}
+    />
   )
 }
 

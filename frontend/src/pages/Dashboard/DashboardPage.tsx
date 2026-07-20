@@ -77,8 +77,8 @@ function LastRunCell({ job }: { job: Job }) {
         <Button component={Link} to={`/runs/${last.id}`} variant="subtle" size="compact-xs" p={0}>
           #{last.id}
         </Button>
-        <RunStatusBadge status={last.status} />
-        <DryRunBadge dryRun={last.dry_run} />
+        <RunStatusBadge status={last.status} mode="responsive" />
+        <DryRunBadge dryRun={last.dry_run} mode="responsive" />
       </Group>
       <TimestampLabel value={last.finished_at ?? last.started_at} size="xs" relativeOnly />
       <RunSummaryStats matched={last.matched} added={last.added} errors={last.errors} />
@@ -242,7 +242,7 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
             </Stack>
 
             <Box visibleFrom="sm">
-              <RoundedTable striped highlightOnHover minWidth={960}>
+              <RoundedTable striped highlightOnHover minWidth={860}>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Name</Table.Th>
@@ -267,10 +267,10 @@ export function DashboardPage({ connections = [] }: DashboardPageProps) {
                         <ScheduleCell job={job} />
                       </Table.Td>
                       <Table.Td>
-                        <DryRunBadge dryRun={job.dry_run} compact />
+                        <DryRunBadge dryRun={job.dry_run} compact mode="responsive" />
                       </Table.Td>
                       <Table.Td>
-                        <JobStatusBadge enabled={job.enabled} />
+                        <JobStatusBadge enabled={job.enabled} mode="responsive" />
                       </Table.Td>
                       <Table.Td>
                         <LastRunCell job={job} />

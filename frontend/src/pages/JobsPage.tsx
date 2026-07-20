@@ -154,7 +154,7 @@ export function JobsPage() {
           </Stack>
 
           <Box visibleFrom="sm">
-            <RoundedTable striped highlightOnHover minWidth={900}>
+            <RoundedTable striped highlightOnHover minWidth={800}>
               <Table.Thead>
                 <Table.Tr>
                   <SortableTh column="name" label="Name" sort={sort} onSort={handleSort} />
@@ -178,7 +178,7 @@ export function JobsPage() {
                     <Table.Td className={sortedColumnCellClass(sort, "data_types")}>
                       <Group gap={4}>
                         {job.data_types.map((dt) => (
-                          <DataTypeBadge key={dt} dataType={dt} />
+                          <DataTypeBadge key={dt} dataType={dt} mode="responsive" />
                         ))}
                       </Group>
                     </Table.Td>
@@ -186,10 +186,10 @@ export function JobsPage() {
                       <ScheduleCell job={job} />
                     </Table.Td>
                     <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
-                      <DryRunBadge dryRun={job.dry_run} compact />
+                      <DryRunBadge dryRun={job.dry_run} compact mode="responsive" />
                     </Table.Td>
                     <Table.Td className={sortedColumnCellClass(sort, "enabled")}>
-                      <JobStatusBadge enabled={job.enabled} />
+                      <JobStatusBadge enabled={job.enabled} mode="responsive" />
                     </Table.Td>
                     <Table.Td>
                       <JobActions

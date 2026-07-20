@@ -259,7 +259,7 @@ export function RunHistoryPage() {
           </Stack>
 
           <Box visibleFrom="sm">
-            <RoundedTable striped highlightOnHover minWidth={900}>
+            <RoundedTable striped highlightOnHover minWidth={800}>
               <Table.Thead>
                 <Table.Tr>
                   <SortableTh column="id" label="Run" sort={sort} onSort={handleSort} />
@@ -302,13 +302,13 @@ export function RunHistoryPage() {
                         {run.source_pair ? <SourcePairLabel sourcePair={run.source_pair} variant="icons" /> : <Text c="dimmed">—</Text>}
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "trigger")}>
-                        <RunTriggerBadge trigger={run.trigger} />
+                        <RunTriggerBadge trigger={run.trigger} mode="responsive" />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "dry_run")}>
-                        <DryRunBadge dryRun={run.dry_run} compact />
+                        <DryRunBadge dryRun={run.dry_run} compact mode="responsive" />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "status")}>
-                        <RunStatusBadge status={run.status} pulse />
+                        <RunStatusBadge status={run.status} pulse mode="responsive" />
                       </Table.Td>
                       <Table.Td className={sortedColumnCellClass(sort, "started_at")}>
                         <TimestampLabel value={run.started_at} size="xs" />

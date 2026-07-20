@@ -1,0 +1,17 @@
+.iconBadge {
+  /* Larger than default sm/md circle so a 14px glyph has real padding. */
+  --badge-height: 1.625rem;
+  width: var(--badge-height);
+  height: var(--badge-height);
+  min-width: var(--badge-height);
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.iconBadge :global(svg) {
+  display: block;
+  flex-shrink: 0;
+}
