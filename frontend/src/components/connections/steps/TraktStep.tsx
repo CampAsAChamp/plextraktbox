@@ -92,6 +92,9 @@ export function TraktStep({
         </Alert>
       ) : null}
       <Group wrap="wrap">
+        {configured ? (
+          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
+        ) : null}
         <Button
           onClick={() => start.mutate()}
           loading={start.isPending}
@@ -100,10 +103,7 @@ export function TraktStep({
         >
           Connect Trakt
         </Button>
-        {configured ? (
-          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
-        ) : null}
-        <ClearConnectionButton service="trakt" connection={connection} onCleared={onCleared} />
+        {configured ? <ClearConnectionButton service="trakt" connection={connection} onCleared={onCleared} /> : null}
       </Group>
       {device ? (
         <Alert color="blue" title="Authorize on Trakt">

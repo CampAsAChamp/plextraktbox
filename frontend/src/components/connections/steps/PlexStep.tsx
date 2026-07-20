@@ -206,6 +206,9 @@ export function PlexStep({
         </Alert>
       ) : null}
       <Group wrap="wrap">
+        {configured ? (
+          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
+        ) : null}
         <Button
           onClick={() => start.mutate()}
           loading={start.isPending}
@@ -214,10 +217,7 @@ export function PlexStep({
         >
           Connect Plex
         </Button>
-        {configured ? (
-          <TestConnectionButton testStatus={testStatus} onClick={() => testSaved.mutate()} loading={testSaved.isPending} />
-        ) : null}
-        <ClearConnectionButton service="plex" connection={connection} onCleared={onCleared} />
+        {configured ? <ClearConnectionButton service="plex" connection={connection} onCleared={onCleared} /> : null}
       </Group>
       {pollError ? (
         <Alert color="red" title="Could not finish Plex setup">

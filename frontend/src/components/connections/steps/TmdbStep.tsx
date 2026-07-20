@@ -218,16 +218,13 @@ export function TmdbStep({
           )}
         />
         <Group wrap="wrap">
+          {canTest ? (
+            <TestConnectionButton testStatus={testStatus} onClick={handleTest} loading={testSaved.isPending || testDraft.isPending} />
+          ) : null}
           <Button type="submit" loading={save.isPending} disabled={!isDirty} leftSection={<SaveIcon />}>
             Save TMDB connection
           </Button>
-          <TestConnectionButton
-            testStatus={testStatus}
-            onClick={handleTest}
-            loading={testSaved.isPending || testDraft.isPending}
-            disabled={!canTest}
-          />
-          <ClearConnectionButton service="tmdb" connection={connection} onCleared={onCleared} />
+          {configured ? <ClearConnectionButton service="tmdb" connection={connection} onCleared={onCleared} /> : null}
         </Group>
       </Stack>
     </form>
