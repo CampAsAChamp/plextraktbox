@@ -1,18 +1,4 @@
-import {
-  ActionIcon,
-  AppShell,
-  Avatar,
-  Box,
-  Burger,
-  Button,
-  Drawer,
-  Group,
-  Menu,
-  NavLink,
-  Stack,
-  Title,
-  useMantineTheme,
-} from "@mantine/core"
+import { ActionIcon, AppShell, Avatar, Box, Burger, Button, Drawer, Group, Menu, NavLink, Stack, useMantineTheme } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
@@ -28,6 +14,24 @@ import { ApiHealthBadge } from "src/components/layout/ApiHealthBadge"
 import { NotificationBell } from "src/components/notifications/NotificationBell"
 
 const GITHUB_REPO_URL = "https://github.com/CampAsAChamp/plextraktbox"
+
+function BrandMark({ size = 40, decorative = false }: { size?: number; decorative?: boolean }) {
+  return (
+    <Box
+      component="img"
+      src="/logo.svg"
+      alt={decorative ? "" : "plextraktbox"}
+      width={size}
+      height={size}
+      style={{
+        display: "block",
+        flexShrink: 0,
+        borderRadius: "50%",
+      }}
+      aria-hidden={decorative || undefined}
+    />
+  )
+}
 
 function ChevronDownIcon({ size = 14 }: { size?: number }) {
   return (
@@ -142,9 +146,7 @@ export function AppLayout({ username, avatarUrl, showLogout = false }: AppLayout
                 }}
               >
                 <Group gap="sm" wrap="nowrap">
-                  <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }} lineClamp={1}>
-                    plextraktbox
-                  </Title>
+                  <BrandMark decorative />
                   <ActionIcon
                     component="span"
                     variant={isHome ? "light" : "subtle"}
@@ -159,9 +161,7 @@ export function AppLayout({ username, avatarUrl, showLogout = false }: AppLayout
                 </Group>
               </Link>
             ) : (
-              <Title order={3} fw={700} style={{ letterSpacing: "-0.02em" }}>
-                plextraktbox
-              </Title>
+              <BrandMark />
             )}
             {showLogout ? (
               <Group gap={4} visibleFrom="sm">
