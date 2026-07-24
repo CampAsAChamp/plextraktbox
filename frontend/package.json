@@ -26,7 +26,7 @@
     "cron-validator": "^1.4.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^6.28.0",
+    "react-router-dom": "^7.0.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
