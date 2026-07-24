@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.13.0...v0.14.0) (2026-07-24)
+
+
+### Features
+
+* add new logo ([50ccf89](https://github.com/CampAsAChamp/plextraktbox/commit/50ccf89179c1959a873d37871fbe5d802a83878e))
+
 # [0.13.0](https://github.com/CampAsAChamp/plextraktbox/compare/v0.12.0...v0.13.0) (2026-07-20)
 
 
