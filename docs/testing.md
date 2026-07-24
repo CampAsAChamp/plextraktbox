@@ -65,5 +65,6 @@ maintainers (`mise run check-doppler`); default CI does not require a Doppler to
 - **Frontend:** vitest + RTL; specs under `frontend/tests/` (mirrors `src/`)
 - **Doppler:** `mise run up-dev` (default hot reload) / `up-doppler` / `check-doppler`; optional CI
   `DOPPLER_TOKEN` — secrets in Doppler, knobs in `.env` (see [dev-workflow.md](dev-workflow.md))
-- **TrueNAS:** personal install + catalog — see [deploy/truenas.md](deploy/truenas.md) and
-  [phases/phase-23.md](phases/phase-23.md)
+- **TrueNAS:** personal install ([phase-22 test plan](phases/test-plans/phase-22-test-plan.md)) +
+  catalog ([phase-23 test plan](phases/test-plans/phase-23-test-plan.md)) — see also
+  [deploy/truenas.md](deploy/truenas.md)

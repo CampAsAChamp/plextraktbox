@@ -31,8 +31,11 @@ docs/
 │   └── truenas.md      ← TrueNAS deployment
 └── phases/
     ├── README.md       ← remaining work
+    ├── phase-22.md     ← TrueNAS personal install (done)
     ├── phase-23.md     ← TrueNAS catalog scope (planned)
     ├── phase-25.md     ← ops / OSS hygiene (done)
     └── test-plans/
+        ├── phase-22-test-plan.md  ← custom-app / personal install
+        ├── phase-23-test-plan.md  ← TrueNAS catalog pre-upload
         └── phase-25-test-plan.md
 ```

@@ -9,7 +9,7 @@ official/community app — not just via manual "Launch Docker Image."
 
 This is **milestone 2** of two TrueNAS milestones (see [deploy/truenas.md](../deploy/truenas.md)).
 **Do not start until the personal install has been running successfully on real hardware for a
-while** — publishing before the app is proven is premature.
+while** ([Phase 22](phase-22.md)) — publishing before the app is proven is premature.
 
 ## Deliverables
 
@@ -38,7 +38,8 @@ while** — publishing before the app is proven is premature.
 
 ## Prerequisites
 
-Personal TrueNAS install stable on real hardware (see [deploy/truenas.md](../deploy/truenas.md)).
+Personal TrueNAS install stable on real hardware
+([phase-22](phase-22.md) / [deploy/truenas.md](../deploy/truenas.md)).
 
 ## Notes
 
@@ -47,4 +48,6 @@ implementation checklist for catalog work.
 
 ## Verification
 
-Test plan TBD — catalog install on clean SCALE box.
+Full pre-upload checklist:
+[test-plans/phase-23-test-plan.md](test-plans/phase-23-test-plan.md)
+(clean catalog install, packaging, sync smoke, upgrade/persistence).

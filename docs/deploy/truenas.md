@@ -31,6 +31,10 @@ See [architecture.md](../architecture.md) for full stack context.
 Run the published image on your own TrueNAS box via **custom app** / "Launch Docker Image". No
 catalog involvement — a working container + dataset mount on one machine.
 
+**Verification checklist:**
+[phases/test-plans/phase-22-test-plan.md](../phases/test-plans/phase-22-test-plan.md)
+([phase-22.md](../phases/phase-22.md)).
+
 ## Milestone 2 — App Catalog (Phase 23)
 
 Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, heavier effort. Do
@@ -45,7 +49,8 @@ Getting **plextraktbox** **listed in the TrueNAS App Catalog** is a separate, he
 3. Publish container image to a public registry (e.g. GHCR) with versioned tags
 4. Submit to the official community catalog or stand up a self-hosted custom catalog URL — confirm
    current submission/review requirements at the time
-5. Verify catalog install on a clean TrueNAS instance
+5. Verify catalog install on a clean TrueNAS instance — full checklist:
+   [phases/test-plans/phase-23-test-plan.md](../phases/test-plans/phase-23-test-plan.md)
 
 ---
 
