@@ -1,4 +1,4 @@
-import { ActionIcon, AppShell, Avatar, Box, Burger, Button, Drawer, Group, Menu, NavLink, Stack, useMantineTheme } from "@mantine/core"
+import { AppShell, Avatar, Box, Burger, Button, Drawer, Group, Menu, NavLink, Stack, useMantineTheme } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
@@ -143,22 +143,11 @@ export function AppLayout({ username, avatarUrl, showLogout = false }: AppLayout
                   textDecoration: "none",
                   cursor: "pointer",
                   minWidth: 0,
+                  display: "flex",
+                  alignItems: "center",
                 }}
               >
-                <Group gap="sm" wrap="nowrap">
-                  <BrandMark decorative />
-                  <ActionIcon
-                    component="span"
-                    variant={isHome ? "light" : "subtle"}
-                    color={isHome ? primary : "gray"}
-                    size="lg"
-                    aria-hidden
-                    tabIndex={-1}
-                    visibleFrom="sm"
-                  >
-                    <HomeIcon size={18} />
-                  </ActionIcon>
-                </Group>
+                <BrandMark decorative />
               </Link>
             ) : (
               <BrandMark />
